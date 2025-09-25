@@ -1,5 +1,0 @@
-{
-  "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=storm-test-a51c5a46-94a2-4e22-b3d1-03aaa67bd5a8;Integrated Security=True",
-  "Source": "067ea0d9-ba62-43f7-9106-34930c60c528",
-  "Provider": "8800600a-add9-47e8-81d2-1d13b5a09c13"
-}
