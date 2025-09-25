@@ -1,10 +1,20 @@
-name: Build, Pack, and Publish NuGet
+name: Build and Pack NuGet Packages
 
 on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for NuGet packages'
+        required: true
+        type: string
 
 jobs:
-  build-pack-publish:
+  build-pack:
     runs-on: windows-latest
 
     steps:
@@ -15,33 +25,22 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-              
-      - name: Extract version from tag (if present)
-        run: |
-          if ($env:GITHUB_REF -like 'refs/tags/v*') {
-            $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
-          } else {
-            $version = '0.0.0-preview'
-          }
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
-        shell: pwsh
 
       - name: Update SharedAssemblyInfo.props version
         run: |
-          (Get-Content 'src/SharedAssemblyInfo.props') -replace '<Version>.*</Version>', "<Version>${{ env.VERSION }}</Version>" | Set-Content 'src/SharedAssemblyInfo.props'
+          (Get-Content 'src/SharedAssemblyInfo.props') -replace '<Version>.*</Version>', "<Version>${{ inputs.version }}</Version>" | Set-Content 'src/SharedAssemblyInfo.props'
         shell: pwsh
 
       - name: Update AltaSoft.Storm.MsSql.nuspec versions
         run: |
-          pwsh -File "Update-NuspecDependencyVersions.ps1" -PackageVersion "${{ env.VERSION }}"
+          pwsh -File "Update-NuspecDependencyVersions.ps1" -PackageVersion "${{ inputs.version }}"
         shell: pwsh
 
       - name: Update build targets version
         run: |
-          pwsh -File "Update-TaskAssemblyVersion.ps1" -NewVersion "${{ env.VERSION }}" -FilePath "src/AltaSoft.Storm.Weaver/build/AltaSoft.Storm.Generator.MsSql.targets"
-          pwsh -File "Update-TaskAssemblyVersion.ps1" -NewVersion "${{ env.VERSION }}" -FilePath "src/AltaSoft.Storm.Weaver/buildMultiTargeting/AltaSoft.Storm.Generator.MsSql.targets"
+          pwsh -File "Update-TaskAssemblyVersion.ps1" -NewVersion "${{ inputs.version }}" -FilePath "src/AltaSoft.Storm.Weaver/build/AltaSoft.Storm.Generator.MsSql.targets"
+          pwsh -File "Update-TaskAssemblyVersion.ps1" -NewVersion "${{ inputs.version }}" -FilePath "src/AltaSoft.Storm.Weaver/buildMultiTargeting/AltaSoft.Storm.Generator.MsSql.targets"
         shell: pwsh
-
 
       - name: Restore projects
         run: |
@@ -66,7 +65,6 @@ jobs:
           dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
           dotnet pack -o ./nupkgs src/AltaSoft.Storm.MsSql/
         shell: pwsh
-
 
       - name: Upload NuGet packages as artifact
         uses: actions/upload-artifact@v4

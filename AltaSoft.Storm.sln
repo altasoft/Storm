@@ -66,7 +66,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{F3154E81-DC86-4A01-A4D6-F92224CBF03C}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\build_pack_nugets.yaml = .github\workflows\build_pack_nugets.yaml
+		.github\workflows\build_and_pack.yaml = .github\workflows\build_and_pack.yaml
+		.github\workflows\publish_nuget.yml = .github\workflows\publish_nuget.yml
+		.github\workflows\test_with_mssql.yaml = .github\workflows\test_with_mssql.yaml
 	EndProjectSection
 EndProject
 Global

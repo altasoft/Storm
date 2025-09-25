@@ -8,7 +8,12 @@ namespace AltaSoft.Storm.Tests;
 
 public sealed class DatabaseFixture : IAsyncLifetime
 {
-    private const string TestBaseConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Integrated Security=True;Encrypt=false;TrustServerCertificate=true";
+    private static string GetConnectionString()
+    {
+        // Use environment variable if set, otherwise fallback to localdb
+        return Environment.GetEnvironmentVariable("STORM_TEST_CONNECTION")
+            ?? "Data Source=(localdb)\\MSSQLLocalDB;Integrated Security=True;Encrypt=false;TrustServerCertificate=true";
+    }
 
     private readonly DatabaseHelper _databaseHelper;
 
@@ -19,7 +24,7 @@ public sealed class DatabaseFixture : IAsyncLifetime
 
     public DatabaseFixture()
     {
-        _databaseHelper = new DatabaseHelper("storm-test-" + Guid.NewGuid(), TestBaseConnectionString);
+        _databaseHelper = new DatabaseHelper("storm-test-" + Guid.NewGuid(), GetConnectionString());
         Users = _databaseHelper.Users;
         UsersBulkCopy = _databaseHelper.UsersBulkCopy;
         CustomerProperties = _databaseHelper.CustomerProperties;

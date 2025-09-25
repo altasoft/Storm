@@ -1,0 +1,44 @@
+name: Test with MSSQL
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          SA_PASSWORD: "Your_password123"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "exit 0"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Wait for MSSQL to be ready
+        run: |
+          for i in {1..30}; do
+            if /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Your_password123' -Q "SELECT 1"; then
+              echo "SQL Server is ready."
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run tests
+        env:
+          STORM_TEST_CONNECTION: "Server=localhost,1433;User Id=sa;Password=Your_password123;"
+        run: dotnet test --logger trx
