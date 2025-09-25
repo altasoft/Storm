@@ -25,8 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		src\AltaSoft.Storm.MsSql\AltaSoft.Storm.MsSql.nuspec = src\AltaSoft.Storm.MsSql\AltaSoft.Storm.MsSql.nuspec
 		Directory.Packages.props = Directory.Packages.props
-		readme.md = readme.md
 		src\SharedAssemblyInfo.props = src\SharedAssemblyInfo.props
+		readme2.md = readme2.md
 		Update-NuspecDependencyVersions.ps1 = Update-NuspecDependencyVersions.ps1
 		Update-TaskAssemblyVersion.ps1 = Update-TaskAssemblyVersion.ps1
 	EndProjectSection

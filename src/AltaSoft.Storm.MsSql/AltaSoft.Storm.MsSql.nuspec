@@ -9,6 +9,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>AltaSoft.Storm - Fastest ORM</description>
     <copyright>Copyright 2024-2025 ALTA Software llc.</copyright>
+    <readme>README.md</readme>
     <dependencies>
       <group targetFramework="net8.0">
         <dependency id="AltaSoft.DomainPrimitives" version="6.0.2" />
@@ -37,7 +38,7 @@
     <file src="..\AltaSoft.Storm\bin\Release\net8.0\AltaSoft.Storm.dll" target="lib\net8.0\" />
     <file src="..\AltaSoft.Storm\bin\Release\net9.0\AltaSoft.Storm.dll" target="lib\net9.0\" />
     <file src="..\AltaSoft.Storm.Analyzers\bin\Release\netstandard2.0\AltaSoft.Storm.Analyzers.dll" target="analyzers\dotnet\cs" />
-    <!--<file src="README.md" target="docs\" />-->
+    <file src="README.md" target="README.md" />
     <file src="..\StormGlobalTypeAliases.cs" target="contentFiles\cs\any" />
   </files>
 </package>
