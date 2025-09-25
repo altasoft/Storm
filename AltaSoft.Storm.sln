@@ -37,11 +37,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltaSoft.Storm.Generator.Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VSIX", "VSIX", "{2249270F-A2C7-42D5-8507-FDA1355046B5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltaSoft.Storm.TrackingListTests", "tests\TrackingListTests\AltaSoft.Storm.TrackingListTests.csproj", "{D7A4416C-9085-4332-A029-14760A7A4C7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltaSoft.Storm.TrackingListTests", "Tests\TrackingListTests\AltaSoft.Storm.TrackingListTests.csproj", "{D7A4416C-9085-4332-A029-14760A7A4C7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltaSoft.Storm.Tests", "tests\OrmTests\AltaSoft.Storm.Tests.csproj", "{E05B3B9A-0FA9-4878-9305-EE9939EC9224}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltaSoft.Storm.Tests", "Tests\OrmTests\AltaSoft.Storm.Tests.csproj", "{E05B3B9A-0FA9-4878-9305-EE9939EC9224}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltaSoft.Storm.TestModels", "tests\TestModels\AltaSoft.Storm.TestModels.csproj", "{62B15D08-B4F8-40A6-8ED1-382A3C7D5FDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltaSoft.Storm.TestModels", "Tests\TestModels\AltaSoft.Storm.TestModels.csproj", "{62B15D08-B4F8-40A6-8ED1-382A3C7D5FDC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerfProfiler", "Tests\PerfProfiler\PerfProfiler.csproj", "{D72078F8-060B-4FBD-9C4F-694B53C2DD62}"
 EndProject
