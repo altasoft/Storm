@@ -1,19 +1,27 @@
 <Project>
-  <PropertyGroup>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>orm;sql;database;dotnet;storm;mssql;altasoft</PackageTags>
-    <PackageProjectUrl>https://github.com/altasoft/Storm</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/altasoft/Storm</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <Description>AltaSoft.Storm - Fastest ORM</Description>
-    <Summary>Fastest ORM for .NET with MSSQL support.</Summary>
-    <Authors>Gregory Nikolaishvili, Teimuraz Nikolaishvili</Authors>
-    <Company>ALTA Software llc.</Company>
-    <Copyright>Copyright 2024-2025 ALTA Software llc.</Copyright>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Summary>Fastest ORM for .NET with MSSQL support.</Summary>
+		<Authors>Gregory Nikolaishvili, Teimuraz Nikolaishvili</Authors>
+		<Company>ALTA Software llc.</Company>
+		<Copyright>Copyright 2024-2025 ALTA Software llc.</Copyright>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<ProjectUrl>https://github.com/altasoft/Storm</ProjectUrl>
+		<PackageProjectUrl>https://github.com/altasoft/Storm</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/altasoft/Storm</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Description>AltaSoft.Storm - Fastest ORM</Description>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<PackageTags>orm;sql;database;dotnet;storm;mssql;altasoft</PackageTags>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>>
+	</ItemGroup>
 </Project>
