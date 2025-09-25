@@ -5,9 +5,6 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.1" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.1" />
-  </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="AltaSoft.DomainPrimitives" Version="6.0.2" />
     <PackageVersion Include="AltaSoft.DomainPrimitives.Generator" Version="6.0.2" />
