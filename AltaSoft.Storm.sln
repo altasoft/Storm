@@ -63,6 +63,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltaSoft.Storm.TestApp", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltaSoft.Storm.Analyzers", "src\AltaSoft.Storm.Analyzers\AltaSoft.Storm.Analyzers.csproj", "{ECBCA17A-E8F7-03DB-7622-AB0B697ECD6E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{F3154E81-DC86-4A01-A4D6-F92224CBF03C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build_pack_nugets.yaml = .github\workflows\build_pack_nugets.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -267,6 +274,8 @@ Global
 		{D04E553B-FCEE-478D-A969-DEA4CB795F01} = {FE2F1D5B-5931-413B-B376-DD491BD63610}
 		{B566BE5C-0ACC-4044-9AAA-5F0583C74D9D} = {2249270F-A2C7-42D5-8507-FDA1355046B5}
 		{03D3B2F6-C468-B8EE-66B6-A69966CF5FD4} = {FE017601-E617-4637-BB98-B521C8EE662A}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {CC45FAD4-1BF0-48BD-9D83-FF644E05EB70}
+		{F3154E81-DC86-4A01-A4D6-F92224CBF03C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5853F5BC-CE31-4CEC-BD34-272834411009}

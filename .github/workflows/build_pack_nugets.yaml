@@ -1,0 +1,75 @@
+name: Build, Pack, and Publish NuGet
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-pack-publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+              
+      - name: Extract version from tag (if present)
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+          } else {
+            $version = '0.0.0-preview'
+          }
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+        shell: pwsh
+
+      - name: Update SharedAssemblyInfo.props version
+        run: |
+          (Get-Content 'src/SharedAssemblyInfo.props') -replace '<Version>.*</Version>', "<Version>${{ env.VERSION }}</Version>" | Set-Content 'src/SharedAssemblyInfo.props'
+        shell: pwsh
+
+      - name: Update AltaSoft.Storm.MsSql.nuspec versions
+        run: |
+          pwsh -File "Update-NuspecDependencyVersions.ps1" -PackageVersion "${{ env.VERSION }}"
+        shell: pwsh
+
+      - name: Update build targets version
+        run: |
+          pwsh -File "Update-TaskAssemblyVersion.ps1" -NewVersion "${{ env.VERSION }}" -FilePath "src/AltaSoft.Storm.Weaver/build/AltaSoft.Storm.Generator.MsSql.targets"
+          pwsh -File "Update-TaskAssemblyVersion.ps1" -NewVersion "${{ env.VERSION }}" -FilePath "src/AltaSoft.Storm.Weaver/buildMultiTargeting/AltaSoft.Storm.Generator.MsSql.targets"
+        shell: pwsh
+
+
+      - name: Restore projects
+        run: |
+          dotnet restore src/AltaSoft.Storm.Generator.Common/
+          dotnet restore src/AltaSoft.Storm.Weaver/
+          dotnet restore src/AltaSoft.Storm.Generator/
+          dotnet restore src/AltaSoft.Storm/
+          dotnet restore src/AltaSoft.Storm.MsSql/
+          dotnet restore src/AltaSoft.Storm.Analyzers/
+        shell: pwsh
+
+      - name: Build projects
+        run: |
+          dotnet build -c Release src/AltaSoft.Storm.Weaver/
+          dotnet build -c Release src/AltaSoft.Storm/
+          dotnet build -c Release src/AltaSoft.Storm.Analyzers/
+          dotnet build -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
+        shell: pwsh
+
+      - name: Pack projects
+        run: |
+          dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
+          dotnet pack -o ./nupkgs src/AltaSoft.Storm.MsSql/
+        shell: pwsh
+
+
+      - name: Upload NuGet packages as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: ./nupkgs/*.nupkg
