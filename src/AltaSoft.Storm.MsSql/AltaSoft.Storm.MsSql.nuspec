@@ -8,8 +8,14 @@
     <owners>ALTA Software llc.</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>AltaSoft.Storm - Fastest ORM</description>
+    <summary>Fastest ORM for .NET with MSSQL support.</summary>
     <copyright>Copyright 2024-2025 ALTA Software llc.</copyright>
     <readme>README.md</readme>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/altasoft/Storm</projectUrl>
+    <repository type="git" url="https://github.com/altasoft/Storm" />
+    <tags>orm;sql;database;dotnet;storm;mssql;altasoft</tags>
+    <releaseNotes>Initial release supporting .NET 8 and .NET 9.</releaseNotes>
     <dependencies>
       <group targetFramework="net8.0">
         <dependency id="AltaSoft.DomainPrimitives" version="6.0.2" />
@@ -38,7 +44,7 @@
     <file src="..\AltaSoft.Storm\bin\Release\net8.0\AltaSoft.Storm.dll" target="lib\net8.0\" />
     <file src="..\AltaSoft.Storm\bin\Release\net9.0\AltaSoft.Storm.dll" target="lib\net9.0\" />
     <file src="..\AltaSoft.Storm.Analyzers\bin\Release\netstandard2.0\AltaSoft.Storm.Analyzers.dll" target="analyzers\dotnet\cs" />
-    <file src="README.md" target="README.md" />
+    <file src="..\..\README.md" target="README.md" />
     <file src="..\StormGlobalTypeAliases.cs" target="contentFiles\cs\any" />
   </files>
 </package>
