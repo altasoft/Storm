@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<LangVersion>Latest</LangVersion>
+	<IsPackable>false</IsPackable>
+	<CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<DefineConstants>$(DefineConstants);STORM_MSSQL</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\..\src\AltaSoft.Storm.Generator\AltaSoft.Storm.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" ExcludeAssets="runtime" />
+
+	<ProjectReference Include="..\..\src\AltaSoft.Storm\AltaSoft.Storm.csproj" />
+	<ProjectReference Include="..\..\src\AltaSoft.Storm.MsSql\AltaSoft.Storm.MsSql.csproj" />
+	<ProjectReference Include="..\..\src\AltaSoft.Storm.Weaver\AltaSoft.Storm.Weaver.csproj" />
+	<ProjectReference Include="..\..\src\cecil\Mono.Cecil.csproj" />
+	<ProjectReference Include="..\..\src\cecil\rocks\Mono.Cecil.Rocks.csproj" />
+	<ProjectReference Include="..\..\src\cecil\symbols\pdb\Mono.Cecil.Pdb.csproj" />
+  </ItemGroup>
+
+  <Import Project="build\AltaSoft.Storm.MsSql.targets" />
+
+  <ItemGroup>
+	<PackageReference Include="AltaSoft.DomainPrimitives" Version="6.0.2" />
+	<PackageReference Include="AltaSoft.DomainPrimitives.Generator" Version="6.0.2" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" ExcludeAssets="runtime">
+	  <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+	<PackageReference Include="AltaSoft.DomainPrimitives.SwaggerExtensions" Version="6.0.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+	<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	<CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+	<!--Don't include the output from a previous source generator execution into future runs; the */** trick here ensures that there's at least one subdirectory, which is our key that it's coming from a source generator as opposed to something that is coming from some other tool.-->
+	<Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Compile Include="..\..\src\StormGlobalTypeAliases.cs" Link="StormGlobalTypeAliases.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Reference Include="Mono.Cecil" HintPath="..\..\src\cecil\Lib\$(Configuration)\Mono.Cecil.dll" />
+	  <Reference Include="Mono.Cecil.Pdb" HintPath="..\..\src\cecil\Lib\$(Configuration)\Mono.Cecil.Pdb.dll" />
+	  <Reference Include="Mono.Cecil.Rocks" HintPath="..\..\src\cecil\Lib\$(Configuration)\Mono.Cecil.Rocks.dll" />
+  </ItemGroup>
+
+</Project>

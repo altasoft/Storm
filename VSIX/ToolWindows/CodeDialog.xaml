@@ -1,0 +1,26 @@
+<vs:DialogWindow  x:Class="AltaSoft.Storm.ToolWindows.CodeDialog"
+               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
+               xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+        
+               toolkit:Themes.UseVsTheme="True"
+               WindowStartupLocation="CenterOwner"
+               Height="600"
+               Width="800"
+               HasDialogFrame ="True"
+               ShowInTaskbar="False"
+               ResizeMode="CanResizeWithGrip"
+               Title="Generated Code" 
+               Background="{DynamicResource {x:Static vs:ThemedDialogColors.WindowPanelBrushKey}}"
+
+               Loaded="Window_Loaded">
+
+    <Grid>
+        <TextBox x:Name="codeTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                 Margin="10" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
+
+        <Button Content="Copy to Clipboard" Focusable="False" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="120" Margin="10"
+                Click="CopyButton_Click" />
+    </Grid>
+</vs:DialogWindow>

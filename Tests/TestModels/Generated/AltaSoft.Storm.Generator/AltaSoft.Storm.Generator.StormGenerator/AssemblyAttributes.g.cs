@@ -1,0 +1,1 @@
+﻿[assembly: AltaSoft.Storm.Attributes.StormAssembly]

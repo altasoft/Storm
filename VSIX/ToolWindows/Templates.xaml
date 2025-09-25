@@ -1,0 +1,165 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+        xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+        xmlns:platformUi ="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
+        xmlns:valueConverters="clr-namespace:AltaSoft.Storm.ValueConverters"
+        xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+        
+        xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit">
+
+    <valueConverters:TypeStatusToBrushConverter x:Key="TypeStatusToBrushConverter" />
+    <valueConverters:PropertyStatusToBrushConverter x:Key="PropertyStatusToBrushConverter" />
+    <valueConverters:DbObjectStatusToBrushConverter x:Key="DbObjectToBrushConverter" />
+    <valueConverters:DbColumnStatusToBrushConverter x:Key="DbColumnStatusToBrushConverter" />
+
+    <!-- Template for StormPropertyDetailDef -->
+    <DataTemplate x:Key="PropertyDetailTemplate">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="PropertyNameColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="PropertyTypeColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="BindingColumn" />
+                <ColumnDefinition Width="*" SharedSizeGroup="StatusMessageColumn" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" BorderThickness="0 1 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <Ellipse Width="12" Height="12" Margin="4" Fill="{Binding Status, Converter={StaticResource PropertyStatusToBrushConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="1" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Width="16" Margin="4" Text="{Binding SaveAsText}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="2" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <imaging:CrispImage Width="16" Height="16" Margin="4" Moniker="{Binding LoadWithFlagsImage}" />
+            </Border>
+            <Border Grid.Column="3" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding PropertyName}" />
+            </Border>
+            <Border Grid.Column="4" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding PropertyTypeDisplayName}" />
+            </Border>
+            <Border Grid.Column="5" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding BindingDisplayName}" />
+            </Border>
+            <Border Grid.Column="6" BorderThickness="0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding StatusMessage}" FontStyle="Italic" />
+            </Border>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Template for StormPropertyDef -->
+    <HierarchicalDataTemplate x:Key="PropertyTemplate" ItemsSource="{Binding Details}" ItemTemplate="{StaticResource PropertyDetailTemplate}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="PropertyNameColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="PropertyTypeColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="BindingColumn" />
+                <ColumnDefinition Width="*" SharedSizeGroup="StatusMessageColumn" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" BorderThickness="0 1 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <Ellipse Width="12" Height="12" Margin="4" Fill="{Binding Status, Converter={StaticResource PropertyStatusToBrushConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="1" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Width="24" Margin="4" Text="{Binding SaveAsText}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="2" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <imaging:CrispImage Width="16" Height="16" Margin="4" Moniker="{Binding LoadWithFlagsImage}" />
+            </Border>
+            <Border Grid.Column="3" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding PropertyName}" />
+            </Border>
+            <Border Grid.Column="4" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding PropertyTypeDisplayName}" />
+            </Border>
+            <Border Grid.Column="5" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding BindingDisplayName}" />
+            </Border>
+            <Border Grid.Column="6" BorderThickness="0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding StatusMessage}" FontStyle="Italic" />
+            </Border>
+        </Grid>
+    </HierarchicalDataTemplate>
+
+    <!-- Template for StormTypeDef -->
+    <HierarchicalDataTemplate x:Key="TypeTemplate" ItemsSource="{Binding Properties}" ItemTemplate="{StaticResource PropertyTemplate}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="TypeDisplayNameColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="BindingColumn2" />
+                <ColumnDefinition Width="*" SharedSizeGroup="StatusMessageColumn2" />
+            </Grid.ColumnDefinitions>
+            <Ellipse Grid.Column="0" Width="12" Height="12" Margin="8" Fill="{Binding Status, Converter={StaticResource TypeStatusToBrushConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="1" Margin="8" Text="{Binding TypeDisplayName}" HorizontalAlignment="Left" FontWeight="Bold" />
+            <TextBlock Grid.Column="2" Margin="8" Text="{Binding BindingDisplayName}" FontWeight="Bold" />
+            <TextBlock Grid.Column="3" Margin="8" Text="{Binding StatusMessage}" FontStyle="Italic" />
+        </Grid>
+    </HierarchicalDataTemplate>
+
+    <!-- Template for DbColumnDef -->
+    <DataTemplate x:Key="DbColumnTemplate">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ColumnNameColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="DataTypeColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="IsNullableColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="DefaultValue" MinWidth="20" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" BorderThickness="0 1 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <Ellipse Width="12" Height="12" Margin="4" Fill="{Binding Status, Converter={StaticResource DbColumnStatusToBrushConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="1" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <imaging:CrispImage Width="16" Height="16" Margin="4" Moniker="{Binding IsKeyImage}" />
+            </Border>
+            <Border Grid.Column="2" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding ColumnName}" />
+            </Border>
+            <Border Grid.Column="3" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding DataTypeFullName}" />
+            </Border>
+            <Border Grid.Column="4" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding NullableText}" />
+            </Border>
+            <Border Grid.Column="5" BorderThickness="0" BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}">
+                <TextBlock Margin="4" Text="{Binding DefaultValue}" />
+            </Border>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Template for DbObjectDef -->
+    <HierarchicalDataTemplate x:Key="DbObjectTemplate" ItemsSource="{Binding Columns}" ItemTemplate="{StaticResource DbColumnTemplate}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ObjectNameColumn" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="SeparatorColumn" />
+                <ColumnDefinition Width="*" SharedSizeGroup="StatusMessageColumn4" />
+            </Grid.ColumnDefinitions>
+            <Ellipse Grid.Column="0" Width="12" Height="12" Margin="8" Fill="{Binding Status, Converter={StaticResource DbObjectToBrushConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="1" Margin="8" Text="{Binding SchemaName}" HorizontalAlignment="Left" FontWeight="Bold" />
+            <TextBlock Grid.Column="2" Margin="8" Text="{Binding ObjectName}" HorizontalAlignment="Left" FontWeight="Bold" />
+            <TextBlock Grid.Column="3" Margin="8" Text="{Binding StatusMessage}" FontStyle="Italic" />
+        </Grid>
+    </HierarchicalDataTemplate>
+
+    <!-- Template for Database Entities (Tables, Views, Functions, Procedures) -->
+    <HierarchicalDataTemplate x:Key="DbEntityTemplate" ItemsSource="{Binding DbObjects}" ItemTemplate="{StaticResource DbObjectTemplate}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Margin="8" Text="{Binding Name}" HorizontalAlignment="Left" FontWeight="Bold" />
+        </Grid>
+    </HierarchicalDataTemplate>
+
+</ResourceDictionary>

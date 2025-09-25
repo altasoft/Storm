@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+	<LangVersion>Latest</LangVersion>
+	<Nullable>enable</Nullable>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+  <Import Project="../SharedAssemblyInfo.props" />
+
+  <ItemGroup>
+	  <Compile Include="..\StormGlobalTypeAliases.cs" Link="StormGlobalTypeAliases.cs" />
+  </ItemGroup>
+	
+  <ItemGroup Condition="'$(DefineConstants.Contains(STORM_MSSQL))'">
+	  <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="AltaSoft.DomainPrimitives" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+	<PackageReference Include="Microsoft.Extensions.ObjectPool" />
+	<PackageReference Include="Microsoft.OData.Core" />
+	<PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+</Project>

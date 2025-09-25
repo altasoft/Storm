@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<Extern href="stdidcmd.h" />
+	<Extern href="vsshlids.h" />
+	<Include href="KnownImageIds.vsct" />
+	<Include href="VSGlobals.vsct" />
+
+	<Commands package="guidAltaSoftStormPackage">
+
+		<Buttons>
+			<Button guid="guidAltaSoftStormPackage" id="StormCommand" priority="0x0100" type="Button">
+				<Parent guid="VSMainMenu" id="View.DevWindowsGroup.OtherWindows.Group1" />
+				<Icon guid="ImageCatalogGuid" id="UpdateDatabase" />
+				<CommandFlag>IconIsMoniker</CommandFlag>
+				<Strings>
+					<ButtonText>AltaSoft.Storm Tool Window</ButtonText>
+					<LocCanonicalName>.View.StormToolWindow</LocCanonicalName>
+				</Strings>
+			</Button>
+
+			<Button guid="guidAltaSoftStormPackage" id="StormDesignCommand" priority="0x0200" type="Button">
+				<Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_PROJECT_BUILD" />
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<CommandFlag>DefaultInvisible</CommandFlag>
+				<CommandFlag>IconIsMoniker</CommandFlag>
+				<Icon guid="ImageCatalogGuid" id="UpdateDatabase" />
+				<Strings>
+					<ButtonText>AltaSoft.Storm Designer</ButtonText>
+					<LocCanonicalName>.View.StormToolWindow2</LocCanonicalName>
+				</Strings>
+			</Button>
+		</Buttons>
+	</Commands>
+
+	<Symbols>
+		<GuidSymbol name="guidAltaSoftStormPackage" value="{0a02b82e-6254-4133-a480-ad539bda268a}">
+			<IDSymbol name="StormCommand" value="0x0100" />
+			<IDSymbol name="StormDesignCommand" value="0x0101" />
+		</GuidSymbol>
+	</Symbols>
+</CommandTable>

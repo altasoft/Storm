@@ -1,0 +1,22 @@
+<Project>
+  <PropertyGroup>
+    <OutDir>$(MSBuildThisFileDirectory)Lib\$(Configuration)\$(TargetFramework)</OutDir>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsPackable>false</IsPackable>
+    <Configurations>Debug;Release</Configurations>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\cecil.snk</AssemblyOriginatorKeyFile>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);NET_CORE</DefineConstants>
+    <RootNamespace></RootNamespace>
+    <NoWarn>CS0618</NoWarn>
+  </PropertyGroup>
+  <!--<ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>-->
+  <PropertyGroup>
+    <CecilOverrides Condition="'$(CecilOverrides)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), Mono.Cecil.overrides))\Mono.Cecil.overrides</CecilOverrides>
+  </PropertyGroup>
+  <Import Project="$(CecilOverrides)" Condition="Exists('$(CecilOverrides)')" />
+</Project>

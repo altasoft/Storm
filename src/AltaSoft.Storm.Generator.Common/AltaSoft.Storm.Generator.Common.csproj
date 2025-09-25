@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>Latest</LangVersion>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<Import Project="../SharedAssemblyInfo.props" />
+
+	<ItemGroup Condition="'$(DefineConstants.Contains(STORM_MSSQL))'">
+		<PackageReference Include="Microsoft.Data.SqlClient" />
+	</ItemGroup>
+
+  <ItemGroup>
+		<Compile Include="..\AltaSoft.Storm\Helpers\FrozenDictionary.cs" Link="FrozenDictionary.cs" />
+		<Compile Include="..\StormGlobalTypeAliases.cs" Link="StormGlobalTypeAliases.cs" />
+	</ItemGroup>
+
+  <ItemGroup>
+	  <Compile Include="..\AltaSoft.Storm\UnifiedDbType.cs" Link="UnifiedDbType.cs" />
+	  <Compile Include="..\AltaSoft.Storm\Extensions\UnifiedDbTypeExt.cs" Link="UnifiedDbTypeExt.cs" />
+	  <Compile Include="..\AltaSoft.Storm\Extensions\UnifiedDbTypeExt.mssql.cs" Link="UnifiedDbTypeExt.mssql.cs" />
+	  <Compile Include="..\AltaSoft.Storm\Exceptions\StormException.cs" Link="StormException.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
+
+	  <!--<PackageReference Include="Meziantou.Analyzer" >
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>-->
+
+	  <!--<PackageReference Include="Microsoft.VisualStudio.Interop" />-->
+	</ItemGroup>
+
+
+</Project>

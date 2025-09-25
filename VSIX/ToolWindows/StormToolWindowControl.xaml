@@ -1,0 +1,258 @@
+﻿<UserControl x:Class="AltaSoft.Storm.ToolWindows.StormToolWindowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
+
+             xmlns:platform   ="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:vsImaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+             toolkit:Themes.UseVsTheme="True"
+             mc:Ignorable="d"
+             d:DesignHeight="300"
+             d:DesignWidth="651.613"
+             x:Name="StormToolWindow">
+
+    <UserControl.Resources>
+
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="VsThemeDictionary.xaml" />
+                <ResourceDictionary Source="Templates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="TreeViewItemFocusVisual">
+                <Setter Property="Control.Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Rectangle />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="Width" Value="19" />
+                <Setter Property="Height" Value="13" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                            <Border Width="19" Height="13" Background="Transparent">
+                                <Border Width="9" Height="9" SnapsToDevicePixels="true" BorderBrush="#FF7898B5" BorderThickness="1" CornerRadius="1">
+                                    <Border.Background>
+                                        <LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
+                                            <GradientStop Color="White" Offset=".2" />
+                                            <GradientStop Color="#FFC0B7A6" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Path x:Name="ExpandPath" Fill="Black" Margin="1,1,1,1" Data="M 0 2 L 0 3 L 2 3 L 2 5 L 3 5 L 3 3 L 5 3 L 5 2 L 3 2 L 3 0 L 2 0 L 2 2 Z" />
+                                </Border>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Data" TargetName="ExpandPath" Value="M 0 2 L 0 3 L 5 3 L 5 2 Z" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="{x:Type TreeViewItem}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static platform:TreeViewColors.BackgroundTextBrushKey}}" />
+                <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                <Setter Property="Padding" Value="1,0,0,0" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource TreeViewItemFocusVisual}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition MinWidth="19" Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <ToggleButton x:Name="Expander" Style="{StaticResource ExpandCollapseToggleStyle}" ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" />
+                                <Border x:Name="Bd" SnapsToDevicePixels="true" Grid.Row="0" Grid.Column="1" Background="{TemplateBinding Background}"
+                                        BorderThickness="1,0,1,1"
+                                        BorderBrush="{DynamicResource {x:Static platform:HeaderColors.SeparatorLineBrushKey}}"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter x:Name="PART_Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" ContentSource="Header" />
+                                </Border>
+                                <ItemsPresenter x:Name="ItemsHost" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsExpanded" Value="false">
+                                    <Setter Property="Visibility" TargetName="ItemsHost" Value="Collapsed" />
+                                </Trigger>
+                                <Trigger Property="HasItems" Value="false">
+                                    <Setter Property="Visibility" TargetName="Expander" Value="Hidden" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="true">
+                                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static platform:TreeViewColors.SelectedItemActiveBrushKey}}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static platform:TreeViewColors.SelectedItemActiveTextBrushKey}}" />
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsSelected" Value="true" />
+                                        <Condition Property="IsSelectionActive" Value="false" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static platform:TreeViewColors.SelectedItemInactiveBrushKey}}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static platform:TreeViewColors.SelectedItemInactiveTextBrushKey}}" />
+                                </MultiTrigger>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <EventSetter Event="Expanded" Handler="TreeViewItem_Expanded" />
+                <Style.Triggers>
+                    <Trigger Property="VirtualizingStackPanel.IsVirtualizing" Value="true">
+                        <Setter Property="ItemsPanel">
+                            <Setter.Value>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel />
+                                </ItemsPanelTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="TreeViewStyle" TargetType="{x:Type TreeView}">
+                <Setter Property="Background" Value="{DynamicResource {x:Static platform:TreeViewColors.BackgroundBrushKey}}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static platform:CommonControlsColors.ButtonBorderBrushKey}}" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <TabControl x:Name="MainTabControl" BorderThickness="0">
+        <TabItem Name="TabItemLoading" Header="Loading..">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <ProgressBar Grid.Row="0" Name="ProgressBarTypes" DockPanel.Dock="Top" Maximum="100" Minimum="0" Value="0" Margin="4"
+                                 Height="{DynamicResource {x:Static toolkit:ToolkitResourceKeys.ThickProgressBarHeight}}" />
+
+                    <ListBox Grid.Row="1" Name="LogListBoxTypes">
+                    </ListBox>
+                </Grid>
+                <GridSplitter Grid.Column="1"></GridSplitter>
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <ProgressBar Grid.Row="0" Name="ProgressBarDbObjects" DockPanel.Dock="Top" Maximum="100" Minimum="0" Value="0" Margin="4"
+                                 Height="{DynamicResource {x:Static toolkit:ToolkitResourceKeys.ThickProgressBarHeight}}" />
+
+                    <ListBox Grid.Row="1" Name="LogListBoxDbObjects">
+                    </ListBox>
+                </Grid>
+            </Grid>
+        </TabItem>
+
+        <TabItem Name="TabItemStormTypes" Header="Storm Types">
+            <DockPanel>
+                <!-- Toolbar -->
+                <ToolBar DockPanel.Dock="Top" toolkit:Themes.UseVsTheme="True">
+                    <Button Click="ButtonConnect_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <imaging:CrispImage Moniker="{x:Static vsImaging:KnownMonikers.ConnectToDatabase}" Width="16" Height="16" />
+                            <TextBlock Text="Connect" Margin="5,0,5,0" />
+                        </StackPanel>
+                    </Button>
+                    <Separator></Separator>
+                    <Button Click="ButtonRefresh_OnClick">
+                        <StackPanel Orientation="Horizontal">
+                            <imaging:CrispImage Moniker="{x:Static vsImaging:KnownMonikers.Refresh}" Width="16" Height="16" />
+                            <TextBlock Text="Refresh" Margin="5,0,5,0" />
+                        </StackPanel>
+                    </Button>
+                    <Separator></Separator>
+                    <Button Click="ButtonGenerateSql_OnClick">
+                        <StackPanel Orientation="Horizontal">
+                            <imaging:CrispImage Moniker="{x:Static vsImaging:KnownMonikers.GenerateTable}" Width="16" Height="16" />
+                            <TextBlock Text="Generate SQL script" Margin="5,0,5,0" />
+                        </StackPanel>
+                    </Button>
+                </ToolBar>
+
+                <TreeView x:Name="GridStormTypes" ItemsSource="{Binding StormTypeDefs}" Grid.IsSharedSizeScope="True" ItemTemplate="{StaticResource TypeTemplate}">
+                </TreeView>
+            </DockPanel>
+        </TabItem>
+
+        <!-- Second Tab -->
+        <TabItem Name="TabItemDbObjects" Header="Database Objects">
+            <DockPanel>
+                <!-- Toolbar -->
+                <ToolBar DockPanel.Dock="Top" toolkit:Themes.UseVsTheme="True">
+                    <Button Click="ButtonConnect_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <imaging:CrispImage Moniker="{x:Static vsImaging:KnownMonikers.ConnectToDatabase}" Width="16" Height="16" />
+                            <TextBlock Text="Connect" Margin="5,0,5,0" />
+                        </StackPanel>
+                    </Button>
+                    <Separator></Separator>
+                    <Button Click="ButtonRefresh_OnClick">
+                        <StackPanel Orientation="Horizontal">
+                            <imaging:CrispImage Moniker="{x:Static vsImaging:KnownMonikers.Refresh}" Width="16" Height="16" />
+                            <TextBlock Text="Refresh" Margin="5,0,5,0" />
+                        </StackPanel>
+                    </Button>
+                    <Separator></Separator>
+                    <Button Click="ButtonGenerateClass_OnClick">
+                        <StackPanel Orientation="Horizontal">
+                            <imaging:CrispImage Moniker="{x:Static vsImaging:KnownMonikers.Class}" Width="16" Height="16" />
+                            <TextBlock Text="Generate C# class" Margin="5,0,5,0" />
+                        </StackPanel>
+                    </Button>
+                </ToolBar>
+                <TreeView x:Name="GridDbObjects" ItemsSource="{Binding DbEntityDefs}" Grid.IsSharedSizeScope="True" ItemTemplate="{StaticResource DbEntityTemplate}">
+                </TreeView>
+            </DockPanel>
+        </TabItem>
+
+        <TabItem Header="GitHub Home" GotFocus="TabItemGitHubGotFocus">
+        </TabItem>
+
+        <TabItem Header="Alta Software Home" GotFocus="TabItemAltaSoftGotFocus">
+        </TabItem>
+
+        <!--<TabItem Header="Testing">
+            <TreeView>
+                <TreeViewItem Header="001" IsExpanded="True">
+                    <TreeViewItem Header="001a"></TreeViewItem>
+                    <TreeViewItem Header="001a"></TreeViewItem>
+                    <TreeViewItem Header="001b"></TreeViewItem>
+                    <TreeViewItem Header="001c"></TreeViewItem>
+                </TreeViewItem>
+            </TreeView>
+        </TabItem>-->
+    </TabControl>
+</UserControl>

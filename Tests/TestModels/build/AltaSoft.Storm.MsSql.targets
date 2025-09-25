@@ -1,0 +1,23 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" TreatAsLocalProperty="TaskAssembly">
+	<PropertyGroup>
+		<TaskAssembly>$(MSBuildProjectDirectory)\..\..\src\AltaSoft.Storm.Weaver\bin\$(Configuration)\netstandard2.0\AltaSoft.Storm.Weaver.dll</TaskAssembly>
+	</PropertyGroup>
+
+	<UsingTask TaskFactory="TaskHostFactory" TaskName="AltaSoft.Storm.Weaver.RewriteSettersTask" AssemblyFile="$(TaskAssembly)" />
+
+	<Target Name="RewriteSetters" AfterTargets="AfterCompile">
+
+		<!-- Print variables for debugging -->
+		<!--<Message Text="TaskAssembly: $(TaskAssembly)" />
+		<Message Text="TargetPath: $(TargetPath)" />
+		<Message Text="TargetDir: $(TargetDir)" />
+		<Message Text="IntermediateOutputPath: $(IntermediateOutputPath)" />
+		<Message Text="References: @(ReferencePath -> '%(Identity)')" />-->
+
+		<AltaSoft.Storm.Weaver.RewriteSettersTask
+			TargetAssembly="$(IntermediateOutputPath)$(TargetFileName)"
+			TargetFramework="$(TargetFramework)"
+			TargetDir="$(TargetDir)"
+			References="@(ReferencePath)"/>
+	</Target>
+</Project>

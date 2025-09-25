@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<Project>
+  <PropertyGroup>
+	<Product>AltaSoft.Storm</Product>
+	<AssemblyTitle>AltaSoft.Storm - Fastest ORM</AssemblyTitle>
+	<Description>AltaSoft.Storm - Fastest ORM</Description>
+	<Authors>Gregory Nikolaishvili, Teimuraz Nikolaishvili</Authors>
+	<Company>ALTA Software llc.</Company>
+	<Copyright>Copyright © 2024-2025 ALTA Software llc.</Copyright>
+	<Version>1.1.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<DefineConstants>$(DefineConstants);STORM_MSSQL</DefineConstants>
+	<RestoreSources>https://api.nuget.org/v3/index.json</RestoreSources>
+  </PropertyGroup>
+
+</Project>
