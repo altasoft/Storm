@@ -40,5 +40,5 @@ jobs:
 
       - name: Run tests
         env:
-          STORM_TEST_CONNECTION: "Server=localhost,1433;User Id=sa;Password=Your_password123;"
+          STORM_TEST_CONNECTION: "Server=localhost,1433;User Id=sa;Password=Your_password123;Encrypt=false;TrustServerCertificate=true"
         run: dotnet test --logger trx
