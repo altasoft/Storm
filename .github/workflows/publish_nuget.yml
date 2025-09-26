@@ -6,15 +6,15 @@ on:
 
 jobs:
   extract-version:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}
     steps:
-      - name: Extract version from release tag
+      - name: Extract version from tag
         id: set_version
         shell: bash
         run: |
-          TAG="${{ github.event.release.tag_name }}"
+          TAG="${{ github.event.release.tag_name }}" 
           VER="${TAG#v}"    
           echo "version=$VER" >> "$GITHUB_OUTPUT"
 
