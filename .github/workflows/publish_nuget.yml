@@ -25,13 +25,21 @@ jobs:
       version: ${{ needs.extract-version.outputs.version }}
 
   publish:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build-and-pack
     steps:
       - name: Download NuGet packages artifact
         uses: actions/download-artifact@v4
         with:
           name: nupkgs
+          path: nupkgs
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
 
       - name: Publish packages to NuGet.org
-        run: dotnet nuget push "nupkgs/*.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push "*.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+        working-directory: nupkgs
+
