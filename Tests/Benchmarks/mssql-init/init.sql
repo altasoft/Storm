@@ -1,3 +1,0 @@
-CREATE DATABASE AdventureWorks
-COLLATE Latin1_General_100_BIN2;
-GO
