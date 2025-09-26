@@ -365,6 +365,59 @@ StormManager.SetLogger(myLogger);
 
 ---
 
+## Enum Storage: Store Enums as Strings
+
+Storm supports storing enums as strings in the database for better readability and schema evolution. To enable this, use the `[StormStringEnum<EnumType, ConverterType>(maxLength)]` attribute on your enum definition, and annotate your model property with `[StormColumn(SaveAs = SaveAs.String)]`:
+
+```csharp
+[StormStringEnum<RgbColor, RgbColorExt>(16)]
+public enum RgbColor : sbyte {
+    Red,
+    Green,
+    Blue,
+    White,
+    Black
+}
+
+public sealed class RgbColorExt : IStormStringToEnumConverter<RgbColor>
+{
+    public static string ToDbString(RgbColor value)
+    {
+        return value switch
+        {
+            RgbColor.Red => "#FF0000",
+            RgbColor.Green => "#00FF00",
+            RgbColor.Blue => "#0000FF",
+            RgbColor.White => "#FFFFFF",
+            RgbColor.Black => "#000000",
+            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
+        };
+    }
+
+    public static RgbColor FromDbString(string value)
+    {
+        return value.ToUpper() switch
+        {
+            "#FF0000" => RgbColor.Red,
+            "#00FF00" => RgbColor.Green,
+            "#0000FF" => RgbColor.Blue,
+            "#FFFFFF" => RgbColor.White,
+            "#000000" => RgbColor.Black,
+            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
+        };
+    }
+}
+
+public class Car {
+    [StormColumn(SaveAs = SaveAs.String)]
+    public RgbColor Color { get; set; } = RgbColor.Blue;
+}
+```
+
+This configuration ensures that the enum values are stored as strings in the database, rather than their underlying integer values. This approach improves schema clarity and makes future changes to enum values safer.
+
+---
+
 ## Contributing
 
 AltaSoft.Storm is MIT licensed and welcomes all contributions! Open issues, submit PRs, and help us build the future of .NET ORM.
