@@ -10,10 +10,13 @@ jobs:
     outputs:
       version: ${{ steps.set_version.outputs.version }}
     steps:
-      - name: Extract version from tag
+      - name: Extract version from release tag
         id: set_version
+        shell: bash
         run: |
-          echo "version=$(echo ${GITHUB_REF#refs/tags/v})" >> $GITHUB_OUTPUT
+          TAG="${{ github.event.release.tag_name }}"
+          VER="${TAG#v}"    
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
 
   build-and-pack:
     uses: ./.github/workflows/build_and_pack.yaml
@@ -31,4 +34,4 @@ jobs:
           name: nupkgs
 
       - name: Publish packages to NuGet.org
-        run: dotnet nuget push "nupkgs/*.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push "nupkgs/*.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
