@@ -2,6 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/AltaSoft.Storm.MsSql?style=for-the-badge)](https://www.nuget.org/packages/AltaSoft.Storm.MsSql)
 [![Dot NET 8+](https://img.shields.io/static/v1?label=DOTNET&message=8%2B&color=0c3c60&style=for-the-badge)](https://dotnet.microsoft.com)
+[![Dot NET 9+](https://img.shields.io/static/v1?label=DOTNET&message=9%2B&color=0c3c60&style=for-the-badge)](https://dotnet.microsoft.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -15,6 +16,7 @@
 - [Installation & Setup](#installation--setup)
 - [Model Definition](#model-definition)
 - [Querying & CRUD](#querying--crud)
+- [Update & Patch Examples](#update--patch-examples)
 - [Batch Operations & Bulk Insert](#batch-operations--bulk-insert)
 - [Partial Loading](#partial-loading)
 - [Unit of Work & Transactions](#unit-of-work--transactions)
@@ -26,6 +28,7 @@
 - [Change Tracking & Concurrency](#change-tracking--concurrency)
 - [Logging & Exception Handling](#logging--exception-handling)
 - [Extensibility & Advanced Configuration](#extensibility--advanced-configuration)
+- [Enum Storage: Store Enums as Strings](#enum-storage-store-enums-as-strings)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -172,7 +175,7 @@ var filtered = await context.SelectFromUsersTable()
 var names = await context.SelectFromUsersTable().ListAsync(x => x.Name, x => x.BirthDate);
 ```
 
-### Update & Delete
+## Update & Delete
 
 ```csharp
 // Change tracking update
@@ -182,6 +185,32 @@ await context.UpdateUsersTable().Set(user).GoAsync();
 
 // Delete by key
 await context.DeleteFromUsersTable(1).GoAsync();
+```
+
+---
+
+## Update & Patch Examples
+
+AltaSoft.Storm supports expressive update and patch operations. You can update specific fields directly:
+
+```csharp
+// Update a single field by key
+await context.UpdatePersonTable(10).Set(x => x.Name, "NewName").GoAsync();
+
+// Update multiple fields by key
+await context.UpdatePersonTable(10)
+    .Set(x => x.Name, "NewName")
+    .Set(x => x.Age, 42)
+    .GoAsync();
+
+// Patch by condition
+await context.UpdatePersonTable()
+    .Where(x => x.Age < 18)
+    .Set(x => x.IsMinor, true)
+    .GoAsync();
+
+// Set by key property
+await context.UpdatePersonTable().Set(x => x.Id, 10).Set(x => x.Name, "Updated").GoAsync();
 ```
 
 ---
