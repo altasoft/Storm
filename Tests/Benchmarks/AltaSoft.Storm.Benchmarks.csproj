@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<Description>AltaSoft.Orm Core Performance Test</Description>
+	<OutputType>Exe</OutputType>
+	<TargetFrameworks>net9.0</TargetFrameworks>
+	<IsTestProject>false</IsTestProject>
+	<NoWarn>$(NoWarn);IDE0063;IDE0034;IDE0059;IDE0060</NoWarn>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BenchmarkDotNet" Version="0.15.4" />
+		<PackageReference Include="Dapper" Version="2.1.66" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
+	</ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\TestModels\AltaSoft.Storm.TestModels.csproj" />
+	<ProjectReference Include="..\..\src\AltaSoft.Storm.MsSql\AltaSoft.Storm.MsSql.csproj" />
+	<ProjectReference Include="..\..\src\AltaSoft.Storm\AltaSoft.Storm.csproj" />
+  </ItemGroup>
+
+</Project>

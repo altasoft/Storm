@@ -68,6 +68,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\test_with_mssql.yaml = .github\workflows\test_with_mssql.yaml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltaSoft.Storm.Benchmarks", "Tests\Benchmarks\AltaSoft.Storm.Benchmarks.csproj", "{7BF36B28-2A07-7E32-1C32-4DB07071D139}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -246,6 +248,18 @@ Global
 		{ECBCA17A-E8F7-03DB-7622-AB0B697ECD6E}.Release|arm64.Build.0 = Release|Any CPU
 		{ECBCA17A-E8F7-03DB-7622-AB0B697ECD6E}.Release|x86.ActiveCfg = Release|Any CPU
 		{ECBCA17A-E8F7-03DB-7622-AB0B697ECD6E}.Release|x86.Build.0 = Release|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Debug|arm64.Build.0 = Debug|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Debug|x86.Build.0 = Debug|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Release|arm64.ActiveCfg = Release|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Release|arm64.Build.0 = Release|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Release|x86.ActiveCfg = Release|Any CPU
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -261,6 +275,7 @@ Global
 		{03D3B2F6-C468-B8EE-66B6-A69966CF5FD4} = {FE017601-E617-4637-BB98-B521C8EE662A}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {CC45FAD4-1BF0-48BD-9D83-FF644E05EB70}
 		{F3154E81-DC86-4A01-A4D6-F92224CBF03C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7BF36B28-2A07-7E32-1C32-4DB07071D139} = {FE017601-E617-4637-BB98-B521C8EE662A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5853F5BC-CE31-4CEC-BD34-272834411009}
