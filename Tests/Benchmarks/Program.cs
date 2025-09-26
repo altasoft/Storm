@@ -7,6 +7,6 @@ internal sealed class Program
     private static void Main(string[] args)
     {
         // Bench
-        BenchmarkRunner.Run<AdventureWorksBenchmark>();
+        BenchmarkRunner.Run<AdventureWorksUpdateBenchmark>();
     }
 }
