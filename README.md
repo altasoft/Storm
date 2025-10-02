@@ -1,8 +1,7 @@
-# AltaSoft.Storm ó Modern, High-Performance ORM for .NET
+# AltaSoft.Storm ‚Äî Modern, High-Performance ORM for .NET
 
 [![NuGet](https://img.shields.io/nuget/v/AltaSoft.Storm.MsSql?style=for-the-badge)](https://www.nuget.org/packages/AltaSoft.Storm.MsSql)
 [![Dot NET 8+](https://img.shields.io/static/v1?label=DOTNET&message=8%2B&color=0c3c60&style=for-the-badge)](https://dotnet.microsoft.com)
-[![Dot NET 9+](https://img.shields.io/static/v1?label=DOTNET&message=9%2B&color=0c3c60&style=for-the-badge)](https://dotnet.microsoft.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -47,32 +46,32 @@
 - **Performance First:** Uses C# source generators for compile-time bindings; no runtime reflection.
 - **Developer Happiness:** Clear, type-safe APIs and auto-generated helpers for all CRUD and advanced scenarios.
 - **Extensibility:** Easily supports new databases, serialization providers, and custom behaviors.
-- **Transparency:** No magic or ìblack boxî behavior; everything is open and documented.
+- **Transparency:** No magic or ‚Äúblack box‚Äù behavior; everything is open and documented.
 
 ---
 
 ## Supported Databases
 
-- **MSSQL** ó Fully supported, production-ready.
+- **MSSQL** ‚Äî Fully supported, production-ready.
 - **Other DBs:** PostgreSQL, MySQL, etc., planned for future releases. Community contributions welcome!
 
 ---
 
 ## Feature Overview
 
-- **Source Generator Bindings** ó Tables, views, stored procedures, functions, virtual views, custom SQL.
-- **Automatic Change Tracking** ó Efficient IL weaving for property change detection.
-- **Batch Operations & Bulk Insert** ó High-speed batch updates/inserts.
-- **Partial Loading** ó Load only the fields you need, including nested/detail tables.
-- **Unit of Work & Transactions** ó Robust transaction management.
-- **Stored Procedures & Scalar Functions** ó Strongly-typed execution and result mapping.
-- **Virtual Views & Custom SQL** ó Map models to SQL views, virtual views, or arbitrary SQL.
-- **Domain Primitives Support** ó Seamless integration with [AltaSoft.DomainPrimitives](https://github.com/altasoft/DomainPrimitives).
-- **Serialization (JSON/XML)** ó Save/load complex properties as JSON (preferred) or XML.
-- **SQL Compression/Decompression** ó Efficiently store large strings as compressed data.
-- **Change Tracking & Concurrency** ó Optimistic concurrency and dirty-checking.
-- **Logging & Error Handling** ó Plug in your own logger, all errors use StormException.
-- **Table Hints, Schema Customization, Connection Management** ó Advanced configuration options.
+- **Source Generator Bindings** ‚Äî Tables, views, stored procedures, functions, virtual views, custom SQL.
+- **Automatic Change Tracking** ‚Äî Efficient IL weaving for property change detection.
+- **Batch Operations & Bulk Insert** ‚Äî High-speed batch updates/inserts.
+- **Partial Loading** ‚Äî Load only the fields you need, including nested/detail tables.
+- **Unit of Work & Transactions** ‚Äî Robust transaction management.
+- **Stored Procedures & Scalar Functions** ‚Äî Strongly-typed execution and result mapping.
+- **Virtual Views & Custom SQL** ‚Äî Map models to SQL views, virtual views, or arbitrary SQL.
+- **Domain Primitives Support** ‚Äî Seamless integration with [AltaSoft.DomainPrimitives](https://github.com/altasoft/DomainPrimitives).
+- **Serialization (JSON/XML)** ‚Äî Save/load complex properties as JSON (preferred) or XML.
+- **SQL Compression/Decompression** ‚Äî Efficiently store large strings as compressed data.
+- **Change Tracking & Concurrency** ‚Äî Optimistic concurrency and dirty-checking.
+- **Logging & Error Handling** ‚Äî Plug in your own logger, all errors use StormException.
+- **Table Hints, Schema Customization, Connection Management** ‚Äî Advanced configuration options.
 - **Open Source, MIT Licensed, Community-Driven.**
 
 ---
@@ -479,7 +478,7 @@ Just use `[StormDbObject<MyContext>]` and Storm will generate all extension meth
 Any type implementing the domain primitive pattern is auto-mapped to its underlying DB type.
 
 ### How do I bulk insert or batch update?
-Use the generated `BulkInsertInto...` or batch update methodsósee code samples above.
+Use the generated `BulkInsertInto...` or batch update methods‚Äîsee code samples above.
 
 ### How do I handle transactions?
 Use `UnitOfWork.Create()` and transaction helpers.
@@ -495,4 +494,4 @@ Open an issue or discussion on GitHub!
 
 ---
 
-_AltaSoft.Storm ó Fast, Modern, and Open Source ORM for .NET_
+_AltaSoft.Storm ‚Äî Fast, Modern, and Open Source ORM for .NET_
