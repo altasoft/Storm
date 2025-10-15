@@ -59,9 +59,10 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
         await _context.InsertIntoSysAdmin().Values(newUser).GoAsync();
 
         var sysAdmin = await _context.SelectFromSysAdmin().WithNoTracking().GetAsync();
+        sysAdmin.Should().NotBeNull();
 
-        sysAdmin!.StartChangeTracking();
-        sysAdmin!.Sid = 321;
+        sysAdmin.StartChangeTracking();
+        sysAdmin.Sid = 321;
         sysAdmin.BranchId = 2222;
         var set = sysAdmin.__GetChangedPropertyNames().ToList();
         set.Should().HaveCount(2);
@@ -103,7 +104,7 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
     [Fact]
     public async Task SelectUsers_EnumInWhereCondition_ShouldNotThrowException()
     {
-        var result = await _context.SelectFromUsersTable()
+        _ = await _context.SelectFromUsersTable()
             .Where(x => x.UserStatus == UserStatus.Ok && x.NullableUserStatus != null).ListAsync();
     }
 
@@ -158,21 +159,24 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
         const string expectedCurrencyId = "USD";
 
         // Act & Assert - Checking Branch ID for existing user
-        var branchId = await _context.SelectFromUsersTable(userId, branchIdForUser).WithTableHints(StormTableHints.NoLock).GetAsync(x => x.BranchId);
+        var (branchId, found) = await _context.SelectFromUsersTable(userId, branchIdForUser).WithTableHints(StormTableHints.NoLock).GetAsync(x => x.BranchId);
+        found.Should().BeTrue("the user should be found in the database");
         branchId.Should().Be(branchIdForUser, "the branch ID should match the expected value for existing user");
 
         // Act & Assert - Checking Branch ID for non-existent user
-        branchId = await _context.SelectFromUsersTable(userId, nonExistentBranchId).GetAsync(x => x.BranchId);
+        (branchId, found) = await _context.SelectFromUsersTable(userId, nonExistentBranchId).GetAsync(x => x.BranchId);
+        found.Should().BeFalse("the user should not be found in the database");
         branchId.Should().Be(0, "the branch ID should be 0 for a non-existent user");
 
         // Act & Assert - Checking multiple properties
         var userProperties = await _context.SelectFromUsersTable(userId, branchIdForUser).GetAsync(x => x.BranchId, x => x.AutoInc);
         userProperties.Should().NotBeNull();
-        userProperties!.Value.Item1.Should().Be(branchIdForUser, "the first property (BranchId) should match the expected value");
+        userProperties.Value.Item1.Should().Be(branchIdForUser, "the first property (BranchId) should match the expected value");
         userProperties.Value.Item2.Should().Be(userId, "the second property (AutoInc) should match the user ID");
 
         // Act & Assert - Checking Currency ID
-        var currencyId = await _context.SelectFromUsersTable(userId, branchIdForUser).GetAsync(x => x.CurrencyId);
+        var (currencyId, found2) = await _context.SelectFromUsersTable(userId, branchIdForUser).GetAsync(x => x.CurrencyId);
+        found2.Should().BeTrue("the user should be found in the database");
         currencyId.Should().NotBeNull().And.Be(expectedCurrencyId, "the currency ID should match the expected value");
     }
 
@@ -195,7 +199,7 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
 
         var singleUser = await _context.SelectFromUsersTable().Partially(partialLoadFlag).OrderBy(User.OrderByKey).GetAsync();
         singleUser.Should().NotBeNull();
-        AssertUserWithBasicPartialLoad(singleUser!);
+        AssertUserWithBasicPartialLoad(singleUser);
     }
 
     private static void AssertUserWithBasicPartialLoad(User user)
@@ -231,7 +235,7 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
 
         var singleUser = await _context.SelectFromUsersTable().Partially(partialLoadFlags).OrderBy(User.OrderByKey).GetAsync();
         singleUser.Should().NotBeNull();
-        AssertUserWithSelectedPartialLoad(singleUser!);
+        AssertUserWithSelectedPartialLoad(singleUser);
     }
 
     private static void AssertUserWithSelectedPartialLoad(User user)
@@ -299,7 +303,7 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
     {
         actual.Should().NotBeNull();
 
-        actual!.UserId.Should().Be(expected.UserId);
+        actual.UserId.Should().Be(expected.UserId);
         actual.BranchId.Should().Be(expected.BranchId);
         actual.AutoInc.Should().Be(expected.AutoInc);
         actual.FullName.Should().Be(expected.FullName);
@@ -326,7 +330,7 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
     {
         actual.Should().NotBeNull();
 
-        actual!.Count.Should().Be(expected.Length);
+        actual.Count.Should().Be(expected.Length);
 
         for (var i = 0; i < expected.Length; i++)
         {

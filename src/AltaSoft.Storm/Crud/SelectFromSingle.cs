@@ -111,17 +111,27 @@ internal class SelectFromSingle<T, TOrderBy, TPartialLoadFlags> : SelectQueryPar
         => GetController().FirstOrDefaultAsync(this, cancellationToken);
 
     /// <summary>
+    /// This method is deprecated. Please use another overload."/>
+    /// </summary>
+    [Obsolete("This method is deprecated. Please use another overload")]
+    public async Task<TColumn?> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
+        TColumn? defaultWhenNotFound, CancellationToken cancellationToken = default)
+    {
+        var (value, found) = await GetAsync(columnSelector, cancellationToken).ConfigureAwait(false);
+        return found ? value : defaultWhenNotFound;
+    }
+
+    /// <summary>
     /// Asynchronously retrieves a single column value from the database based on the provided column selector. If no match is found, returns a default value.
     /// </summary>
     /// <typeparam name="TColumn">The type of the column to retrieve.</typeparam>
     /// <param name="columnSelector">An expression to select the column.</param>
-    /// <param name="defaultWhenNotFound">The default value to return if no match is found.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the asynchronous operation.</param>
-    /// <returns>A task representing the asynchronous operation, which, upon completion, will contain the column value or the default value.</returns>
+    /// <returns>A task representing the asynchronous operation, which, upon completion, will contain the column value and whether row was found.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<TColumn?> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
-        TColumn? defaultWhenNotFound = default, CancellationToken cancellationToken = default)
-        => GetController().GetColumnValueAsync(columnSelector, this, defaultWhenNotFound, cancellationToken);
+    public Task<(TColumn? value, bool found)> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
+        CancellationToken cancellationToken = default)
+        => GetController().GetColumnValueAsync(columnSelector, this, cancellationToken);
 
     /// <summary>
     /// Asynchronously retrieves a tuple of two column values from the database based on the provided column selectors.

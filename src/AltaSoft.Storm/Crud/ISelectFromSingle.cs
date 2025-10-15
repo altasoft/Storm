@@ -82,16 +82,23 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
     Task<T?> GetAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// This method is deprecated. Please use another overload."/>
+    /// </summary>
+    [Obsolete("This method is deprecated. Please use another overload")]
+    Task<TColumn?> GetAsync<TColumn>(
+        Expression<Func<T, TColumn>> columnSelector,
+        TColumn? defaultWhenNotFound,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Asynchronously retrieves a single column value from the database based on the provided column selector. If no match is found, returns a default value.
     /// </summary>
     /// <typeparam name="TColumn">The type of the column to retrieve.</typeparam>
     /// <param name="columnSelector">An expression to select the column.</param>
-    /// <param name="defaultWhenNotFound">The default value to return if no match is found.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the asynchronous operation.</param>
-    /// <returns>A task representing the asynchronous operation, which, upon completion, will contain the column value or the default value.</returns>
-    Task<TColumn?> GetAsync<TColumn>(
+    /// <returns>A task representing the asynchronous operation, which, upon completion, will contain the column value and whether row was found.</returns>
+    Task<(TColumn? value, bool found)> GetAsync<TColumn>(
         Expression<Func<T, TColumn>> columnSelector,
-        TColumn? defaultWhenNotFound = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
