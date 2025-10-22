@@ -59,7 +59,8 @@ public class UsersFuncTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         const string expectedCurrencyId = "USD";
 
         // Act & Assert - Checking Branch ID for existing user
-        var branchId = await _context.SelectFromUsersFunc(userId).GetAsync(x => x.BranchId);
+        var (branchId, found) = await _context.SelectFromUsersFunc(userId).GetAsync(x => x.BranchId);
+        found.Should().BeTrue(because: "the user should exist in the database");
         branchId.Should().Be(branchIdForUser, because: "the branch ID should match the expected value for existing user");
 
         // Act & Assert - Checking multiple properties
@@ -69,7 +70,8 @@ public class UsersFuncTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         userProperties.Value.Item2.Should().Be(userId, because: "the second property (AutoInc) should match the user ID");
 
         // Act & Assert - Checking Currency ID
-        var currencyId = await _context.SelectFromUsersFunc(userId).GetAsync(x => x.CurrencyId);
+        var (currencyId, found2) = await _context.SelectFromUsersFunc(userId).GetAsync(x => x.CurrencyId);
+        found2.Should().BeTrue(because: "the user should exist in the database");
         currencyId.Should().NotBeNull().And.Be(expectedCurrencyId, because: "the currency ID should match the expected value");
     }
 

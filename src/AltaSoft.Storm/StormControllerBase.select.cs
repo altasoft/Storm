@@ -193,13 +193,11 @@ public abstract partial class StormControllerBase
     /// <typeparam name="TColumn">The type of the scalar result being retrieved.</typeparam>
     /// <param name="columnSelector">Expression specifying the column to retrieve the scalar value from.</param>
     /// <param name="queryParameters">The Query parameters.</param>
-    /// <param name="defaultValue">Default value to return if no result is found.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the asynchronous operation.</param>
     /// <returns>An asynchronous task that represents the operation and returns the retrieved scalar value.</returns>
-    internal async Task<TColumn?> GetColumnValueAsync<T, TColumn>(
+    internal async Task<(TColumn? value, bool found)> GetColumnValueAsync<T, TColumn>(
         Expression<Func<T, TColumn>> columnSelector,
         SelectQueryParameters<T> queryParameters,
-        TColumn? defaultValue,
         CancellationToken cancellationToken = default)
         where T : IDataBindable
     {
@@ -217,10 +215,10 @@ public abstract partial class StormControllerBase
             await using (reader.ConfigureAwait(false))
             {
                 if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                    return defaultValue;
+                    return (default, false);
 
                 var idx = 0;
-                return ReadSingleScalarValue(reader, propertyName, ref idx).GetDbValue<TColumn>();
+                return (ReadSingleScalarValue(reader, propertyName, ref idx).GetDbValue<TColumn>(), true);
             }
         }
     }
