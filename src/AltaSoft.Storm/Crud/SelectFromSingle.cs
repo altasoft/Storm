@@ -122,7 +122,7 @@ internal class SelectFromSingle<T, TOrderBy, TPartialLoadFlags> : SelectQueryPar
     }
 
     /// <summary>
-    /// Asynchronously retrieves a single column value from the database based on the provided column selector. If no match is found, returns a default value.
+    /// Asynchronously retrieves a single column value from the database based on the provided column selector and returns a tuple containing the value and a flag indicating whether a row was found.
     /// </summary>
     /// <typeparam name="TColumn">The type of the column to retrieve.</typeparam>
     /// <param name="columnSelector">An expression to select the column.</param>
