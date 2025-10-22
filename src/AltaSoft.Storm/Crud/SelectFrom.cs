@@ -180,7 +180,7 @@ internal class SelectFrom<T, TOrderBy, TPartialLoadFlags> : SelectQueryParameter
     }
 
     /// <summary>
-    /// Asynchronously retrieves a single column value from the database based on the provided column selector. If no match is found, returns a default value.
+    /// Asynchronously retrieves a single column value from the database based on the provided column selector. Returns a tuple containing the column value and a boolean indicating whether a matching row was found.
     /// </summary>
     /// <typeparam name="TColumn">The type of the column to retrieve.</typeparam>
     /// <param name="columnSelector">An expression to select the column.</param>
