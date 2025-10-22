@@ -169,7 +169,7 @@ internal class SelectFrom<T, TOrderBy, TPartialLoadFlags> : SelectQueryParameter
         => GetController().FirstOrDefaultAsync(this, cancellationToken);
 
     /// <summary>
-    /// This method is deprecated. Please use another overload."/>
+    /// This method is deprecated. Please use another overload.
     /// </summary>
     [Obsolete("This method is deprecated. Please use another overload")]
     public async Task<TColumn?> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
