@@ -106,7 +106,7 @@ public interface ISelectFrom<T, in TOrderBy, in TPartialLoadFlags>
     Task<T?> GetAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// This method is deprecated. Please use another overload."/>
+    /// This method is deprecated. Please use another overload.
     /// </summary>
     [Obsolete("This method is deprecated. Please use another overload")]
     Task<TColumn?> GetAsync<TColumn>(
