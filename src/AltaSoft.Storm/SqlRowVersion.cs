@@ -238,7 +238,7 @@ public readonly struct SqlRowVersion :
         if (s.Length == 16) // hex
         {
             var bytes = new byte[ByteLength];
-            for (int i = 0; i < ByteLength; i++)
+            for (var i = 0; i < ByteLength; i++)
                 bytes[i] = Convert.ToByte(s.Substring(i * 2, 2), 16);
             return new SqlRowVersion(bytes);
         }

@@ -45,9 +45,7 @@ internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFro
 
     #endregion Builder
 
-    /// <summary>
-    /// Deletes asynchronously the specified entity based on the provided parameters.
-    /// </summary>
+    /// <inheritdoc/>
     public Task<int> GoAsync(CancellationToken cancellationToken = default)
     {
         if (KeyValues is not null || WhereExpressions is not null)
@@ -62,7 +60,6 @@ internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFro
         return Task.FromResult(0);
     }
 
-    /// <param name="batchCommands"></param>
     /// <inheritdoc />
     public void GenerateBatchCommands(List<StormDbBatchCommand> batchCommands)
     {

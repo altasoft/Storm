@@ -16,5 +16,5 @@ public interface IConcurrencyCheck
     /// Gets an array of the object's column definitions and their corresponding saved values for concurrency columns.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public (StormColumnDef column, object? value)[] __ConcurrencyColumnValues() => [];
+    (StormColumnDef column, object? value)[] __ConcurrencyColumnValues() => [];
 }

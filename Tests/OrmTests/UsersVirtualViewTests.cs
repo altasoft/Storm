@@ -61,9 +61,9 @@ public class UserVirtualViewTests : IClassFixture<DatabaseFixture>, IAsyncLifeti
         const string expectedCurrencyId = "USD";
 
         // Act & Assert - Checking Branch ID for existing user
-        var (branchId, found) = await _context.SelectFromUsersVirtualView(userId, branchIdForUser).GetAsync(x => x.BranchId);
-        found.Should().BeTrue(because: "the user should be found in the database");
-        branchId.Should().Be(branchIdForUser, because: "the branch ID should match the expected value for existing user");
+        var r = await _context.SelectFromUsersVirtualView(userId, branchIdForUser).GetAsync(x => x.BranchId);
+        r.RowFound.Should().BeTrue(because: "the user should be found in the database");
+        r.Value.Should().Be(branchIdForUser, because: "the branch ID should match the expected value for existing user");
 
         // Act & Assert - Checking multiple properties
         var userProperties = await _context.SelectFromUsersVirtualView(userId, branchIdForUser).GetAsync(x => x.BranchId, x => x.AutoInc);
@@ -72,9 +72,9 @@ public class UserVirtualViewTests : IClassFixture<DatabaseFixture>, IAsyncLifeti
         userProperties.Value.Item2.Should().Be(userId, because: "the second property (AutoInc) should match the user ID");
 
         // Act & Assert - Checking Currency ID
-        var (currencyId, found2) = await _context.SelectFromUsersVirtualView(userId, branchIdForUser).GetAsync(x => x.CurrencyId);
-        found2.Should().BeTrue(because: "the user should be found in the database");
-        currencyId.Should().NotBeNull().And.Be(expectedCurrencyId, because: "the currency ID should match the expected value");
+        var r2 = await _context.SelectFromUsersVirtualView(userId, branchIdForUser).GetAsync(x => x.CurrencyId);
+        r2.RowFound.Should().BeTrue(because: "the user should be found in the database");
+        r2.Value.Should().NotBeNull().And.Be(expectedCurrencyId, because: "the currency ID should match the expected value");
     }
 
     [Fact]
@@ -92,9 +92,9 @@ public class UserVirtualViewTests : IClassFixture<DatabaseFixture>, IAsyncLifeti
         };
 
         // Act & Assert - Checking Branch ID for existing user
-        var (branchId, found) = await _context.SelectFromUsersCustomSql(userId, branchIdForUser, customSql, callParams).GetAsync(x => x.BranchId);
-        found.Should().BeTrue(because: "the user should be found in the database");
-        branchId.Should().Be(branchIdForUser, because: "the branch ID should match the expected value for existing user");
+        var r = await _context.SelectFromUsersCustomSql(userId, branchIdForUser, customSql, callParams).GetAsync(x => x.BranchId);
+        r.RowFound.Should().BeTrue(because: "the user should be found in the database");
+        r.Value.Should().Be(branchIdForUser, because: "the branch ID should match the expected value for existing user");
 
         // Act & Assert - Checking multiple properties
         var userProperties = await _context.SelectFromUsersCustomSql(userId, branchIdForUser, customSql, callParams).GetAsync(x => x.BranchId, x => x.AutoInc);
@@ -103,9 +103,9 @@ public class UserVirtualViewTests : IClassFixture<DatabaseFixture>, IAsyncLifeti
         userProperties.Value.Item2.Should().Be(userId, because: "the second property (AutoInc) should match the user ID");
 
         // Act & Assert - Checking Currency ID
-        var (currencyId, found2) = await _context.SelectFromUsersCustomSql(userId, branchIdForUser, customSql, callParams).GetAsync(x => x.CurrencyId);
-        found2.Should().BeTrue(because: "the user should be found in the database");
-        currencyId.Should().NotBeNull().And.Be(expectedCurrencyId, because: "the currency ID should match the expected value");
+        var r2 = await _context.SelectFromUsersCustomSql(userId, branchIdForUser, customSql, callParams).GetAsync(x => x.CurrencyId);
+        r2.RowFound.Should().BeTrue(because: "the user should be found in the database");
+        r2.Value.Should().NotBeNull().And.Be(expectedCurrencyId, because: "the currency ID should match the expected value");
     }
 
     [Fact]

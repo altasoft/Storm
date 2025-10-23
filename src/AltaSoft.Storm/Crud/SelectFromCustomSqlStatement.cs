@@ -23,6 +23,7 @@ internal sealed class SelectFromCustomSqlStatement<T, TOrderBy, TPartialLoadFlag
         CallParameters = callParameters;
     }
 
+    /// <inheritdoc/>
     protected override StormControllerBase GetController()
     {
         var ctrl = base.GetController();
