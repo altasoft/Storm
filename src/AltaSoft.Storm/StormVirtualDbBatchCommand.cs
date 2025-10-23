@@ -47,7 +47,7 @@ internal sealed class StormVirtualDbBatchCommand : IVirtualStormDbCommand
     }
 
     public void SetStormCommandBaseParameters(StormContext context, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text) =>
-        _command.SetStormCommandBaseParameters(context, sql, queryParameters, commandType);
+        _command.SetStormCommandBaseParameters(sql, commandType);
 
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

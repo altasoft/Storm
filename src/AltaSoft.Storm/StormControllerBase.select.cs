@@ -195,7 +195,7 @@ public abstract partial class StormControllerBase
     /// <param name="queryParameters">The Query parameters.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the asynchronous operation.</param>
     /// <returns>An asynchronous task that represents the operation and returns the retrieved scalar value.</returns>
-    internal async Task<(TColumn? value, bool found)> GetColumnValueAsync<T, TColumn>(
+    internal async Task<DbScalar<TColumn>> GetColumnValueAsync<T, TColumn>(
         Expression<Func<T, TColumn>> columnSelector,
         SelectQueryParameters<T> queryParameters,
         CancellationToken cancellationToken = default)
@@ -215,10 +215,11 @@ public abstract partial class StormControllerBase
             await using (reader.ConfigureAwait(false))
             {
                 if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                    return (default, false);
+                    return new DbScalar<TColumn>(false, false, default);
 
                 var idx = 0;
-                return (ReadSingleScalarValue(reader, propertyName, ref idx).GetDbValue<TColumn>(), true);
+                var value = ReadSingleScalarValue(reader, propertyName, ref idx);
+                return new DbScalar<TColumn>(true, value is not null, value is null ? default : (TColumn)value);
             }
         }
     }

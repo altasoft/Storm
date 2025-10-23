@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 namespace AltaSoft.Storm;
@@ -239,7 +238,7 @@ internal sealed class UnitOfWorkInternal : IUnitOfWork
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>A task representing the asynchronous commit operation.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if the transaction has already been disposed.</exception>
-        public async Task CompleteAsync(CancellationToken cancellationToken = default)
+        public async Task CompleteAsync(CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
 

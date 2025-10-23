@@ -5,12 +5,16 @@ using AltaSoft.Storm.Interfaces;
 namespace AltaSoft.Storm.Crud;
 
 /// <summary>
-/// Interface for updating data in a table
+/// Defines a builder and execution interface for constructing and executing UPDATE queries
+/// that set values for a single entity of type <typeparamref name="T"/>.
+/// Supports command configuration and column-level value assignments. Intended for use with
+/// types that implement <see cref="IDataBindable"/>.
 /// </summary>
+/// <typeparam name="T">The entity type to update, which must implement <see cref="IDataBindable"/>.</typeparam>
 public interface IUpdateFromSingle<T> : ISqlGo where T : IDataBindable
 {
     /// <summary>
-    /// Specifies whether to close the connection after query.
+    /// Specifies that the connection should be closed after the query is executed.
     /// </summary>
     IUpdateFromSingle<T> WithCloseConnection();
 
@@ -22,17 +26,27 @@ public interface IUpdateFromSingle<T> : ISqlGo where T : IDataBindable
     IUpdateFromSingle<T> WithCommandTimeOut(int commandTimeout);
 
     /// <summary>
-    /// Sets the value of the specified type T in an SQL query.
+    /// Sets the values for the update operation using the provided entity instance.
     /// </summary>
+    /// <param name="value">The entity instance whose values should be set in the update.</param>
+    /// <returns>An <see cref="ISqlGo"/> interface for further configuration or execution.</returns>
     ISqlGo Set(T value);
 
     /// <summary>
-    /// Sets the value of a specified column for an entity of type T using the provided column selector expression.
+    /// Sets the value of a specified column for the update operation using the provided column selector and value.
     /// </summary>
+    /// <typeparam name="TValue">The type of the column value.</typeparam>
+    /// <param name="columnSelector">The expression used to select the column.</param>
+    /// <param name="value">The value to set for the column.</param>
+    /// <returns>An <see cref="IUpdateFromSetSingle{T}"/> interface for further configuration or execution.</returns>
     IUpdateFromSetSingle<T> Set<TValue>(Expression<Func<T, TValue?>> columnSelector, TValue value);
 
     /// <summary>
-    /// Sets the value of a specified column for an entity of type T using the provided column selector expression.
+    /// Sets the value of a specified column for the update operation using the provided column selector and value selector expressions.
     /// </summary>
+    /// <typeparam name="TValue">The type of the column value.</typeparam>
+    /// <param name="columnSelector">The expression used to select the column.</param>
+    /// <param name="valueSelector">The expression used to determine the value to set for the column.</param>
+    /// <returns>An <see cref="IUpdateFromSetSingle{T}"/> interface for further configuration or execution.</returns>
     IUpdateFromSetSingle<T> Set<TValue>(Expression<Func<T, TValue?>> columnSelector, Expression<Func<T, TValue?>> valueSelector);
 }

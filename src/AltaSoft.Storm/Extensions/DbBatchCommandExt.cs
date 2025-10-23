@@ -85,11 +85,9 @@ internal static class DbBatchCommandExt
     /// Sets the parameters for a database command, including the command text, connection, transaction, command timeout, and command type.
     /// </summary>
     /// <param name="command">The database command to set the parameters for.</param>
-    /// <param name="context">The Storm context.</param>
     /// <param name="commandText">The command text to set for the command.</param>
-    /// <param name="queryParameters">The query parameters.</param>
     /// <param name="commandType">The command type to set for the command. Optional.</param>
-    internal static void SetStormCommandBaseParameters(this StormDbBatchCommand command, StormContext context, string commandText, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
+    internal static void SetStormCommandBaseParameters(this StormDbBatchCommand command, string commandText,CommandType commandType = CommandType.Text)
     {
         command.CommandText = commandText;
         command.CommandType = commandType;

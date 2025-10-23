@@ -25,7 +25,7 @@ public interface ITrackingList<T> : IList<T>, ITrackingList
     /// Returns a collection of updated items.
     /// </summary>
     /// <returns>A collection of updated items.</returns>
-    public IEnumerable<T> GetUpdatedItems();
+    IEnumerable<T> GetUpdatedItems();
 }
 
 /// <summary>
@@ -49,5 +49,5 @@ public interface ITrackingList : IChangeTrackable
     /// Returns a collection of updated items.
     /// </summary>
     /// <returns>A collection of updated items.</returns>
-    public IEnumerable<object> GetUpdatedObjects();
+    IEnumerable<object> GetUpdatedObjects();
 };

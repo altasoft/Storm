@@ -53,7 +53,7 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Update(vCommand, value, checkConcurrency, queryParameters, cancellationToken);
+            Update(vCommand, value, checkConcurrency, queryParameters);
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
@@ -77,7 +77,7 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Update(vCommand, valueList, checkConcurrency, queryParameters, cancellationToken);
+            Update(vCommand, valueList, checkConcurrency, queryParameters);
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
@@ -138,8 +138,7 @@ public abstract partial class StormControllerBase
         IVirtualStormDbCommand command,
         T value,
         bool checkConcurrency,
-        ModifyQueryParameters<T> queryParameters,
-        CancellationToken cancellationToken = default)
+        ModifyQueryParameters<T> queryParameters)
         where T : IDataBindable
     {
         var sb = StormManager.GetStringBuilderFromPool();
@@ -167,8 +166,7 @@ public abstract partial class StormControllerBase
         IVirtualStormDbCommand command,
         IEnumerable<T> valueList,
         bool checkConcurrency,
-        ModifyQueryParameters<T> queryParameters,
-        CancellationToken cancellationToken = default)
+        ModifyQueryParameters<T> queryParameters)
         where T : IDataBindable
     {
         var sb = StormManager.GetStringBuilderFromPool();

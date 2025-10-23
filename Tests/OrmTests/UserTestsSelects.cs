@@ -159,14 +159,14 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
         const string expectedCurrencyId = "USD";
 
         // Act & Assert - Checking Branch ID for existing user
-        var (branchId, found) = await _context.SelectFromUsersTable(userId, branchIdForUser).WithTableHints(StormTableHints.NoLock).GetAsync(x => x.BranchId);
-        found.Should().BeTrue("the user should be found in the database");
-        branchId.Should().Be(branchIdForUser, "the branch ID should match the expected value for existing user");
+        var r = await _context.SelectFromUsersTable(userId, branchIdForUser).WithTableHints(StormTableHints.NoLock).GetAsync(x => x.BranchId);
+        r.RowFound.Should().BeTrue("the user should be found in the database");
+        r.Value.Should().Be(branchIdForUser, "the branch ID should match the expected value for existing user");
 
         // Act & Assert - Checking Branch ID for non-existent user
-        (branchId, found) = await _context.SelectFromUsersTable(userId, nonExistentBranchId).GetAsync(x => x.BranchId);
-        found.Should().BeFalse("the user should not be found in the database");
-        branchId.Should().Be(0, "the branch ID should be 0 for a non-existent user");
+        var r2 = await _context.SelectFromUsersTable(userId, nonExistentBranchId).GetAsync(x => x.BranchId);
+        r2.RowFound.Should().BeFalse("the user should not be found in the database");
+        r2.Value.Should().Be(0, "the branch ID should be 0 for a non-existent user");
 
         // Act & Assert - Checking multiple properties
         var userProperties = await _context.SelectFromUsersTable(userId, branchIdForUser).GetAsync(x => x.BranchId, x => x.AutoInc);
@@ -175,9 +175,9 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
         userProperties.Value.Item2.Should().Be(userId, "the second property (AutoInc) should match the user ID");
 
         // Act & Assert - Checking Currency ID
-        var (currencyId, found2) = await _context.SelectFromUsersTable(userId, branchIdForUser).GetAsync(x => x.CurrencyId);
-        found2.Should().BeTrue("the user should be found in the database");
-        currencyId.Should().NotBeNull().And.Be(expectedCurrencyId, "the currency ID should match the expected value");
+        var r3 = await _context.SelectFromUsersTable(userId, branchIdForUser).GetAsync(x => x.CurrencyId);
+        r3.RowFound.Should().BeTrue("the user should be found in the database");
+        r3.Value.Should().NotBeNull().And.Be(expectedCurrencyId, "the currency ID should match the expected value");
     }
 
     [Fact]

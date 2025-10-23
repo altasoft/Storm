@@ -18,7 +18,7 @@ public interface IKeyAndWhereExpression<T> where T : IDataBindable
     /// <summary>
     /// ID of the unique index/primary key in KeyColumnDefs array.
     /// </summary>
-    public int? KeyId { get; }
+    int? KeyId { get; }
 
     /// <summary>
     /// Gets the expression used for filtering entities of type T.

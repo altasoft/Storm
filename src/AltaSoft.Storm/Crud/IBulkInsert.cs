@@ -42,7 +42,6 @@ public interface IBulkInsert<T> where T : IDataBindable
     /// <returns>The current <see cref="IBulkInsert{T}"/> instance for method chaining.</returns>
     IBulkInsert<T> WithBulkCopyOptions(SqlBulkCopyOptions options = SqlBulkCopyOptions.Default);
 
-
     /// <summary>
     /// Configures progress notification for the bulk insert operation.
     /// </summary>
