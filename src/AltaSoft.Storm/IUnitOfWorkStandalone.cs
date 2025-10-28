@@ -36,6 +36,11 @@ public interface IUnitOfWorkStandalone : IDisposable
     Task<IUnitOfWorkTransaction> BeginAsync(string connectionString, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Determines whether there is an active transaction in the unit of work.
+    /// </summary>
+    bool HasActiveTransaction();
+
+    /// <summary>
     /// Gets the associated <see cref="AmbientUnitOfWork"/> for advanced or test scenarios.
     /// </summary>
     internal AmbientUnitOfWork AmbientUow { get; }
