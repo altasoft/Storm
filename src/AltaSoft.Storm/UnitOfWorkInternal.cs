@@ -167,6 +167,11 @@ internal sealed class UnitOfWorkInternal : IUnitOfWork
     }
 
     /// <summary>
+    /// Determines whether there is an active transaction in the unit of work.
+    /// </summary>
+    public bool HasActiveTransaction() => !_committed && AmbientUow is { IsRollBacked: false, TransactionCount: > 0 };
+
+    /// <summary>
     /// Gets the logger instance if logging is enabled at the Trace level; otherwise, returns null.
     /// </summary>
     /// <returns>The <see cref="ILogger"/> instance or null.</returns>
@@ -194,16 +199,16 @@ internal sealed class UnitOfWorkInternal : IUnitOfWork
     /// <returns>A task representing the asynchronous rollback operation.</returns>
     private async Task RollbackIfNotCommitedAsync()
     {
-        if (!_committed && !AmbientUow.IsRollBacked)
+        if (!HasActiveTransaction())
+            return;
+
+        try
         {
-            try
-            {
-                await AmbientUow.RollbackAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "UnitOfWork rollback during DisposeAsync failed");
-            }
+            await AmbientUow.RollbackAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "UnitOfWork rollback during DisposeAsync failed");
         }
     }
 
