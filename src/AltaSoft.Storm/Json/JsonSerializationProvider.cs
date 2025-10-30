@@ -14,7 +14,12 @@ namespace AltaSoft.Storm.Json;
 /// </summary>
 public class JsonSerializationProvider : IJsonSerializationProvider
 {
-    private static JsonSerializerOptions? SerializerOptions { get; set; }
+    /// <summary>
+    /// The default JSON serializer options used by the <see cref="JsonSerializationProvider"/>.
+    /// </summary>
+    public static JsonSerializerOptions DefaultSerializerOptions = CreateDefaultSerializerOptions();
+
+    private readonly JsonSerializerOptions _serializerOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonSerializationProvider"/> class with optional custom serializer options.
@@ -22,28 +27,7 @@ public class JsonSerializationProvider : IJsonSerializationProvider
     /// <param name="serializerOptions">Optional. The JSON serializer options to use. If not provided, default options are used.</param>
     public JsonSerializationProvider(JsonSerializerOptions? serializerOptions = null)
     {
-        if (serializerOptions is null)
-        {
-            serializerOptions = new JsonSerializerOptions
-            {
-                WriteIndented = false,
-                AllowTrailingCommas = true,
-                DictionaryKeyPolicy = null,
-                IgnoreReadOnlyProperties = false,
-                NumberHandling = JsonNumberHandling.Strict,
-                UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                ReadCommentHandling = JsonCommentHandling.Disallow,
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
-                ReferenceHandler = ReferenceHandler.IgnoreCycles
-                //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-            };
-
-            serializerOptions.Converters.Add(new JsonStringEnumConverterExt());
-        }
-
-        SerializerOptions = serializerOptions;
+        _serializerOptions = serializerOptions ?? DefaultSerializerOptions;
     }
 
     /// <summary>
@@ -55,7 +39,7 @@ public class JsonSerializationProvider : IJsonSerializationProvider
     /// <exception cref="StormException">Thrown if the deserialization results in a null value for a non-nullable type.</exception>
     public object FromJson(string json, Type returnType)
     {
-        return JsonSerializer.Deserialize(json, returnType, SerializerOptions)
+        return JsonSerializer.Deserialize(json, returnType, _serializerOptions)
             ?? throw new StormException("Null value for not null Json");
     }
 
@@ -76,6 +60,28 @@ public class JsonSerializationProvider : IJsonSerializationProvider
                 type = typeof(object);
         }
 
-        return JsonSerializer.Serialize(value, type, SerializerOptions);
+        return JsonSerializer.Serialize(value, type, _serializerOptions);
+    }
+
+    private static JsonSerializerOptions CreateDefaultSerializerOptions()
+    {
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            AllowTrailingCommas = true,
+            DictionaryKeyPolicy = null,
+            IgnoreReadOnlyProperties = false,
+            NumberHandling = JsonNumberHandling.Strict,
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            ReadCommentHandling = JsonCommentHandling.Disallow,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
+            //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+        };
+
+        options.Converters.Add(new JsonStringEnumConverterExt());
+        return options;
     }
 }
