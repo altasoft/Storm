@@ -22,21 +22,28 @@ public class JsonSerializationProvider : IJsonSerializationProvider
     /// <param name="serializerOptions">Optional. The JSON serializer options to use. If not provided, default options are used.</param>
     public JsonSerializationProvider(JsonSerializerOptions? serializerOptions = null)
     {
-        SerializerOptions = serializerOptions ?? new JsonSerializerOptions
+        if (serializerOptions is null)
         {
-            WriteIndented = false,
-            AllowTrailingCommas = true,
-            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-            IgnoreReadOnlyProperties = false,
-            NumberHandling = JsonNumberHandling.Strict,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            serializerOptions = new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                AllowTrailingCommas = true,
+                DictionaryKeyPolicy = null,
+                IgnoreReadOnlyProperties = false,
+                NumberHandling = JsonNumberHandling.Strict,
+                UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                ReadCommentHandling = JsonCommentHandling.Disallow,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                ReferenceHandler = ReferenceHandler.IgnoreCycles
+                //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+            };
 
-            ReadCommentHandling = JsonCommentHandling.Disallow,
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-            //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-        };
+            serializerOptions.Converters.Add(new JsonStringEnumConverterExt());
+        }
+
+        SerializerOptions = serializerOptions;
     }
 
     /// <summary>
