@@ -77,3 +77,4 @@ public class JsonSerializationProviderTests
         public int Age { get; set; }
     }
 }
+
