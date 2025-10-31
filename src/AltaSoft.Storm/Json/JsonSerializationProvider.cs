@@ -75,6 +75,7 @@ public class JsonSerializationProvider : IJsonSerializationProvider
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
             ReadCommentHandling = JsonCommentHandling.Disallow,
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles
