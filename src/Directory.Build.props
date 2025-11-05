@@ -16,8 +16,10 @@
 		<Description>AltaSoft.Storm - Fastest ORM</Description>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 
-		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+
+	  <EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<PackageTags>orm;sql;database;dotnet;storm;mssql;altasoft</PackageTags>
 	</PropertyGroup>
 
