@@ -18,20 +18,20 @@
     <releaseNotes>Initial release supporting .NET 8 and .NET 9.</releaseNotes>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="AltaSoft.DomainPrimitives" version="6.0.2" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.8" />
-        <dependency id="Microsoft.Extensions.ObjectPool" version="9.0.8" />
-        <dependency id="Microsoft.OData.Core" version="8.3.0" />
-        <dependency id="System.Text.Json" version="9.0.8" />
-        <dependency id="Microsoft.Data.SqlClient" version="6.1.1" />
+        <dependency id="AltaSoft.DomainPrimitives" version="6.0.3" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.10" />
+        <dependency id="Microsoft.Extensions.ObjectPool" version="9.0.10" />
+        <dependency id="Microsoft.OData.Core" version="8.4.2" />
+        <dependency id="System.Text.Json" version="9.0.10" />
+        <dependency id="Microsoft.Data.SqlClient" version="6.1.2" />
       </group>
       <group targetFramework="net9.0">
-        <dependency id="AltaSoft.DomainPrimitives" version="6.0.2" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.8" />
-        <dependency id="Microsoft.Extensions.ObjectPool" version="9.0.8" />
-        <dependency id="Microsoft.OData.Core" version="8.3.0" />
-        <dependency id="System.Text.Json" version="9.0.8" />
-        <dependency id="Microsoft.Data.SqlClient" version="6.1.1" />
+        <dependency id="AltaSoft.DomainPrimitives" version="6.0.3" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.10" />
+        <dependency id="Microsoft.Extensions.ObjectPool" version="9.0.10" />
+        <dependency id="Microsoft.OData.Core" version="8.4.2" />
+        <dependency id="System.Text.Json" version="9.0.10" />
+        <dependency id="Microsoft.Data.SqlClient" version="6.1.2" />
       </group>
     </dependencies>
     <contentFiles>
