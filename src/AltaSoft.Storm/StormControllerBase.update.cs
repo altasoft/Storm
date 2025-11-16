@@ -48,6 +48,9 @@ public abstract partial class StormControllerBase
         CancellationToken cancellationToken = default)
         where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
+
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
@@ -72,6 +75,9 @@ public abstract partial class StormControllerBase
         CancellationToken cancellationToken = default)
         where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
+
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
@@ -141,6 +147,9 @@ public abstract partial class StormControllerBase
         ModifyQueryParameters<T> queryParameters)
         where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
+
         var sb = StormManager.GetStringBuilderFromPool();
         sb.AppendLine("SET XACT_ABORT ON;");
         sb.AppendLine("BEGIN TRAN;");
@@ -169,6 +178,9 @@ public abstract partial class StormControllerBase
         ModifyQueryParameters<T> queryParameters)
         where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
+
         var sb = StormManager.GetStringBuilderFromPool();
         sb.AppendLine("SET XACT_ABORT ON;");
         sb.AppendLine("BEGIN TRAN;");
@@ -194,7 +206,11 @@ public abstract partial class StormControllerBase
 
     private (List<string> whereStatements, List<string> pkColumnNames, List<string> pkParamNames)
         GenerateUpdateRowSql(IVirtualStormDbCommand command, IDataBindable value, IReadOnlyList<(StormColumnDef column, object? value)> columnValues,
-            bool checkConcurrency, bool useRowCount, ref int paramIndex, string? indent, StringBuilder sb)
+            bool checkConcurrency,
+            bool useRowCount,
+            ref int paramIndex,
+            string? indent,
+            StringBuilder sb)
     {
         var pkInformation = GetPkInformation(command, value, ref paramIndex);
         if (columnValues.Count == 0) // no changes, return
