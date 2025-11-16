@@ -256,15 +256,13 @@ public abstract partial class StormControllerBase
 
         if (useRowCount)
         {
-            sb.Append(indent).AppendLine("SET @__storm_rows_affected__ = @@ROWCOUNT;");
+            sb.AppendLine(indent).AppendLine("SET @__storm_rows_affected__ = @@ROWCOUNT;");
         }
 
         if (checkConcurrency)
         {
-            sb.Append(indent).Append("IF @__storm_concurrency_error__<>0 BEGIN ROLLBACK; THROW 900001, 'Concurrency error', 4; RETURN; END;");
+            sb.Append(indent).AppendLine("IF @__storm_concurrency_error__<>0 BEGIN ROLLBACK; THROW 900001, 'Concurrency error', 4; RETURN; END;");
         }
-
-        sb.AppendLine();
 
         paramIndex = pid;
         return pkInformation;

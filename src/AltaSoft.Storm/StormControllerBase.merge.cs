@@ -189,10 +189,13 @@ public abstract partial class StormControllerBase
         else
         {
             sb.AppendLine("BEGIN TRY");
-            GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, null, index, sb);
+            sb.AppendLine("  SET XACT_ABORT OFF;");
+            GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, "  ", index, sb);
+            sb.AppendLine("  SET XACT_ABORT ON;");
             sb.AppendLine("END TRY");
             sb.AppendLine("BEGIN CATCH");
-            sb.AppendLine("IF ERROR_NUMBER() NOT IN (2627, 2601) THROW;");
+            sb.AppendLine("  IF ERROR_NUMBER() NOT IN (2627, 2601) THROW;");
+            sb.AppendLine("  SET XACT_ABORT ON;");
             GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, false, ref paramIndex, "  ", sb);
             sb.AppendLine("END CATCH;");
         }
