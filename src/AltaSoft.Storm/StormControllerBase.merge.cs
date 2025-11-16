@@ -193,9 +193,7 @@ public abstract partial class StormControllerBase
             sb.AppendLine("END TRY");
             sb.AppendLine("BEGIN CATCH");
             sb.AppendLine("IF ERROR_NUMBER() NOT IN (2627, 2601) THROW;");
-            sb.AppendLine("BEGIN");
             GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, false, ref paramIndex, "  ", sb);
-            sb.AppendLine("END");
             sb.AppendLine("END CATCH;");
         }
     }
