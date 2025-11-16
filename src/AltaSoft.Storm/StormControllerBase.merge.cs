@@ -22,6 +22,9 @@ public abstract partial class StormControllerBase
          CancellationToken cancellationToken = default)
          where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
+
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
@@ -57,6 +60,9 @@ public abstract partial class StormControllerBase
         CancellationToken cancellationToken = default)
         where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
+
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
@@ -94,6 +100,8 @@ public abstract partial class StormControllerBase
         ModifyQueryParameters<T> queryParameters)
        where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
 
         var sb = StormManager.GetStringBuilderFromPool();
         sb.AppendLine("SET XACT_ABORT ON;");
@@ -102,9 +110,6 @@ public abstract partial class StormControllerBase
             sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
         if (updateThenInsert)
             sb.AppendLine("DECLARE @__storm_rows_affected__ int = 0;");
-
-        if (!updateThenInsert)
-            sb.AppendLine("DECLARE @__err int");
 
         var paramIndex = 1;
         GenerateMergeSql(command, value, checkConcurrency, updateThenInsert, ref paramIndex, -1, sb);
@@ -121,6 +126,9 @@ public abstract partial class StormControllerBase
         ModifyQueryParameters<T> queryParameters)
         where T : IDataBindable
     {
+        if (!HasConcurrencyCheck)
+            checkConcurrency = false;
+
         var valueList = values.AsIList();
         var autoIncColumn = __GetAutoIncColumn();
 
@@ -134,9 +142,6 @@ public abstract partial class StormControllerBase
             sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
         if (updateThenInsert)
             sb.AppendLine("DECLARE @__storm_rows_affected__ int = 0;");
-
-        if (!updateThenInsert)
-            sb.AppendLine("DECLARE @__err int");
 
         var paramIndex = 1;
         for (var index = 0; index < valueList.Count; index++)
@@ -176,21 +181,23 @@ public abstract partial class StormControllerBase
         if (updateThenInsert)
         {
             GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, true, ref paramIndex, null, sb);
-            sb.AppendLine("IF @__storm_rows_affected__=0");
+            sb.AppendLine("IF @__storm_rows_affected__ = 0");
             sb.AppendLine("BEGIN");
             GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, "  ", index, sb);
+            sb.AppendLine("END");
         }
         else
         {
-            sb.AppendLine("SET XACT_ABORT OFF;");
+            sb.AppendLine("BEGIN TRY");
             GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, null, index, sb);
-            sb.AppendLine("SET @__err = @@ERROR;");
-            sb.AppendLine("SET XACT_ABORT ON;");
-            sb.AppendLine("IF @__err = 2627 OR @__err = 2601");
+            sb.AppendLine("END TRY");
+            sb.AppendLine("BEGIN CATCH");
+            sb.AppendLine("IF ERROR_NUMBER() NOT IN(2627, 2601) THROW;");
             sb.AppendLine("BEGIN");
             GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, false, ref paramIndex, "  ", sb);
+            sb.AppendLine("END");
+            sb.AppendLine("END CATCH;");
         }
-        sb.AppendLine("END");
     }
 
     #endregion Merges
