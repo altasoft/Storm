@@ -192,7 +192,7 @@ public abstract partial class StormControllerBase
             GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, null, index, sb);
             sb.AppendLine("END TRY");
             sb.AppendLine("BEGIN CATCH");
-            sb.AppendLine("IF ERROR_NUMBER() NOT IN(2627, 2601) THROW;");
+            sb.AppendLine("IF ERROR_NUMBER() NOT IN (2627, 2601) THROW;");
             sb.AppendLine("BEGIN");
             GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, false, ref paramIndex, "  ", sb);
             sb.AppendLine("END");
