@@ -55,6 +55,8 @@ public sealed class DatabaseHelper
         await connection.CreateTableAsync<UserBulkCopy>(true).ConfigureAwait(false);
         await connection.CreateTableAsync<CompressedData>(true).ConfigureAwait(false);
 
+        await connection.CreateTableAsync<Account>(true).ConfigureAwait(false);
+
         await using var context = new TestStormContext(ConnectionString);
 
         // Create list of users
