@@ -1080,6 +1080,9 @@ internal static class Executor
                     return x.TypeSymbol.GetFullName() + " " + x.PropertyName.ToCamelCase();
                 }));
 
+                // Re-order index columns to match property declaration order (as used in __keyColumnDefs).
+                // This ensures the array passed to the factory matches the expected column order.
+                // Do NOT use indexColumns directly, as its order comes from StormIndex attribute, which may differ.
                 var orderedIndexes = propertyGenSpecList.FindAll(x => indexColumns.Contains(x));
                 var indexValues = string.Join(", ", orderedIndexes.Select(x => x.PropertyName.ToCamelCase()));
 
