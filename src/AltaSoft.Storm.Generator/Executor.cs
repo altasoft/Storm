@@ -1080,7 +1080,8 @@ internal static class Executor
                     return x.TypeSymbol.GetFullName() + " " + x.PropertyName.ToCamelCase();
                 }));
 
-                var indexValues = string.Join(", ", indexColumns.Select(x => x.PropertyName.ToCamelCase()));
+                var orderedIndexes = propertyGenSpecList.FindAll(x => indexColumns.Contains(x));
+                var indexValues = string.Join(", ", orderedIndexes.Select(x => x.PropertyName.ToCamelCase()));
 
                 if (indexObjectData.IsUnique)
                 {
