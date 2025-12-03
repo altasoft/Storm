@@ -17,6 +17,10 @@ internal sealed class BulkInsert<T> : BulkInsertQueryParameters<T>, IBulkInsert<
     {
     }
 
+    internal BulkInsert(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    {
+    }
+
     #region Builder
 
     /// <inheritdoc/>

@@ -6,7 +6,7 @@ namespace AltaSoft.Storm.TestModels;
 
 [StormDbObject<TestStormContext>(ObjectName = "Humans", DisplayName = "Human")]
 [StormDbObject<TestStormContext>(DisplayName = "HumanVV", ObjectType = DbObjectType.VirtualView, VirtualViewSql = "SELECT * FROM {%schema%}.Humans")]
-[StormDbObject<TestStormContext>(DisplayName = "HumanVVNoSql", ObjectType = DbObjectType.CustomSqlStatement)]
+[StormDbObject<TestStormContext>(DisplayName = "HumanVVNoSql", ObjectType = DbObjectType.CustomSqlStatement, UpdateMode = UpdateMode.NoUpdates, BulkInsert = false)]
 public partial record Human
 {
     [Key]

@@ -26,6 +26,17 @@ internal sealed class UpdateFromSet<T> : ModifyQueryParameters<T>, IUpdateFromSe
         };
     }
 
+    internal UpdateFromSet(UpdateFrom<T> source, StormColumnDef columnSelector, object? value, string customQuotedObjectFullName) : base(source.Context, source.Variant, customQuotedObjectFullName)
+    {
+        CloseConnection = source.CloseConnection;
+        CommandTimeout = source.CommandTimeout;
+
+        _setInstructions = new List<(StormColumnDef column, object? value)>(4)
+        {
+            (columnSelector, value)
+        };
+    }
+
     #region Builder
 
     /// <inheritdoc />

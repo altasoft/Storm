@@ -29,6 +29,20 @@ internal sealed class UpdateFromSetSingle<T> : ModifyQueryParameters<T>, IUpdate
         };
     }
 
+    internal UpdateFromSetSingle(UpdateFromSingle<T> source, StormColumnDef columnSelector, object? value, object[] keyValues, int keyId, string customQuotedObjectFullName) : base(source.Context, source.Variant, customQuotedObjectFullName)
+    {
+        CloseConnection = source.CloseConnection;
+        CommandTimeout = source.CommandTimeout;
+
+        KeyValues = keyValues;
+        KeyId = keyId;
+
+        _setInstructions = new List<(StormColumnDef column, object? value)>(4)
+        {
+            (columnSelector, value)
+        };
+    }
+
     #region Builder
 
     /// <inheritdoc />

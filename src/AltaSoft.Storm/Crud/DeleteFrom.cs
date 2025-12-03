@@ -14,9 +14,16 @@ namespace AltaSoft.Storm.Crud;
 internal sealed class DeleteFrom<T> : ModifyQueryParameters<T>, IDeleteFrom<T>, ISqlGo where T : IDataBindable
 {
     /// <summary>
-    /// Constructor for initializing a SelectFromBase object with a given DbConnection.
+    /// Constructor for initializing a DeleteFrom object with a given DbConnection.
     /// </summary>
     internal DeleteFrom(StormContext context, int variant) : base(context, variant)
+    {
+    }
+
+    /// <summary>
+    /// Constructor for initializing a DeleteFrom object with a given DbConnection. and custom quoted object name
+    /// </summary>
+    internal DeleteFrom(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
     {
     }
 

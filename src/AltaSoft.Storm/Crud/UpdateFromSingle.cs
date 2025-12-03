@@ -20,6 +20,11 @@ internal sealed class UpdateFromSingle<T> : ModifyQueryParameters<T>, IUpdateFro
         KeyValues = keyValues;
         KeyId = keyId;
     }
+    internal UpdateFromSingle(StormContext context, int variant, object[] keyValues, int keyId, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    {
+        KeyValues = keyValues;
+        KeyId = keyId;
+    }
 
     #region Builder
 

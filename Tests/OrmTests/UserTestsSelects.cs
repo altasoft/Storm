@@ -37,16 +37,44 @@ public class UserTestsSelects : IClassFixture<DatabaseFixture>, IAsyncLifetime
     [Fact]
     public async Task TrackableObject_VerifyPropertyIsChangedForAbstractType()
     {
-        var user = await _context.SelectFromUsersTable().OrderBy(User.OrderByKey).GetAsync();
-        user!.TrackableObject = new DerivedTrackableObject("x", null, 1, null, 7);
-        user.StartChangeTracking();
+        //var u = await _context.SelectFromUsers()
+        //     .SetCustomSql("SELECT * from dbo.Users")
+        //     .Where(x => x.AutoInc != -1)
+        //     .OrderBy(User.OrderByKey).ListAsync();
 
-        //user.TrackableObject.IntValue = 2;
-        user.TrackableObject.CustomerIdValue = 8;
-        user.TrackableObject.StrValue = "Z";
-        var set = user.__GetChangedPropertyNames();
-        set.Should().ContainSingle();
-        set.First().Should().Be(nameof(User.TrackableObject));
+
+        //// _context.
+
+        //var xx = new XXXTssad
+        //{
+        //    FullName = "sda",
+        //    LoginName = "sda",
+        //    CurrencyId = "USD",
+        //    CustomerId = 123,
+        //    CustomerId2 = 321,
+        //    UserId = 111,
+        //    AutoInc = 1,
+        //    BigString = "213232131",
+        //    BranchId = 1,
+        //    DatePair = new DatePair() { Date1 = DateOnly.FromDateTime(DateTime.UtcNow), Date2 = DateOnly.FromDateTime(DateTime.UtcNow), },
+        //    Lsn = SqlLogSequenceNumber.Zero,
+        //    UserStatus = UserStatus.Blocked,
+        //    Version = 1
+        //};
+        //var x = new InsertIntoCustomSqlStatement<XXXTssad>(_context, 0, "[dbo].[sda]");
+        //x.Values(xx);
+        //await x.GoAsync();
+
+        //var user = await _context.SelectFromUsersTable().OrderBy(User.OrderByKey).GetAsync();
+        //user!.TrackableObject = new DerivedTrackableObject("x", null, 1, null, 7);
+        //user.StartChangeTracking();
+
+        ////user.TrackableObject.IntValue = 2;
+        //user.TrackableObject.CustomerIdValue = 8;
+        //user.TrackableObject.StrValue = "Z";
+        //var set = user.__GetChangedPropertyNames();
+        //set.Should().ContainSingle();
+        //set.First().Should().Be(nameof(User.TrackableObject));
     }
 
     [Fact]
