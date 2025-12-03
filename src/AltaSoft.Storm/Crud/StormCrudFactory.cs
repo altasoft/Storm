@@ -224,7 +224,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the delete operation.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IDeleteFrom{T}"/>.</returns>
@@ -286,7 +286,7 @@ public static class StormCrudFactory
     /// <param name="variant">The variant of the delete operation.</param>
     /// <param name="value">The value to delete.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
@@ -348,7 +348,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the update operation.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IUpdateFrom{T}"/>.</returns>
@@ -380,7 +380,7 @@ public static class StormCrudFactory
     /// <param name="keyValues">The key values to identify the record.</param>
     /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IUpdateFromSingle{T}"/>.</returns>
@@ -445,7 +445,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context connection.</param>
     /// <param name="variant">The variant of the merge operation.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IMergeInto{T}"/>.</returns>
@@ -476,7 +476,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the insert operation.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IInsertInto{T}"/>.</returns>
