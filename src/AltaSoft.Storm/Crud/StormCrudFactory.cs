@@ -316,7 +316,7 @@ public static class StormCrudFactory
     /// <param name="variant">The variant of the delete operation.</param>
     /// <param name="values">The values to delete.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
