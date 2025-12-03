@@ -159,13 +159,9 @@ public static partial class SqlOrm
     /// <param name="checkNotExists">A flag indicating whether to check if the table already exists before creating it.</param>
     /// <param name="createDetailTables">A flag indicating whether to create detail tables as well.</param>
     /// <param name="queryParameters">Optional query parameters.</param>
+    /// <param name="unquotedSchemaName">Optional schema name without SQL quoting, used in constraint naming. If not provided, the value is resolved from <typeparamref name="T"/>.</param>
+    /// <param name="unquotedTableName">Optional table name without SQL quoting, used in constraint naming. If not provided, the value is resolved from <typeparamref name="T"/>.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
-    /// <param name="quotedTableFullName"> Optional fully-qualified, SQL-quoted table name (e.g., [dbo].[MyTable]). If not provided, the value is resolved from <typeparamref name="T"/>.
-    /// </param>
-    /// <param name="unquotedSchemaName"> Optional schema name without SQL quoting, used in constraint naming. If not provided, the value is resolved from <typeparamref name="T"/>.
-    /// </param>
-    /// <param name="unquotedTableName"> Optional table name without SQL quoting, used in constraint naming. If not provided, the value is resolved from <typeparamref name="T"/>.
-    /// </param>
     /// <returns>A task representing the asynchronous operation. The task result is the number of rows affected.</returns>
     public static async Task<int> CreateTableAsync<T>(this SqlConnection connection, bool checkNotExists, bool createDetailTables = true, DdlParameters? queryParameters = null,
         string? unquotedSchemaName = null, string? unquotedTableName = null, CancellationToken cancellationToken = default)
