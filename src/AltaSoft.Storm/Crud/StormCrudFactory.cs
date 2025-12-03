@@ -256,7 +256,7 @@ public static class StormCrudFactory
     /// <param name="keyValues">The key values to identify the record.</param>
     /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
     /// <param name="customQuotedObjectFullName">
-    /// fully-qualified and properly quoted table name.
+    /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
     /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
