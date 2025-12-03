@@ -463,7 +463,7 @@ public static class StormCrudFactory
     /// <typeparam name="T">The type of the data to insert.</typeparam>
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the insert operation.</param>
-    /// <returns>An instance of <see cref="IInsertInto{T}"/>.</returns>
+    /// <returns>An instance of <see cref="IBulkInsert{T}"/>.</returns>
     public static IBulkInsert<T> BulkInsert<T>(StormContext context, int variant) where T : IDataBindable
     {
         return new BulkInsert<T>(context, variant);
@@ -479,7 +479,7 @@ public static class StormCrudFactory
     /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
     /// </param>
-    /// <returns>An instance of <see cref="IInsertInto{T}"/>.</returns>
+    /// <returns>An instance of <see cref="IBulkInsert{T}"/>.</returns>
     public static IBulkInsert<T> BulkInsert<T>(StormContext context, int variant, string customQuotedObjectFullName) where T : IDataBindable
     {
         return new BulkInsert<T>(context, variant, customQuotedObjectFullName);
