@@ -88,7 +88,7 @@ public sealed class BindObjectData : INotifyPropertyChanged
     [DefaultValue(true)]
     public DupUpdateMode? UpdateMode
     {
-        get => ObjectType == DupDbObjectType.Table ? _updateMode : DupUpdateMode.NoUpdates;
+        get => ObjectType is DupDbObjectType.Table or DupDbObjectType.CustomSqlStatement ? _updateMode : DupUpdateMode.NoUpdates;
         set
         {
             if (value == _updateMode)

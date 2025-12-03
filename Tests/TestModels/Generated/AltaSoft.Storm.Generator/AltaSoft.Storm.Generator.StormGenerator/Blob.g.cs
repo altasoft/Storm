@@ -29,9 +29,9 @@ using AltaSoft.Storm.Extensions;
 
 namespace AltaSoft.Storm.TestModels;
 
-// UpdateMode: NoUpdates
-// 0. (.Blobs - CustomSqlStatement, NoUpdates
-public partial record Blob : IDataBindableWithKey, IEntityComparer<Blob>
+// UpdateMode: ChangeTracking
+// 0. (.Blobs - CustomSqlStatement, ChangeTracking
+public partial record Blob : IDataBindableWithKey, ITrackingObject, IEntityComparer<Blob>
 {
     /// <summary>
     /// Default constructor.
@@ -126,6 +126,33 @@ public partial record Blob : IDataBindableWithKey, IEntityComparer<Blob>
         ];
     }
 
+
+    #region Change Tracking Support
+
+    /// <inheritdoc />
+    public virtual (string propertyName, IChangeTrackable? value)[] __TrackableMembers()
+    {
+return [];
+    }
+    protected bool _isChangeTrackingActive;
+    protected ChangeTrackingStateMachine? _changeTrackingStateMachine;
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsChangeTrackingActive() => _isChangeTrackingActive;
+    /// <inheritdoc />
+    public void StartChangeTracking() { (_changeTrackingStateMachine ??= new(this)).StartChangeTracking(); _isChangeTrackingActive = true; }
+    /// <inheritdoc />
+    public void AcceptChanges(bool stopTracking = true) { _changeTrackingStateMachine?.AcceptChanges(stopTracking); _isChangeTrackingActive = !stopTracking; }
+    /// <inheritdoc />
+    public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
+    /// <inheritdoc />
+    public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
+    private void __PropertySet_Id(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Id", newValue); }
+    private void __PropertySet_BigString(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BigString", newValue); }
+    private void __PropertySet_Metadata(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Metadata", newValue); }
+    private void __PropertySet_SomeOtherValue(ref long newValue, ref long oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("SomeOtherValue", newValue); }
+
+    #endregion Change Tracking Support
 }
 
 /// <summary>
@@ -258,4 +285,19 @@ public static partial class TestStormContextBlobExt
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IInsertInto<Blob> InsertIntoBlob(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.InsertInto<Blob>(context, 0, customQuotedObjectFullName);
+    /// <summary>
+    /// Update row(s)
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IUpdateFrom<Blob> UpdateBlob(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.UpdateFrom<Blob>(context, 0, customQuotedObjectFullName);
+    /// <summary>
+    /// Update row using PK
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IUpdateFromSingle<Blob> UpdateBlob(this TestStormContext context, int id, string customQuotedObjectFullName) => StormCrudFactory.UpdateFromSingle<Blob>(context, 0, [id], 0, customQuotedObjectFullName);
+    /// <summary>
+    /// Merge row(s)
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMergeInto<Blob> MergeIntoBlob(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.MergeInto<Blob>(context, 0, customQuotedObjectFullName);
 }
