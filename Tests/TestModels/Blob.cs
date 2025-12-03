@@ -3,7 +3,7 @@
 namespace AltaSoft.Storm.TestModels;
 
 
-[StormDbObject<TestStormContext>(ObjectType = DbObjectType.CustomSqlStatement, UpdateMode = UpdateMode.ChangeTracking)]
+[StormDbObject<TestStormContext>(ObjectType = DbObjectType.CustomSqlStatement, UpdateMode = UpdateMode.ChangeTracking, BulkInsert = true)]
 public partial record Blob
 {
     [StormColumn(ColumnType = ColumnType.PrimaryKeyAutoIncrement)]

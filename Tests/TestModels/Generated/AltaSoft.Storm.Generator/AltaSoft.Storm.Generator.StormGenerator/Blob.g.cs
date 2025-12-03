@@ -23,6 +23,8 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
+using Microsoft.Data.SqlClient;
+using System.Threading.Channels;
 
 #pragma warning disable IDE1006, CS0612, CS8618
 // ReSharper disable InconsistentNaming
@@ -300,4 +302,9 @@ public static partial class TestStormContextBlobExt
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMergeInto<Blob> MergeIntoBlob(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.MergeInto<Blob>(context, 0, customQuotedObjectFullName);
+    /// <summary>
+    /// Bulk insert rows
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IBulkInsert<Blob> BulkInsertIntoBlob(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.BulkInsert<Blob>(context, 0, customQuotedObjectFullName);
 }

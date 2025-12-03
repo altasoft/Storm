@@ -1228,6 +1228,7 @@ internal static class Executor
                 builder.Append("public static IBulkInsert").Continue(updGenerics)
                     .Continue(" BulkInsertInto").Continue(classNameV)
                     .Continue(contextParamWithoutParenthesis)
+                    .ContinueIf(isCustomSql, ", string customQuotedObjectFullName")
                     .Continue(") => StormCrudFactory.BulkInsert").Continue(updGenerics).Continue("(")
                     .Continue(baseParams)
                     .ContinueIf(isCustomSql, ", customQuotedObjectFullName")
