@@ -283,8 +283,8 @@ public static partial class SqlOrm
     /// <param name="checkExists">Indicates whether to check if the table exists before dropping it.</param>
     /// <param name="dropDetailTables">Indicates whether to drop detail tables as well.</param>
     /// <param name="queryParameters">Optional query parameters.</param>
-    /// <param name="quotedSchemaName"> Optional SQL-quoted schema name (e.g., <c>[dbo]</c>). If not provided, the table name is resolved from <typeparamref name="T"/>. </param>
-    /// <param name="quotedTableFullName"> Optional fully-qualified, SQL-quoted table name (e.g., <c>[dbo].[MyTable]</c>). If not provided, the table name is resolved from <typeparamref name="T"/>. </param>
+    /// <param name="quotedSchemaName">Optional SQL-quoted schema name (e.g., <c>[dbo]</c>). If not provided, the table name is resolved from <typeparamref name="T"/>.</param>
+    /// <param name="quotedTableFullName">Optional fully-qualified, SQL-quoted table name (e.g., <c>[dbo].[MyTable]</c>). If not provided, the table name is resolved from <typeparamref name="T"/>.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the number of rows affected.</returns>
     public static async Task<int> DropTableAsync<T>(this SqlConnection connection, bool checkExists, bool dropDetailTables = true, DdlParameters? queryParameters = null, string? quotedSchemaName = null, string? quotedTableFullName = null, CancellationToken cancellationToken = default)
