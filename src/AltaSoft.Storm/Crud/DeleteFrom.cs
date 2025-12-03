@@ -21,7 +21,7 @@ internal sealed class DeleteFrom<T> : ModifyQueryParameters<T>, IDeleteFrom<T>, 
     }
 
     /// <summary>
-    /// Constructor for initializing a DeleteFrom object with a given DbConnection. and custom quoted object name
+    /// Constructor for initializing a DeleteFrom object with a given DbConnection and custom quoted object name
     /// </summary>
     internal DeleteFrom(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
     {
