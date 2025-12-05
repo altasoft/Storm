@@ -21,10 +21,10 @@ internal abstract class ModifyQueryParameters<T> : QueryParameters, IKeyAndWhere
     protected ModifyQueryParameters(StormContext context, int variant, string customQuotedObjectFullName) : base(context)
     {
         Variant = variant;
-        _customQuotedObjectFullName = customQuotedObjectFullName;
+        CustomQuotedObjectFullName = customQuotedObjectFullName;
     }
 
-    private readonly string? _customQuotedObjectFullName;
+    protected internal readonly string? CustomQuotedObjectFullName;
 
     /// <summary>
     /// Variant of the controller
@@ -81,8 +81,8 @@ internal abstract class ModifyQueryParameters<T> : QueryParameters, IKeyAndWhere
     {
         var ctrl = StormControllerCache.Get<T>(Variant);
 
-        if (_customQuotedObjectFullName is not null)
-            ctrl.QuotedObjectFullName = _customQuotedObjectFullName;
+        if (CustomQuotedObjectFullName is not null)
+            ctrl.QuotedObjectFullName = CustomQuotedObjectFullName;
 
         return ctrl;
     }
