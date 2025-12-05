@@ -69,6 +69,9 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
         var columnDef = Array.Find(GetController().ColumnDefs, x => string.Equals(x.PropertyName, propertyName, StringComparison.Ordinal))
                         ?? throw new StormException($"Column '{propertyName}' not found in the column definitions.");
 
+        if (CustomQuotedObjectFullName is not null)
+            return new UpdateFromSet<T>(this, columnDef, value, CustomQuotedObjectFullName);
+
         return new UpdateFromSet<T>(this, columnDef, value);
     }
 
@@ -92,6 +95,9 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
         var propertyName = columnSelector.GetPropertyNameFromExpression();
         var columnDef = Array.Find(GetController().ColumnDefs, x => string.Equals(x.PropertyName, propertyName, StringComparison.Ordinal))
                         ?? throw new StormException($"Column '{propertyName}' not found in the column definitions.");
+
+        if (CustomQuotedObjectFullName is not null)
+            return new UpdateFromSet<T>(this, columnDef, valueSelector, CustomQuotedObjectFullName);
 
         return new UpdateFromSet<T>(this, columnDef, valueSelector);
     }

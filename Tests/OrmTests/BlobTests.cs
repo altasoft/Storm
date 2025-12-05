@@ -56,10 +56,18 @@ namespace AltaSoft.Storm.Tests
             item.Metadata = "new metadata";
             await _context.UpdateBlob(tableName).Set(item).GoAsync();
 
-
             var updated = await _context.SelectFromBlob(item.Id, $"SELECT * from {tableName}").GetAsync();
             Assert.NotNull(updated);
             Assert.Equal("new metadata", updated.Metadata);
+
+
+            await _context.UpdateBlob(tableName)
+                .Set(x => x.Metadata, "some metadata")
+                .Where(x => x.Id == item.Id).GoAsync();
+
+            updated = await _context.SelectFromBlob(item.Id, $"SELECT * from {tableName}").GetAsync();
+            Assert.NotNull(updated);
+            Assert.Equal("some metadata", updated.Metadata);
 
             await _context.DeleteFromBlob(item.Id, tableName).GoAsync();
 
