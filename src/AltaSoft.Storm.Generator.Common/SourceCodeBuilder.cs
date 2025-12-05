@@ -156,8 +156,6 @@ public sealed class SourceCodeBuilder
     /// <returns>A reference to this <see cref="SourceCodeBuilder"/> instance.</returns>
     public SourceCodeBuilder AppendComment(string commentLine, bool ensureIndentation = true) => AppendLine("// " + commentLine, ensureIndentation);
 
-
-
     /// <summary>
     /// Appends a class or record declaration to the source code builder.
     /// </summary>

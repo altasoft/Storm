@@ -19,8 +19,7 @@ namespace AltaSoft.Storm.TestModels;
     SELECT * FROM {%schema%}.Users
     WHERE Id > 5
     """, DisplayName = "UsersVirtualView", ObjectType = DbObjectType.VirtualView)]
-[StormDbObject<TestStormContext>(VirtualViewSql = null,
-    DisplayName = "UsersCustomSql", ObjectType = DbObjectType.CustomSqlStatement)]
+[StormDbObject<TestStormContext>(DisplayName = "UsersCustomSql", ObjectType = DbObjectType.CustomSqlStatement)]
 [StormIndex(["UserId"], false, indexName: "IX_USER_USER_ID")]
 [StormIndex(["BranchId"], false, indexName: "IX_USER_BRANCH_ID")]
 [StormIndex(["AutoInc"], true, indexName: "IX_USER_AUTOINC")]

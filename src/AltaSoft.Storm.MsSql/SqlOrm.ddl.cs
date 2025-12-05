@@ -159,18 +159,24 @@ public static partial class SqlOrm
     /// <param name="checkNotExists">A flag indicating whether to check if the table already exists before creating it.</param>
     /// <param name="createDetailTables">A flag indicating whether to create detail tables as well.</param>
     /// <param name="queryParameters">Optional query parameters.</param>
+    /// <param name="unquotedSchemaName">Optional schema name without SQL quoting, used in constraint naming. If not provided, the value is resolved from <typeparamref name="T"/>.</param>
+    /// <param name="unquotedTableName">Optional table name without SQL quoting, used in constraint naming. If not provided, the value is resolved from <typeparamref name="T"/>.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task representing the asynchronous operation. The task result is the number of rows affected.</returns>
-    public static async Task<int> CreateTableAsync<T>(this SqlConnection connection, bool checkNotExists, bool createDetailTables = true, DdlParameters? queryParameters = null, CancellationToken cancellationToken = default)
+    public static async Task<int> CreateTableAsync<T>(this SqlConnection connection, bool checkNotExists, bool createDetailTables = true, DdlParameters? queryParameters = null,
+        string? unquotedSchemaName = null, string? unquotedTableName = null, CancellationToken cancellationToken = default)
             where T : IDataBindable
     {
         queryParameters ??= new DdlParameters(connection);
 
         var ctrl = StormControllerCache.Get<T>(0); // Other variants?
-        var quotedTableFullName = ctrl.QuotedObjectFullName;
-        var unquotedSchemaName = ctrl.QuotedSchemaName.UnquoteSqlName();
-        var unquotedTableName = ctrl.QuotedObjectName.UnquoteSqlName();
+        var quotedSchemaName = unquotedSchemaName is not null ? unquotedSchemaName.QuoteSqlName() : ctrl.QuotedSchemaName;
+        var quotedTableFullName = unquotedSchemaName is not null && unquotedTableName is not null ? unquotedSchemaName.QuoteSqlName() + "." + unquotedTableName.QuoteSqlName() : ctrl.QuotedObjectFullName;
+
+        unquotedSchemaName ??= ctrl.QuotedSchemaName.UnquoteSqlName();
+        unquotedTableName ??= ctrl.QuotedObjectName.UnquoteSqlName();
         var columns = ctrl.ColumnDefs;
+
 
         var sb = new StringBuilder(512);
 
@@ -215,7 +221,7 @@ public static partial class SqlOrm
                     detColumns = detCtrl.ColumnDefs;
                 }
 
-                var detailTableFullName = ctrl.QuotedSchemaName + '.' + columnDef.QuotedDetailTableName;
+                var detailTableFullName = quotedSchemaName + '.' + columnDef.QuotedDetailTableName;
                 if (checkNotExists)
                     sb.Append("IF OBJECT_ID (").Append(detailTableFullName.QuoteName('\'')).AppendLine(") IS NULL");
 
@@ -277,15 +283,18 @@ public static partial class SqlOrm
     /// <param name="checkExists">Indicates whether to check if the table exists before dropping it.</param>
     /// <param name="dropDetailTables">Indicates whether to drop detail tables as well.</param>
     /// <param name="queryParameters">Optional query parameters.</param>
+    /// <param name="quotedSchemaName">Optional SQL-quoted schema name (e.g., <c>[dbo]</c>). If not provided, the table name is resolved from <typeparamref name="T"/>.</param>
+    /// <param name="quotedTableFullName">Optional fully-qualified, SQL-quoted table name (e.g., <c>[dbo].[MyTable]</c>). If not provided, the table name is resolved from <typeparamref name="T"/>.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the number of rows affected.</returns>
-    public static async Task<int> DropTableAsync<T>(this SqlConnection connection, bool checkExists, bool dropDetailTables = true, DdlParameters? queryParameters = null, CancellationToken cancellationToken = default)
+    public static async Task<int> DropTableAsync<T>(this SqlConnection connection, bool checkExists, bool dropDetailTables = true, DdlParameters? queryParameters = null, string? quotedSchemaName = null, string? quotedTableFullName = null, CancellationToken cancellationToken = default)
             where T : IDataBindable
     {
         queryParameters ??= new DdlParameters(connection);
 
         var ctrl = StormControllerCache.Get<T>(0); // Other variants?
-        var quotedTableFullName = ctrl.QuotedObjectFullName;
+        quotedTableFullName ??= ctrl.QuotedObjectFullName;
+        quotedSchemaName ??= ctrl.QuotedSchemaName;
 
         var sb = new StringBuilder(256);
 
@@ -299,7 +308,7 @@ public static partial class SqlOrm
             {
                 Debug.Assert(quotedDetailTableName is not null);
 
-                var detailTableFullName = ctrl.QuotedSchemaName + '.' + quotedDetailTableName;
+                var detailTableFullName = quotedSchemaName + '.' + quotedDetailTableName;
                 if (checkExists)
                     sb.Append("IF OBJECT_ID (").Append(detailTableFullName.QuoteName('\'')).AppendLine(") IS NOT NULL").Append(' ', 2);
 

@@ -218,6 +218,22 @@ public static class StormCrudFactory
     }
 
     /// <summary>
+    /// Creates an instance of <see cref="IDeleteFrom{T}"/> for deleting data from a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to delete.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the delete operation.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IDeleteFrom{T}"/>.</returns>
+    public static IDeleteFrom<T> DeleteFrom<T>(StormContext context, int variant, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new DeleteFrom<T>(context, variant, customQuotedObjectFullName);
+    }
+
+    /// <summary>
     /// Creates an instance of <see cref="IDeleteFromSingle{T}"/> for deleting a single record from a table.
     /// </summary>
     /// <typeparam name="T">The type of the data to delete.</typeparam>
@@ -237,11 +253,46 @@ public static class StormCrudFactory
     /// <typeparam name="T">The type of the data to delete.</typeparam>
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the delete operation.</param>
+    /// <param name="keyValues">The key values to identify the record.</param>
+    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
+    public static IDeleteFromSingle<T> DeleteFromSingle<T>(StormContext context, int variant, object[] keyValues, int keyId, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new DeleteFromSingle<T>(context, variant, keyValues, keyId, customQuotedObjectFullName);
+    }
+
+    /// <summary>
+    /// Creates an instance of <see cref="IDeleteFromSingle{T}"/> for deleting a single record from a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to delete.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the delete operation.</param>
     /// <param name="value">The value to delete.</param>
     /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
     public static IDeleteFromSingle<T> DeleteFromSingle<T>(StormContext context, int variant, T value) where T : IDataBindable
     {
         return new DeleteFromSingle<T>(context, variant, value);
+    }
+
+    /// <summary>
+    /// Creates an instance of <see cref="IDeleteFromSingle{T}"/> for deleting a single record from a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to delete.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the delete operation.</param>
+    /// <param name="value">The value to delete.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
+    public static IDeleteFromSingle<T> DeleteFromSingle<T>(StormContext context, int variant, T value, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new DeleteFromSingle<T>(context, variant, value, customQuotedObjectFullName);
     }
 
     /// <summary>
@@ -255,6 +306,23 @@ public static class StormCrudFactory
     public static IDeleteFromSingle<T> DeleteFromSingle<T>(StormContext context, int variant, IEnumerable<T> values) where T : IDataBindable
     {
         return new DeleteFromSingle<T>(context, variant, values);
+    }
+
+    /// <summary>
+    /// Creates an instance of <see cref="IDeleteFromSingle{T}"/> for deleting multiple records from a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to delete.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the delete operation.</param>
+    /// <param name="values">The values to delete.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
+    public static IDeleteFromSingle<T> DeleteFromSingle<T>(StormContext context, int variant, IEnumerable<T> values, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new DeleteFromSingle<T>(context, variant, values, customQuotedObjectFullName);
     }
 
     #endregion Delete
@@ -274,6 +342,22 @@ public static class StormCrudFactory
     }
 
     /// <summary>
+    /// Creates an instance of <see cref="IUpdateFrom{T}"/> for updating data in a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to update.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the update operation.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IUpdateFrom{T}"/>.</returns>
+    public static IUpdateFrom<T> UpdateFrom<T>(StormContext context, int variant, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new UpdateFrom<T>(context, variant, customQuotedObjectFullName);
+    }
+
+    /// <summary>
     /// Creates an instance of <see cref="IUpdateFromSingle{T}"/> for updating a single record in a table.
     /// </summary>
     /// <typeparam name="T">The type of the data to update.</typeparam>
@@ -285,6 +369,24 @@ public static class StormCrudFactory
     public static IUpdateFromSingle<T> UpdateFromSingle<T>(StormContext context, int variant, object[] keyValues, int keyId) where T : IDataBindable
     {
         return new UpdateFromSingle<T>(context, variant, keyValues, keyId);
+    }
+
+    /// <summary>
+    /// Creates an instance of <see cref="IUpdateFromSingle{T}"/> for updating a single record in a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to update.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the update operation.</param>
+    /// <param name="keyValues">The key values to identify the record.</param>
+    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IUpdateFromSingle{T}"/>.</returns>
+    public static IUpdateFromSingle<T> UpdateFromSingle<T>(StormContext context, int variant, object[] keyValues, int keyId, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new UpdateFromSingle<T>(context, variant, keyValues, keyId, customQuotedObjectFullName);
     }
 
     #endregion Update
@@ -303,6 +405,23 @@ public static class StormCrudFactory
         return new InsertInto<T>(context, variant);
     }
 
+
+    /// <summary>
+    /// Creates an instance of <see cref="IInsertInto{T}"/> for inserting data into a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to insert.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the insert operation.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IInsertInto{T}"/>.</returns>
+    public static IInsertInto<T> InsertInto<T>(StormContext context, int variant, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new InsertInto<T>(context, variant, customQuotedObjectFullName);
+    }
+
     #endregion Insert
 
     #region Merge
@@ -319,20 +438,51 @@ public static class StormCrudFactory
         return new MergeInto<T>(context, variant);
     }
 
+    /// <summary>
+    /// Creates an instance of <see cref="IMergeInto{T}"/> for merging data into a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to merge.</typeparam>
+    /// <param name="context">The Storm context connection.</param>
+    /// <param name="variant">The variant of the merge operation.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IMergeInto{T}"/>.</returns>
+    public static IMergeInto<T> MergeInto<T>(StormContext context, int variant, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new MergeInto<T>(context, variant, customQuotedObjectFullName);
+    }
     #endregion Merge
 
     #region BulkInsert
 
     /// <summary>
-    /// Creates an instance of <see cref="BulkInsert{T}"/> for inserting bulk data into a table.
+    /// Creates an instance of <see cref="IBulkInsert{T}"/> for inserting bulk data into a table.
     /// </summary>
     /// <typeparam name="T">The type of the data to insert.</typeparam>
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the insert operation.</param>
-    /// <returns>An instance of <see cref="IInsertInto{T}"/>.</returns>
+    /// <returns>An instance of <see cref="IBulkInsert{T}"/>.</returns>
     public static IBulkInsert<T> BulkInsert<T>(StormContext context, int variant) where T : IDataBindable
     {
         return new BulkInsert<T>(context, variant);
+    }
+
+    /// <summary>
+    /// Creates an instance of <see cref="IBulkInsert{T}"/> for inserting bulk data into a table.
+    /// </summary>
+    /// <typeparam name="T">The type of the data to insert.</typeparam>
+    /// <param name="context">The Storm context.</param>
+    /// <param name="variant">The variant of the insert operation.</param>
+    /// <param name="customQuotedObjectFullName">
+    /// Fully-qualified and properly quoted table name.
+    /// Use this when targeting a specific schema or custom-mapped table.
+    /// </param>
+    /// <returns>An instance of <see cref="IBulkInsert{T}"/>.</returns>
+    public static IBulkInsert<T> BulkInsert<T>(StormContext context, int variant, string customQuotedObjectFullName) where T : IDataBindable
+    {
+        return new BulkInsert<T>(context, variant, customQuotedObjectFullName);
     }
 
     #endregion

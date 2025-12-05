@@ -10,12 +10,19 @@ namespace AltaSoft.Storm.Crud;
 /// <summary>
 /// Base class for deleting data from a database table
 /// </summary>
-internal sealed class InsertInto<T> : ModifyQueryParameters<T>, IInsertInto<T>, ISqlGo where T : IDataBindable
+internal class InsertInto<T> : ModifyQueryParameters<T>, IInsertInto<T> where T : IDataBindable
 {
     /// <summary>
-    /// Constructor for initializing a SelectFromBase object with a given DbConnection.
+    /// Constructor for initializing a InsertInto object with a given DbConnection.
     /// </summary>
     internal InsertInto(StormContext context, int variant) : base(context, variant)
+    {
+    }
+
+    /// <summary>
+    /// Constructor for initializing a InsertInto object with a given DbConnection.
+    /// </summary>
+    internal InsertInto(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
     {
     }
 

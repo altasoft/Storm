@@ -360,4 +360,29 @@ public static partial class TestStormContextHumanExt
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ISelectFromSingle<Human, Human.OrderBy, Human.PartialLoadFlags> SelectFromHumanVVNoSql(this TestStormContext context, long xId, string customSqlStatement, List<StormCallParameter>? callParameters = null) => StormCrudFactory.SelectFromSingle<Human, Human.OrderBy, Human.PartialLoadFlags>(context, 2, [xId], 0, customSqlStatement, callParameters);
+    /// <summary>
+    /// Delete row(s)
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFrom<Human> DeleteFromHumanVVNoSql(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.DeleteFrom<Human>(context, 2, customQuotedObjectFullName);
+    /// <summary>
+    /// Delete row using PK
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFromSingle<Human> DeleteFromHumanVVNoSql(this TestStormContext context, long xId, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle<Human>(context, 2, [xId], 0, customQuotedObjectFullName);
+    /// <summary>
+    /// Delete row using 1 value
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFromSingle<Human> DeleteFromHumanVVNoSql(this TestStormContext context, Human value, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle<Human>(context, 2, value, customQuotedObjectFullName);
+    /// <summary>
+    /// Delete rows using values
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFromSingle<Human> DeleteFromHumanVVNoSql(this TestStormContext context, IEnumerable<Human> values, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle<Human>(context, 2, values, customQuotedObjectFullName);
+    /// <summary>
+    /// Insert row(s)
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IInsertInto<Human> InsertIntoHumanVVNoSql(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.InsertInto<Human>(context, 2, customQuotedObjectFullName);
 }

@@ -674,4 +674,29 @@ public static partial class TestStormContextUserExt
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ISelectFromSingle<User, User.OrderBy, User.PartialLoadFlags> SelectFromUsersCustomSql(this TestStormContext context, int autoInc, string customSqlStatement, List<StormCallParameter>? callParameters = null) => StormCrudFactory.SelectFromSingle<User, User.OrderBy, User.PartialLoadFlags>(context, 5, [autoInc], 3, customSqlStatement, callParameters);
+    /// <summary>
+    /// Delete row(s)
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFrom<User> DeleteFromUsersCustomSql(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.DeleteFrom<User>(context, 5, customQuotedObjectFullName);
+    /// <summary>
+    /// Delete row using PK
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFromSingle<User> DeleteFromUsersCustomSql(this TestStormContext context, AltaSoft.Storm.TestModels.DomainTypes.UserId userId, short branchId, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle<User>(context, 5, [userId, branchId], 0, customQuotedObjectFullName);
+    /// <summary>
+    /// Delete row using 1 value
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFromSingle<User> DeleteFromUsersCustomSql(this TestStormContext context, User value, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle<User>(context, 5, value, customQuotedObjectFullName);
+    /// <summary>
+    /// Delete rows using values
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IDeleteFromSingle<User> DeleteFromUsersCustomSql(this TestStormContext context, IEnumerable<User> values, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle<User>(context, 5, values, customQuotedObjectFullName);
+    /// <summary>
+    /// Insert row(s)
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IInsertInto<User> InsertIntoUsersCustomSql(this TestStormContext context, string customQuotedObjectFullName) => StormCrudFactory.InsertInto<User>(context, 5, customQuotedObjectFullName);
 }

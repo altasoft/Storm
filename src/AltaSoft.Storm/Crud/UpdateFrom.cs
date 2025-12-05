@@ -15,9 +15,16 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
     private bool _checkConcurrency = true;
 
     /// <summary>
-    /// Constructor for initializing a SelectFromBase object with a given DbConnection.
+    /// Constructor for initializing a UpdateFrom object with a given DbConnection.
     /// </summary>
     internal UpdateFrom(StormContext context, int variant) : base(context, variant)
+    {
+    }
+
+    /// <summary>
+    /// Constructor for initializing a UpdateFrom object with a given DbConnection.
+    /// </summary>
+    internal UpdateFrom(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
     {
     }
 

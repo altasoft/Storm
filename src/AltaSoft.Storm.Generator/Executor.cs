@@ -906,7 +906,6 @@ internal static class Executor
         var keyValues = string.Join(", ", keys.Select(x => x.PropertyName.ToCamelCase()));
 
         var contextParamWithoutParenthesis = $"(this {contextName} context";
-        var contextParam = $"{contextParamWithoutParenthesis})";
 
         builder.AppendSummary("StormContext methods");
         builder.AppendClass(false, modifiers + " static partial", contextName + className + "Ext");
@@ -914,6 +913,7 @@ internal static class Executor
         var selGenerics = $"<{className}, {className}.OrderBy, {className}.PartialLoadFlags>";
         var updGenerics = $"<{className}>";
         var isTvf = objectType == DupDbObjectType.TableValuedFunction;
+        var isCustomSql = objectType == DupDbObjectType.CustomSqlStatement;
 
         var outputClassBuilder = new SourceCodeBuilder(1);
 
@@ -1033,13 +1033,14 @@ internal static class Executor
             builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
             builder.Append("public static ISelectFrom").Continue(selGenerics).Continue(" SelectFrom").Continue(classNameV);
 
-            if (objectType == DupDbObjectType.CustomSqlStatement)
+            if (isCustomSql)
                 builder.Continue("(this ").Continue(contextName).Continue(" context, string customSqlStatement, List<StormCallParameter>? callParameters = null)");
             else
-                builder.Append(contextParam);
+                builder.Append($"{contextParamWithoutParenthesis})");
+
 
             builder.Continue(" => StormCrudFactory.SelectFrom").Continue(selGenerics).Continue("(").Continue(baseParams);
-            builder.ContinueLine(objectType == DupDbObjectType.CustomSqlStatement ? ", customSqlStatement, callParameters);" : ");");
+            builder.ContinueLine(isCustomSql ? ", customSqlStatement, callParameters);" : ");");
 
             if (keys.Count > 0)
             {
@@ -1047,11 +1048,11 @@ internal static class Executor
                 builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 builder.Append("public static ISelectFromSingle").Continue(selGenerics).Continue(" SelectFrom").Continue(classNameV).Continue("(").Continue(keyParams);
 
-                if (objectType == DupDbObjectType.CustomSqlStatement)
+                if (isCustomSql)
                     builder.Continue(", string customSqlStatement, List<StormCallParameter>? callParameters = null");
                 builder.Continue(") => StormCrudFactory.SelectFromSingle").Continue(selGenerics).Continue("(").Continue(baseParams).Continue(", [").Continue(keyValues)
                     .Continue("], 0");
-                builder.ContinueLine(objectType == DupDbObjectType.CustomSqlStatement ? ", customSqlStatement, callParameters);" : ");");
+                builder.ContinueLine(isCustomSql ? ", customSqlStatement, callParameters);" : ");");
             }
 
             for (var i = 0; i < indexObjects.Count; i++)
@@ -1091,7 +1092,7 @@ internal static class Executor
                     builder.Append("public static ISelectFromSingle").Continue(selGenerics).Continue(" SelectFrom").Continue(classNameV).Continue("(")
                         .Continue(indexParams);
 
-                    if (objectType == DupDbObjectType.CustomSqlStatement)
+                    if (isCustomSql)
                         builder.Continue(", string customSqlStatement, List<StormCallParameter>? callParameters = null");
                     builder.Continue(") => StormCrudFactory.SelectFromSingle");
                 }
@@ -1099,25 +1100,30 @@ internal static class Executor
                 {
                     builder.Append("public static ISelectFrom").Continue(selGenerics).Continue(" SelectFrom").Continue(classNameV).Continue("(").Continue(indexParams);
 
-                    if (objectType == DupDbObjectType.CustomSqlStatement)
+                    if (isCustomSql)
                         builder.Continue(", string customSqlStatement, List<StormCallParameter>? callParameters = null");
                     builder.Continue(") => StormCrudFactory.SelectFrom");
                 }
 
                 builder.Continue(selGenerics).Continue("(").Continue(baseParams).Continue(", [").Continue(indexValues);
                 builder.Continue("], ").Continue((i + 1).ToString(CultureInfo.InvariantCulture));
-                builder.ContinueLine(objectType == DupDbObjectType.CustomSqlStatement ? ", customSqlStatement, callParameters);" : ");");
+                builder.ContinueLine(isCustomSql ? ", customSqlStatement, callParameters);" : ");");
             }
         }
 
-        if (objectType == DupDbObjectType.Table)
+        if (objectType is DupDbObjectType.Table or DupDbObjectType.CustomSqlStatement)
         {
+            var contextParam = $"{contextParamWithoutParenthesis}{(isCustomSql ? ", string customQuotedObjectFullName" : null)})";
+
             // IDeleteFrom
             builder.AppendSummary("Delete row(s)");
             builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
             builder.Append("public static IDeleteFrom").Continue(updGenerics)
-                .Continue(" DeleteFrom").Continue(classNameV).Continue(contextParam).Continue(" => StormCrudFactory.DeleteFrom").Continue(updGenerics).Continue("(")
-                .Continue(baseParams).ContinueLine(");");
+                .Continue(" DeleteFrom").Continue(classNameV).Continue(contextParam)
+                .Continue(" => StormCrudFactory.DeleteFrom").Continue(updGenerics).Continue("(")
+                .Continue(baseParams)
+                .ContinueIf(isCustomSql, ", customQuotedObjectFullName")
+                .ContinueLine(");");
 
             if (keys.Count > 0)
             {
@@ -1126,30 +1132,54 @@ internal static class Executor
                 builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 builder.Append("public static IDeleteFromSingle").Continue(updGenerics)
                     .Continue(" DeleteFrom").Continue(classNameV).Continue("(").Continue(keyParams)
-                    .Continue(") => StormCrudFactory.DeleteFromSingle").Continue(updGenerics).Continue("(").Continue(baseParams).Continue(", [").Continue(keyValues)
-                    .ContinueLine("], 0);");
+                    .ContinueIf(isCustomSql, ", string customQuotedObjectFullName")
+                    .Continue(") => StormCrudFactory.DeleteFromSingle").Continue(updGenerics).Continue("(").Continue(baseParams).Continue(", [").Continue(keyValues);
+
+                if (isCustomSql)
+                    builder.ContinueLine("], 0, customQuotedObjectFullName);");
+                else
+                    builder.ContinueLine("], 0);");
+
 
                 // Value
                 builder.AppendSummary("Delete row using 1 value");
                 builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 builder.Append("public static IDeleteFromSingle").Continue(updGenerics)
                     .Continue(" DeleteFrom").Continue(classNameV).Continue("(this ").Continue(contextName).Continue(" context, ").Continue(className)
-                    .Continue(" value) => StormCrudFactory.DeleteFromSingle").Continue(updGenerics).Continue("(").Continue(baseParams).ContinueLine(", value);");
+                    .ContinueIf(isCustomSql, " value, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle")
+                    .ContinueIf(!isCustomSql, " value) => StormCrudFactory.DeleteFromSingle")
+                    .Continue(updGenerics).Continue("(").Continue(baseParams);
+
+                if (isCustomSql)
+                    builder.ContinueLine(", value, customQuotedObjectFullName);");
+                else
+                    builder.ContinueLine(", value);");
 
                 // Values
                 builder.AppendSummary("Delete rows using values");
                 builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 builder.Append("public static IDeleteFromSingle").Continue(updGenerics)
                     .Continue(" DeleteFrom").Continue(classNameV).Continue("(this ").Continue(contextName).Continue(" context, IEnumerable<").Continue(className)
-                    .Continue("> values) => StormCrudFactory.DeleteFromSingle").Continue(updGenerics).Continue("(").Continue(baseParams).ContinueLine(", values);");
+                    .ContinueIf(isCustomSql, "> values, string customQuotedObjectFullName) => StormCrudFactory.DeleteFromSingle")
+                    .ContinueIf(!isCustomSql, "> values) => StormCrudFactory.DeleteFromSingle")
+                    .Continue(updGenerics).Continue("(").Continue(baseParams);
+
+                if (isCustomSql)
+                    builder.ContinueLine(", values, customQuotedObjectFullName);");
+                else
+                    builder.ContinueLine(", values);");
             }
 
             // IInsertInto
             builder.AppendSummary("Insert row(s)");
             builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
             builder.Append("public static IInsertInto").Continue(updGenerics)
-                .Continue(" InsertInto").Continue(classNameV).Continue(contextParam).Continue(" => StormCrudFactory.InsertInto").Continue(updGenerics).Continue("(")
-                .Continue(baseParams).ContinueLine(");");
+                .Continue(" InsertInto").Continue(classNameV)
+                .Continue(contextParam)
+                .Continue(" => StormCrudFactory.InsertInto").Continue(updGenerics).Continue("(")
+                .Continue(baseParams)
+                .ContinueIf(isCustomSql, ", customQuotedObjectFullName")
+                .ContinueLine(");");
 
             // Checking if we can have UpdateFrom
             if (objectVariant.UpdateMode != DupUpdateMode.NoUpdates && propertyGenSpecList.Exists(static x => !x.IsReadOnly && !x.IsKey))
@@ -1157,24 +1187,38 @@ internal static class Executor
                 // IUpdateFrom
                 builder.AppendSummary("Update row(s)");
                 builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-                builder.Append("public static IUpdateFrom").Continue(updGenerics).Continue(" Update").Continue(classNameV).Continue(contextParam)
-                    .Continue(" => StormCrudFactory.UpdateFrom").Continue(updGenerics).Continue("(").Continue(baseParams).ContinueLine(");");
+                builder.Append("public static IUpdateFrom").Continue(updGenerics).Continue(" Update").Continue(classNameV)
+                    .Continue(contextParam)
+                    .Continue(" => StormCrudFactory.UpdateFrom").Continue(updGenerics).Continue("(").Continue(baseParams)
+                    .ContinueIf(isCustomSql, ", customQuotedObjectFullName")
+                    .ContinueLine(");");
 
                 if (keys.Count > 0)
                 {
                     builder.AppendSummary("Update row using PK");
                     builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
                     builder.Append("public static IUpdateFromSingle").Continue(updGenerics).Continue(" Update").Continue(classNameV)
-                        .Continue("(").Continue(keyParams).Continue(") => StormCrudFactory.UpdateFromSingle").Continue(updGenerics).Continue("(").Continue(baseParams)
-                        .Continue(", [").Continue(keyValues).ContinueLine("], 0);");
+                        .Continue("(").Continue(keyParams)
+                        .ContinueIf(isCustomSql, ", string customQuotedObjectFullName")
+                        .Continue(") => StormCrudFactory.UpdateFromSingle").Continue(updGenerics).Continue("(").Continue(baseParams)
+                        .Continue(", [").Continue(keyValues);
+
+                    if (isCustomSql)
+                        builder.ContinueLine("], 0, customQuotedObjectFullName);");
+                    else
+                        builder.ContinueLine("], 0);");
                 }
 
                 // IMergeInto
                 builder.AppendSummary("Merge row(s)");
                 builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 builder.Append("public static IMergeInto").Continue(updGenerics)
-                    .Continue(" MergeInto").Continue(classNameV).Continue(contextParam).Continue(" => StormCrudFactory.MergeInto").Continue(updGenerics).Continue("(")
-                    .Continue(baseParams).ContinueLine(");");
+                    .Continue(" MergeInto").Continue(classNameV)
+                    .Continue(contextParam)
+                    .Continue(" => StormCrudFactory.MergeInto").Continue(updGenerics).Continue("(")
+                    .Continue(baseParams)
+                    .ContinueIf(isCustomSql, ", customQuotedObjectFullName")
+                    .ContinueLine(");");
             }
 
             if (objectVariant.BindObjectData.BulkInsert)
@@ -1182,9 +1226,13 @@ internal static class Executor
                 builder.AppendSummary("Bulk insert rows");
                 builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 builder.Append("public static IBulkInsert").Continue(updGenerics)
-                    .Continue(" BulkInsertInto").Continue(classNameV).Continue(contextParamWithoutParenthesis)
+                    .Continue(" BulkInsertInto").Continue(classNameV)
+                    .Continue(contextParamWithoutParenthesis)
+                    .ContinueIf(isCustomSql, ", string customQuotedObjectFullName")
                     .Continue(") => StormCrudFactory.BulkInsert").Continue(updGenerics).Continue("(")
-                    .Continue(baseParams).ContinueLine(");");
+                    .Continue(baseParams)
+                    .ContinueIf(isCustomSql, ", customQuotedObjectFullName")
+                    .ContinueLine(");");
             }
         }
 
