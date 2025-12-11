@@ -13,11 +13,7 @@ namespace AltaSoft.Storm.Crud;
 internal sealed class BulkInsert<T> : BulkInsertQueryParameters<T>, IBulkInsert<T>, ISqlGo
     where T : IDataBindable
 {
-    internal BulkInsert(StormContext context, int variant) : base(context, variant)
-    {
-    }
-
-    internal BulkInsert(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    internal BulkInsert(StormContext context, int variant, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
     }
 

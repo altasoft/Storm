@@ -405,7 +405,6 @@ public static class StormCrudFactory
         return new InsertInto<T>(context, variant);
     }
 
-
     /// <summary>
     /// Creates an instance of <see cref="IInsertInto{T}"/> for inserting data into a table.
     /// </summary>

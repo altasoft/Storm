@@ -13,12 +13,7 @@ namespace AltaSoft.Storm.Crud;
 /// </summary>
 internal abstract class ModifyQueryParameters<T> : QueryParameters, IKeyAndWhereExpression<T> where T : IDataBindable
 {
-    protected ModifyQueryParameters(StormContext context, int variant) : base(context)
-    {
-        Variant = variant;
-    }
-
-    protected ModifyQueryParameters(StormContext context, int variant, string customQuotedObjectFullName) : base(context)
+    protected ModifyQueryParameters(StormContext context, int variant, string? customQuotedObjectFullName) : base(context)
     {
         Variant = variant;
         CustomQuotedObjectFullName = customQuotedObjectFullName;

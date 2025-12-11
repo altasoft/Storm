@@ -14,17 +14,11 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
 {
     private bool _checkConcurrency = true;
 
-    /// <summary>
-    /// Constructor for initializing a UpdateFrom object with a given DbConnection.
-    /// </summary>
-    internal UpdateFrom(StormContext context, int variant) : base(context, variant)
-    {
-    }
 
     /// <summary>
     /// Constructor for initializing a UpdateFrom object with a given DbConnection.
     /// </summary>
-    internal UpdateFrom(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    internal UpdateFrom(StormContext context, int variant, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
     }
 
@@ -69,10 +63,7 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
         var columnDef = Array.Find(GetController().ColumnDefs, x => string.Equals(x.PropertyName, propertyName, StringComparison.Ordinal))
                         ?? throw new StormException($"Column '{propertyName}' not found in the column definitions.");
 
-        if (CustomQuotedObjectFullName is not null)
-            return new UpdateFromSet<T>(this, columnDef, value, CustomQuotedObjectFullName);
-
-        return new UpdateFromSet<T>(this, columnDef, value);
+        return new UpdateFromSet<T>(this, columnDef, value, CustomQuotedObjectFullName);
     }
 
     /// <inheritdoc />
@@ -96,10 +87,7 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
         var columnDef = Array.Find(GetController().ColumnDefs, x => string.Equals(x.PropertyName, propertyName, StringComparison.Ordinal))
                         ?? throw new StormException($"Column '{propertyName}' not found in the column definitions.");
 
-        if (CustomQuotedObjectFullName is not null)
-            return new UpdateFromSet<T>(this, columnDef, valueSelector, CustomQuotedObjectFullName);
-
-        return new UpdateFromSet<T>(this, columnDef, valueSelector);
+        return new UpdateFromSet<T>(this, columnDef, valueSelector, CustomQuotedObjectFullName);
     }
 
     /// <inheritdoc />

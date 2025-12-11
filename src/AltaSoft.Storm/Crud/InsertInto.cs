@@ -15,14 +15,7 @@ internal class InsertInto<T> : ModifyQueryParameters<T>, IInsertInto<T> where T 
     /// <summary>
     /// Constructor for initializing a InsertInto object with a given DbConnection.
     /// </summary>
-    internal InsertInto(StormContext context, int variant) : base(context, variant)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for initializing a InsertInto object with a given DbConnection.
-    /// </summary>
-    internal InsertInto(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    internal InsertInto(StormContext context, int variant, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
     }
 

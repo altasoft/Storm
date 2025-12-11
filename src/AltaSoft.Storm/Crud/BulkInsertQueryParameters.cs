@@ -12,12 +12,7 @@ namespace AltaSoft.Storm.Crud;
 /// </summary>
 internal abstract class BulkInsertQueryParameters<T> : QueryParameters where T : IDataBindable
 {
-    protected BulkInsertQueryParameters(StormContext context, int variant) : base(context)
-    {
-        Variant = variant;
-    }
-
-    protected BulkInsertQueryParameters(StormContext context, int variant, string customQuotedObjectFullName) : base(context)
+    protected BulkInsertQueryParameters(StormContext context, int variant, string? customQuotedObjectFullName) : base(context)
     {
         Variant = variant;
         _customQuotedObjectFullName = customQuotedObjectFullName;
