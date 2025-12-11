@@ -15,21 +15,7 @@ internal sealed class UpdateFromSetSingle<T> : ModifyQueryParameters<T>, IUpdate
     // Update with set instructions
     private readonly List<(StormColumnDef column, object? value)> _setInstructions;
 
-    internal UpdateFromSetSingle(UpdateFromSingle<T> source, StormColumnDef columnSelector, object? value, object[] keyValues, int keyId) : base(source.Context, source.Variant)
-    {
-        CloseConnection = source.CloseConnection;
-        CommandTimeout = source.CommandTimeout;
-
-        KeyValues = keyValues;
-        KeyId = keyId;
-
-        _setInstructions = new List<(StormColumnDef column, object? value)>(4)
-        {
-            (columnSelector, value)
-        };
-    }
-
-    internal UpdateFromSetSingle(UpdateFromSingle<T> source, StormColumnDef columnSelector, object? value, object[] keyValues, int keyId, string customQuotedObjectFullName) : base(source.Context, source.Variant, customQuotedObjectFullName)
+    internal UpdateFromSetSingle(UpdateFromSingle<T> source, StormColumnDef columnSelector, object? value, object[] keyValues, int keyId, string? customQuotedObjectFullName) : base(source.Context, source.Variant, customQuotedObjectFullName)
     {
         CloseConnection = source.CloseConnection;
         CommandTimeout = source.CommandTimeout;

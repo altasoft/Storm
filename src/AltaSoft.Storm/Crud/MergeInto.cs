@@ -14,14 +14,7 @@ internal sealed class MergeInto<T> : ModifyQueryParameters<T>, IMergeInto<T> whe
     /// <summary>
     /// Constructor for initializing a MergeInto object with a given DbConnection.
     /// </summary>
-    internal MergeInto(StormContext context, int variant) : base(context, variant)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for initializing a MergeInto object with a given DbConnection.
-    /// </summary>
-    internal MergeInto(StormContext context, int variant, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    internal MergeInto(StormContext context, int variant, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
     }
 

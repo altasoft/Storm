@@ -11,33 +11,18 @@ namespace AltaSoft.Storm.Crud;
 /// </summary>
 internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFromSingle<T>, ISqlGo where T : IDataBindable
 {
-    internal DeleteFromSingle(StormContext context, int variant, object[] keyValues, int keyId) : base(context, variant)
+    internal DeleteFromSingle(StormContext context, int variant, object[] keyValues, int keyId, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
         KeyValues = keyValues;
         KeyId = keyId;
     }
 
-    internal DeleteFromSingle(StormContext context, int variant, object[] keyValues, int keyId, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
-    {
-        KeyValues = keyValues;
-        KeyId = keyId;
-    }
-
-    internal DeleteFromSingle(StormContext context, int variant, T value) : base(context, variant)
-    {
-        RowValue = value;
-    }
-    internal DeleteFromSingle(StormContext context, int variant, T value, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    internal DeleteFromSingle(StormContext context, int variant, T value, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
         RowValue = value;
     }
 
-    internal DeleteFromSingle(StormContext context, int variant, IEnumerable<T> values) : base(context, variant)
-    {
-        RowValues = values;
-    }
-
-    internal DeleteFromSingle(StormContext context, int variant, IEnumerable<T> values, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    internal DeleteFromSingle(StormContext context, int variant, IEnumerable<T> values, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
         RowValues = values;
     }

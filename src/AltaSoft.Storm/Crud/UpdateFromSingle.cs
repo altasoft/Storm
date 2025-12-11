@@ -12,15 +12,7 @@ namespace AltaSoft.Storm.Crud;
 
 internal sealed class UpdateFromSingle<T> : ModifyQueryParameters<T>, IUpdateFromSingle<T> where T : IDataBindable
 {
-    /// <summary>
-    /// Constructor for initializing a SelectFromBase object with a given DbConnection.
-    /// </summary>
-    internal UpdateFromSingle(StormContext context, int variant, object[] keyValues, int keyId) : base(context, variant)
-    {
-        KeyValues = keyValues;
-        KeyId = keyId;
-    }
-    internal UpdateFromSingle(StormContext context, int variant, object[] keyValues, int keyId, string customQuotedObjectFullName) : base(context, variant, customQuotedObjectFullName)
+    internal UpdateFromSingle(StormContext context, int variant, object[] keyValues, int keyId, string? customQuotedObjectFullName = null) : base(context, variant, customQuotedObjectFullName)
     {
         KeyValues = keyValues;
         KeyId = keyId;
@@ -53,7 +45,7 @@ internal sealed class UpdateFromSingle<T> : ModifyQueryParameters<T>, IUpdateFro
         var columnDef = Array.Find(GetController().ColumnDefs, x => string.Equals(x.PropertyName, propertyName, StringComparison.Ordinal))
                         ?? throw new StormException($"Column '{propertyName}' not found in the column definitions.");
 
-        return new UpdateFromSetSingle<T>(this, columnDef, value, KeyValues!, KeyId!.Value);
+        return new UpdateFromSetSingle<T>(this, columnDef, value, KeyValues!, KeyId!.Value, CustomQuotedObjectFullName);
     }
 
     /// <inheritdoc />
@@ -63,7 +55,7 @@ internal sealed class UpdateFromSingle<T> : ModifyQueryParameters<T>, IUpdateFro
         var columnDef = Array.Find(GetController().ColumnDefs, x => string.Equals(x.PropertyName, propertyName, StringComparison.Ordinal))
                         ?? throw new StormException($"Column '{propertyName}' not found in the column definitions.");
 
-        return new UpdateFromSetSingle<T>(this, columnDef, valueSelector, KeyValues!, KeyId!.Value);
+        return new UpdateFromSetSingle<T>(this, columnDef, valueSelector, KeyValues!, KeyId!.Value, CustomQuotedObjectFullName);
     }
 
     /// <inheritdoc />
