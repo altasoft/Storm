@@ -10,9 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="AltaSoft.DomainPrimitives" Version="6.1.0" />
-    <PackageVersion Include="AltaSoft.DomainPrimitives.Generator" Version="6.0.3" />
-    <PackageVersion Include="AltaSoft.DomainPrimitives.XmlDataTypes" Version="6.0.3" />
-    <PackageVersion Include="AltaSoft.DomainPrimitives.SwaggerExtensions" Version="6.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="9.0.10" />
     <PackageVersion Include="Microsoft.OData.Core" Version="8.4.3" />
