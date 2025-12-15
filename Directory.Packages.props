@@ -9,7 +9,7 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.3" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="AltaSoft.DomainPrimitives" Version="6.0.4" />
+    <PackageVersion Include="AltaSoft.DomainPrimitives" Version="6.1.0" />
     <PackageVersion Include="AltaSoft.DomainPrimitives.Generator" Version="6.0.3" />
     <PackageVersion Include="AltaSoft.DomainPrimitives.XmlDataTypes" Version="6.0.3" />
     <PackageVersion Include="AltaSoft.DomainPrimitives.SwaggerExtensions" Version="6.0.3" />
