@@ -1931,7 +1931,7 @@ internal static class Executor
             if ((p.ColumnType & (DupColumnType.AutoIncrement | DupColumnType.RowVersion)) == DupColumnType.Default)
             {
                 flags.Add("CanInsert");
-                if (!p.IsKey)
+                if (!p.IsKey && (p.ColumnType & DupColumnType.Immutable) == 0)
                     flags.Add("CanUpdate");
             }
 

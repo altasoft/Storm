@@ -99,7 +99,6 @@ public abstract partial class StormControllerBase
     {
         var paramIndex = 1;
         var sb = StormManager.GetStringBuilderFromPool();
-        sb.AppendLine("SET XACT_ABORT ON;");
 
         GenerateInsertSql(command, value, ref paramIndex, -1, sb);
 
@@ -117,7 +116,7 @@ public abstract partial class StormControllerBase
         var valueList = values.AsIList();
 
         var sb = StormManager.GetStringBuilderFromPool();
-        sb.AppendLine("SET XACT_ABORT ON;");
+
         if (autoIncColumn is not null)
             sb.Append("DECLARE @__storm_id_values TABLE ([Id] ").Append(StormManager.ToSqlDbType(autoIncColumn.DbType, 0, 0, 0)).AppendLine(" NOT NULL);");
 
@@ -127,11 +126,19 @@ public abstract partial class StormControllerBase
         }
 
         if (sb.Length == 0)
+        {
+            StormManager.ReturnStringBuilderToPool(sb);
             return (autoIncColumn, valueList);
+        }
 
         if (autoIncColumn is not null)
         {
             sb.AppendLine("SELECT [Id] FROM @__storm_id_values;");
+        }
+
+        if (!queryParameters.Context.IsInUnitOfWork)
+        {
+            sb.WrapIntoBeginTranCommit();
         }
 
         command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);

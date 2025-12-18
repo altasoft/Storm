@@ -76,7 +76,6 @@ public abstract partial class StormControllerBase
         where T : IDataBindable
     {
         var sb = StormManager.GetStringBuilderFromPool();
-        sb.AppendLine("SET XACT_ABORT ON;");
 
         GenerateDeleteSql(command, queryParameters, sb);
 
@@ -111,7 +110,15 @@ public abstract partial class StormControllerBase
         }
 
         if (sb.Length == 0)
+        {
+            StormManager.ReturnStringBuilderToPool(sb);
             return;
+        }
+
+        if (!queryParameters.Context.IsInUnitOfWork)
+        {
+            sb.WrapIntoBeginTranCommit();
+        }
 
         command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
     }
@@ -162,7 +169,7 @@ public abstract partial class StormControllerBase
 
         var (whereStatements, _, _) = GetPkInformation(command, value, ref paramIndex);
 
-        sb.AppendLine("SET NOCOUNT ON; SET XACT_ABORT ON;");
+        sb.AppendLine("SET NOCOUNT ON;");
 
         foreach (var column in ColumnDefs.GetDetailColumns())
         {

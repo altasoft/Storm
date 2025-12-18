@@ -104,16 +104,18 @@ public abstract partial class StormControllerBase
             checkConcurrency = false;
 
         var sb = StormManager.GetStringBuilderFromPool();
-        sb.AppendLine("SET XACT_ABORT ON;");
-        sb.AppendLine("BEGIN TRAN;");
+
         if (checkConcurrency)
             sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
+
         if (updateThenInsert)
             sb.AppendLine("DECLARE @__storm_rows_affected__ int = 0;");
 
         var paramIndex = 1;
         GenerateMergeSql(command, value, checkConcurrency, updateThenInsert, ref paramIndex, -1, sb);
-        sb.AppendLine("COMMIT TRAN;");
+
+        if (!queryParameters.Context.IsInUnitOfWork)
+            sb.WrapIntoBeginTranCommit();
 
         command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
     }
@@ -133,11 +135,10 @@ public abstract partial class StormControllerBase
         var autoIncColumn = __GetAutoIncColumn();
 
         var sb = StormManager.GetStringBuilderFromPool();
-        sb.AppendLine("SET XACT_ABORT ON;");
+
         if (autoIncColumn is not null)
             sb.Append("DECLARE @__storm_id_values TABLE ([Index] int NOT NULL, [Id] ").Append(StormManager.ToSqlDbType(autoIncColumn.DbType, 0, 0, 0)).AppendLine(" NOT NULL);");
 
-        sb.AppendLine("BEGIN TRAN;");
         if (checkConcurrency)
             sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
         if (updateThenInsert)
@@ -149,11 +150,14 @@ public abstract partial class StormControllerBase
             GenerateMergeSql(command, valueList[index], checkConcurrency, updateThenInsert, ref paramIndex, index, sb);
         }
 
-        sb.AppendLine("COMMIT TRAN;");
-
         if (autoIncColumn is not null)
         {
             sb.AppendLine("SELECT [Index],[Id] FROM @__storm_id_values;");
+        }
+
+        if (!queryParameters.Context.IsInUnitOfWork)
+        {
+            sb.WrapIntoBeginTranCommit();
         }
 
         command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
@@ -189,13 +193,10 @@ public abstract partial class StormControllerBase
         else
         {
             sb.AppendLine("BEGIN TRY");
-            sb.AppendLine("  SET XACT_ABORT OFF;");
             GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, "  ", index, sb);
-            sb.AppendLine("  SET XACT_ABORT ON;");
             sb.AppendLine("END TRY");
             sb.AppendLine("BEGIN CATCH");
             sb.AppendLine("  IF ERROR_NUMBER() NOT IN (2627, 2601) THROW;");
-            sb.AppendLine("  SET XACT_ABORT ON;");
             GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, false, ref paramIndex, "  ", sb);
             sb.AppendLine("END CATCH;");
         }

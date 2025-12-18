@@ -40,10 +40,15 @@ public enum DupColumnType
     /// <summary>
     /// Specifies that whether the column in database table has a default value.
     /// </summary>
-    HasDefaultValue = 16,
+    HasDefaultValue = 16,  //TODO
 
     /// <summary>
     /// Represents a conditional terminator for a column in a database table.
     /// </summary>
     ConditionalTerminator = 32,
+
+    /// <summary>
+    /// Indicates that the column is immutable and cannot be modified after insert.
+    /// </summary>
+    Immutable = 64
 }
