@@ -251,4 +251,19 @@ internal static class StringBuilderExt
         }
         return sb;
     }
+
+    /// <summary>
+    /// Wraps the contents of the specified StringBuilder in SQL transaction statements by inserting a BEGIN TRAN at the
+    /// start and appending a COMMIT TRAN at the end.
+    /// </summary>
+    /// <remarks>This method modifies the provided StringBuilder in place. Use this method to ensure that a
+    /// batch of SQL statements is executed within a single transaction block.</remarks>
+    /// <param name="sb">The StringBuilder instance containing the SQL statements to be wrapped in a transaction. Cannot be null.</param>
+    /// <returns>The same StringBuilder instance with BEGIN TRAN prepended and COMMIT TRAN appended.</returns>
+    public static StringBuilder WrapIntoBeginTranCommit(this StringBuilder sb)
+    {
+        sb.Insert(0, $"BEGIN TRAN;{Environment.NewLine}");
+        sb.AppendLine("COMMIT TRAN");
+        return sb;
+    }
 }

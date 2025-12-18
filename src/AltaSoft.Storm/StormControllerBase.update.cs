@@ -115,7 +115,7 @@ public abstract partial class StormControllerBase
             // ReSharper disable once AccessToModifiedClosure
             builder.Append(column.ColumnName).Append('=');
 
-            if (x.value is LambdaExpression lambda && lambda.Parameters.Count == 1 && lambda.Parameters[0].Type == typeof(T))
+            if (x.value is LambdaExpression { Parameters.Count: 1 } lambda && lambda.Parameters[0].Type == typeof(T))
             {
                 // Wrap original expression into Expression<Func<T, object?>>
                 var param = lambda.Parameters[0];
@@ -151,8 +151,7 @@ public abstract partial class StormControllerBase
             checkConcurrency = false;
 
         var sb = StormManager.GetStringBuilderFromPool();
-        sb.AppendLine("SET XACT_ABORT ON;");
-        sb.AppendLine("BEGIN TRAN;");
+
         if (checkConcurrency)
             sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
 
@@ -166,7 +165,6 @@ public abstract partial class StormControllerBase
             StormManager.ReturnStringBuilderToPool(sb);
             return;
         }
-        sb.AppendLine("COMMIT TRAN;");
 
         command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
     }
@@ -182,8 +180,7 @@ public abstract partial class StormControllerBase
             checkConcurrency = false;
 
         var sb = StormManager.GetStringBuilderFromPool();
-        sb.AppendLine("SET XACT_ABORT ON;");
-        sb.AppendLine("BEGIN TRAN;");
+
         if (checkConcurrency)
             sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
 
@@ -199,7 +196,11 @@ public abstract partial class StormControllerBase
             StormManager.ReturnStringBuilderToPool(sb);
             return;
         }
-        sb.AppendLine("COMMIT TRAN;");
+
+        if (!queryParameters.Context.IsInUnitOfWork)
+        {
+            sb.WrapIntoBeginTranCommit();
+        }
 
         command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
     }

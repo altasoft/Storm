@@ -44,13 +44,18 @@ public enum ColumnType
     /// Indicates that the column in a database table has a default value.
     /// This is used when the database should automatically assign a default value if none is provided.
     /// </summary>
-    HasDefaultValue = 16,
+    HasDefaultValue = 16, //TODO
 
     /// <summary>
     /// Represents a conditional terminator for a column in a database table.
     /// If value of this column is true, the reading of the properties from <see cref="StormDbDataReader"/> will stop and following properties will not be initialized.
     /// </summary>
     ConditionalTerminator = 32,
+
+    /// <summary>
+    /// Indicates that the column is immutable and cannot be modified after insert.
+    /// </summary>
+    Immutable = 64,
 
     /// <summary>
     /// Represents a primary key column with an auto-increment feature,
