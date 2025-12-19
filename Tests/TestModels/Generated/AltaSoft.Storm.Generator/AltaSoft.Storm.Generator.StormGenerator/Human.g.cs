@@ -117,7 +117,7 @@ public partial record Human : IDataBindableWithKey, ITrackingObject, IEntityComp
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.XId };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

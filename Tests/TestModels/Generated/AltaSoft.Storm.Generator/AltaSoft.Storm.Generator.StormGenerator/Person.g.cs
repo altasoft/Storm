@@ -132,7 +132,7 @@ public partial record Person : IDataBindableWithKey, ITrackingObject, IEntityCom
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.BusinessEntityID };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

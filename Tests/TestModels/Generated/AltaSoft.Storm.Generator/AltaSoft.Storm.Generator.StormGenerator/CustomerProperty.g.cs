@@ -108,7 +108,7 @@ public partial record CustomerProperty : IDataBindableWithKey, ITrackingObject, 
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.Id, OrderBy.Name };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

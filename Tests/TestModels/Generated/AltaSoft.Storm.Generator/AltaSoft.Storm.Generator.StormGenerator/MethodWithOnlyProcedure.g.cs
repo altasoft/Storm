@@ -87,7 +87,7 @@ public partial class MethodWithOnlyProcedure : IDataBindable
     /// </summary>
     public const OrderBy[]? Unordered = default;
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

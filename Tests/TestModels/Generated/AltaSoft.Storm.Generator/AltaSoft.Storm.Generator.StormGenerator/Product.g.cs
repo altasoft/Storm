@@ -174,7 +174,7 @@ public partial record Product : IDataBindableWithKey, ITrackingObject, IEntityCo
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.ProductID, OrderBy.Name, OrderBy.ProductNumber, OrderBy.Rowguid };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

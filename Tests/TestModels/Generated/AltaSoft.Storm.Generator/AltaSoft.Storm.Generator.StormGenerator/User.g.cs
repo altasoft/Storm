@@ -189,7 +189,7 @@ public partial record User : IDataBindableWithKey, IConcurrencyCheck, ITrackingO
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.UserId, OrderBy.BranchId };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

@@ -108,7 +108,7 @@ public partial class ClassWithTimestamp : IDataBindableWithKey, IConcurrencyChec
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.EventId };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

@@ -133,7 +133,7 @@ public sealed partial record Post : IDataBindableWithKey, ITrackingObject, IEnti
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.Id };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

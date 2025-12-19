@@ -176,7 +176,7 @@ public partial record SysAdmin : IDataBindableWithKey, IConcurrencyCheck, ITrack
     /// </summary>
     public new static readonly OrderBy[] OrderByKey = new[] { OrderBy.UserId, OrderBy.BranchId };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public new uint? __GetLoadingFlags() => __loadingFlags;

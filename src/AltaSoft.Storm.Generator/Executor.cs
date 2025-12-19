@@ -479,7 +479,7 @@ internal static class Executor
         // __GetLoadingFlags
         if (!isAbstract)
         {
-            builder.AppendLine("private uint? __loadingFlags;");
+            builder.AppendLine("private readonly uint? __loadingFlags;");
         }
 
         builder.AppendLine("/// <inheritdoc />");

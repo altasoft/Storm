@@ -99,7 +99,7 @@ internal sealed partial class FourValues : IDataBindable, ITrackingObject
     /// </summary>
     public const OrderBy[]? Unordered = default;
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

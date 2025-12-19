@@ -161,7 +161,7 @@ public partial record UserBulkCopy : IDataBindableWithKey, IConcurrencyCheck, IT
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.UserId, OrderBy.BranchId };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

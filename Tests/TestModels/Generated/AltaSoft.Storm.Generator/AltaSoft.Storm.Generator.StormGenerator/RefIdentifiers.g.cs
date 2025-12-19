@@ -167,7 +167,7 @@ public partial record RefIdentifiers : IDataBindableWithKey, ITrackingObject, IE
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.RecordKey };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

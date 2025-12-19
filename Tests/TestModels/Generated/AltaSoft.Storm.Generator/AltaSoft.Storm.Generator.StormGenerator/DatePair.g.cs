@@ -97,7 +97,7 @@ public partial class DatePair : IDataBindable, IConcurrencyCheck, ITrackingObjec
     /// </summary>
     public const OrderBy[]? Unordered = default;
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;

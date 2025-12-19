@@ -128,7 +128,7 @@ public partial record Car : IDataBindableWithKey, ITrackingObject, IEntityCompar
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.CarId };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;
