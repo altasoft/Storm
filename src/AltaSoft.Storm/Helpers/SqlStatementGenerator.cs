@@ -232,7 +232,7 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
                     switch (GetExpressionValue(node.Arguments[1]))
                     {
                         case IEnumerable list:
-                            var values = list.Cast<object>().ToList();
+                            var values = list.Cast<object?>().ToList();
                             if (values.Count == 0)
                             {
                                 _builder.Append("1=0");
@@ -297,6 +297,22 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
     /// <returns>The value obtained from the expression.</returns>
     private static object? GetExpressionValue(in Expression expression)
     {
+        // Handle array/new-array expressions (e.g. new[] {1,2,3})
+        if (expression is NewArrayExpression nae)
+        {
+            var elemType = expression.Type.GetElementType() ?? typeof(object);
+            var arr = Array.CreateInstance(elemType, nae.Expressions.Count);
+            for (var i = 0; i < nae.Expressions.Count; i++)
+            {
+                var v = GetExpressionValue(nae.Expressions[i]);
+                // Convert element to array element type if necessary
+                if (v is not null && elemType != v.GetType())
+                    v = Convert.ChangeType(v, elemType, CultureInfo.InvariantCulture);
+                arr.SetValue(v, i);
+            }
+            return arr;
+        }
+
         static Func<object?, object?> Compose(Func<object?, object?> f, Func<object?, object?> g) => x => x is not null ? g(f(x)) : null;
 
         Func<object?, object?> get = x => x;

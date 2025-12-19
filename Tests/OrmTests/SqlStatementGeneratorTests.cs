@@ -78,7 +78,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => ((IMyTest)x).CustomerId == 5;
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("([CustomerId] = @p0)");
         cmd.Params.Should().HaveCount(1);
@@ -93,7 +93,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringName != null && x.StringName.Contains("xyz");
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("(([StringName] IS NOT NULL) AND [StringName] LIKE '%'+@p0+'%')");
         cmd.Params.Should().HaveCount(1);
@@ -107,9 +107,9 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var cols = ctrl.ColumnDefs;
 
         var values = new[] { 1, 2, 3 };
-        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntValue.In(values);
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntValue.In(1, 2, 3);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[IntValue] IN (@p0,@p1,@p2)");
         cmd.Params.Should().HaveCount(values.Length);
@@ -125,7 +125,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { (int?)null, 1, 2, 3 };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntValue.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[IntValue] IN (NULL,@p0,@p1,@p2)");
         cmd.Params.Should().HaveCount(values.Length - 1);
@@ -141,7 +141,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { 1, 2, 3 };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntValueN.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[IntValueN] IN (@p0,@p1,@p2)");
         cmd.Params.Should().HaveCount(values.Length);
@@ -157,7 +157,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { (int?)null, 1, 2, 3 };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntValueN.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[IntValueN] IN (NULL,@p0,@p1,@p2)");
         cmd.Params.Should().HaveCount(values.Length - 1);
@@ -172,7 +172,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringName == null;
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("([StringName] IS NULL)");
         cmd.Params.Should().BeEmpty();
@@ -186,7 +186,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringName != null && x.StringName.StartsWith("ab");
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("(([StringName] IS NOT NULL) AND [StringName] LIKE @p0+'%')");
         cmd.Params.Should().HaveCount(1);
@@ -201,7 +201,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringName != null && x.StringName.EndsWith("yz");
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("(([StringName] IS NOT NULL) AND [StringName] LIKE '%'+@p0)");
         cmd.Params.Should().HaveCount(1);
@@ -232,7 +232,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => (int)x.CustomerId == 2;
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("([CustomerId] = @p0)");
         cmd.Params.Should().HaveCount(1);
@@ -247,7 +247,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.CustomerIdN != null && x.CustomerIdN.Value == 2;
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("(([CustomerIdN] IS NOT NULL) AND ([CustomerIdN] = @p0))");
         cmd.Params.Should().HaveCount(1);
@@ -262,7 +262,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN != null && ((int)x.IntColorN & (int)RgbColor.Red) != 0;
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("(([IntColorN] IS NOT NULL) AND (([IntColorN] & @p0) <> @p1))");
         cmd.Params.Should().HaveCount(2);
@@ -278,7 +278,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN != null && ((int)x.IntColorN.Value & (int)RgbColor.Red) != 0;
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("(([IntColorN] IS NOT NULL) AND (([IntColorN] & @p0) <> @p1))");
         cmd.Params.Should().HaveCount(2);
@@ -295,7 +295,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = Array.Empty<int>();
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntValue.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("1=0");
         cmd.Params.Should().BeEmpty();
@@ -310,7 +310,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { 1, 2, 3 };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntValue.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[IntValue] IN (@p0,@p1,@p2)");
         cmd.Params.Should().HaveCount(values.Length);
@@ -326,7 +326,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { "a", "b" };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringName.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[StringName] IN (@p0,@p1)");
         cmd.Params.Should().HaveCount(values.Length);
@@ -342,7 +342,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { null, "a", "b" };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringName.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[StringName] IN (NULL,@p0,@p1)");
         cmd.Params.Should().HaveCount(values.Length - 1);
@@ -358,7 +358,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { "a", "b" };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.Ccy.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[Ccy] IN (@p0,@p1)");
         cmd.Params.Should().HaveCount(values.Length);
@@ -374,7 +374,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var values = new[] { null, "a", "b" };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.CcyN.In(values);
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("[CcyN] IN (NULL,@p0,@p1)");
         cmd.Params.Should().HaveCount(values.Length - 1);
@@ -389,7 +389,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringName == x.StringNameN + "A";
 
-        var (sql, cmd) = RunWhere(new[] { expr }, cols);
+        var (sql, cmd) = RunWhere([expr], cols);
 
         sql.Should().Be("([StringName] = ([StringNameN] + @p0))");
         cmd.Params.Should().HaveCount(1);

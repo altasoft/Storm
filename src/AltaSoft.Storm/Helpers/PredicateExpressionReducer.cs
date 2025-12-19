@@ -327,7 +327,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         { Expression: MemberExpression { Expression: ParameterExpression } ime } when IsNullableHasValue(node) => Expression.Equal(ime, Expression.Constant(null)),
 
         // Allow access to Nullable<T>.Value: convert parent nullable expression to underlying type.
-        { Expression: MemberExpression { Expression: ParameterExpression } ime, Member: PropertyInfo { Name: "Value" } } => Expression.Convert(ime, node.Type),
+        { Expression: MemberExpression { Expression: ParameterExpression } ime, Member: PropertyInfo { Name: "Value", DeclaringType: { } declaringType } } when IsNullableT(declaringType) => Expression.Convert(ime, node.Type),
 
         // If the member is a nested property (e.g., x.MyProperty.MySubProperty), throw an exception as it's not supported.
         { Expression: MemberExpression { Expression: ParameterExpression } } => throw new NotSupportedException("Nested properties not supported"),
