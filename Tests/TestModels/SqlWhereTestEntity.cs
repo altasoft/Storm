@@ -28,5 +28,9 @@ public partial record SqlWhereTestEntity
     public CurrencyId Ccy { get; set; }
 
     public CurrencyId? CcyN { get; set; }
+
+    public bool BoolValue { get; set; }
+
+    public bool? BoolValueN { get; set; }
 }
 
