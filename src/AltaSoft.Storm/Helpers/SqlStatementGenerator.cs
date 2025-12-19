@@ -384,8 +384,10 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
 
         if (column is not null)
         {
-            var size = GetParamSize(column.DbType, column.Size, value);
-            _command.AddDbParameter(paramName, column.DbType, size, value);
+            var dbType = ToVariableLengthDbType(column.DbType);
+            
+            var size = GetParamSize(dbType, column.Size, value);
+            _command.AddDbParameter(paramName, dbType, size, value);
         }
         else
         {
@@ -405,6 +407,8 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
 #endif
 
             var dbType = type.ToUnifiedDbType();
+            dbType = ToVariableLengthDbType(dbType);
+
             var size = GetParamSize(dbType, null, value);
             _command.AddDbParameter(paramName, dbType, size, value);
         }
@@ -430,6 +434,18 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
 
             return valueSize > columnSize.Value ? valueSize : columnSize.Value;
         }
+    }
+
+    private static UnifiedDbType ToVariableLengthDbType(UnifiedDbType dbType)
+    {
+        return dbType switch
+        {
+            UnifiedDbType.StringFixedLength => UnifiedDbType.String,
+            UnifiedDbType.AnsiStringFixedLength => UnifiedDbType.AnsiString,
+            UnifiedDbType.Binary => UnifiedDbType.VarBinary,
+
+            _ => dbType
+        };
     }
 
     private static bool IsMemberAccessOnParameter(Expression? expr)
