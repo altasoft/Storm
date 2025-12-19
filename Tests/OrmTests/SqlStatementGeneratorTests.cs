@@ -434,7 +434,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
         var cols = ctrl.ColumnDefs;
 
-        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValue & x.BoolValue;
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValue && x.BoolValue;
 
         var (sql, cmd) = RunWhere([expr], cols);
 
@@ -450,7 +450,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
         var cols = ctrl.ColumnDefs;
 
-        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValue | x.BoolValue;
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValue || x.BoolValue;
 
         var (sql, cmd) = RunWhere([expr], cols);
 
@@ -466,7 +466,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
         var cols = ctrl.ColumnDefs;
 
-        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValueN != null && (x.BoolValueN.Value & x.BoolValue);
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValueN != null && (x.BoolValueN.Value && x.BoolValue);
 
         var (sql, cmd) = RunWhere([expr], cols);
 

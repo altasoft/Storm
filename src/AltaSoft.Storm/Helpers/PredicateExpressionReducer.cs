@@ -138,11 +138,11 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         // If one side is nullable (Nullable<>) and the other is a non-nullable value type, convert the nullable side to the other's type
         if (left is { Type: var lt } && right is { Type: var rt } && lt != rt)
         {
-            if (IsNullableT(lt) && IsNonNullableValueType(rt) && IsIntegralOrEnumType(rt))
+            if (IsNullableT(lt) && IsNonNullableValueType(rt))
             {
                 left = Expression.Convert(left, rt);
             }
-            else if (IsNullableT(rt) && IsNonNullableValueType(lt) && IsIntegralOrEnumType(lt))
+            else if (IsNullableT(rt) && IsNonNullableValueType(lt))
             {
                 right = Expression.Convert(right, lt);
             }
@@ -186,7 +186,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
             // If both left and right operands are not constant expressions, return an OrElse expression combining them.
             { } right => Expression.OrElse(left, right),
 
-            // If none of the above conditions are met for the right operand, return null.
+            // If none of the above conditions are met, return null.
             _ => null
         },
 
@@ -329,7 +329,11 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         { Expression: MemberExpression { Expression: ParameterExpression } ime } when IsNullableHasValue(node) => Expression.Equal(ime, Expression.Constant(null)),
 
         // Allow access to Nullable<T>.Value: convert parent nullable expression to underlying type.
-        { Expression: MemberExpression { Expression: ParameterExpression } ime, Member: PropertyInfo { Name: "Value", DeclaringType: { } declaringType } } when IsNullableT(declaringType) => Expression.Convert(ime, node.Type),
+        // If the member is the 'Value' property of a nullable (e.g. x.BoolN.Value) and its type is bool,
+        // return an equality comparison against true. This makes nullable boolean value usage
+        // behave like a boolean equality (column = true) during SQL generation.
+        { Expression: MemberExpression { Expression: ParameterExpression } ime } when node.Member is PropertyInfo { Name: "Value" } 
+            => node.Type == typeof(bool) ? Expression.Equal(Expression.Convert(ime, node.Type), Expression.Constant(true)) : Expression.Convert(ime, node.Type),
 
         // If the member is a nested property (e.g., x.MyProperty.MySubProperty), throw an exception as it's not supported.
         { Expression: MemberExpression { Expression: ParameterExpression } } => throw new NotSupportedException("Nested properties not supported"),
@@ -379,21 +383,4 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
     /// <returns>True if <paramref name="t"/> is Nullable&lt;T&gt;; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsNullableT(Type t) => Nullable.GetUnderlyingType(t) is not null;
-
-    /// <summary>
-    /// Checks whether the supplied type is an integral type (byte, sbyte, short, ushort, int, uint, long, ulong) or an enum.
-    /// These are the types that support bitwise operations and need special nullable handling.
-    /// </summary>
-    /// <param name="t">Type to check.</param>
-    /// <returns>True if <paramref name="t"/> is an integral type or enum; otherwise, false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsIntegralOrEnumType(Type t)
-    {
-        if (t.IsEnum)
-            return true;
-
-        var typeCode = Type.GetTypeCode(t);
-        return typeCode is TypeCode.Byte or TypeCode.SByte or TypeCode.Int16 or TypeCode.UInt16 
-            or TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64;
-    }
 }
