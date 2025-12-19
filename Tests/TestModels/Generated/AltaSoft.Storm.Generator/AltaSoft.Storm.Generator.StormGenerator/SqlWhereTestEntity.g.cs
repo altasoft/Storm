@@ -64,6 +64,8 @@ public partial record SqlWhereTestEntity : IDataBindable, ITrackingObject
         StringNameN = (string?)dr.GetStringOrNull(idx++);
         Ccy = (AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId)(string)dr.GetString(idx++);
         CcyN = (AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId?)(string?)dr.GetStringOrNull(idx++);
+        BoolValue = (bool)dr.GetBoolean(idx++);
+        BoolValueN = (bool?)dr.GetBooleanOrNull(idx++);
     }
 
 
@@ -113,7 +115,11 @@ public partial record SqlWhereTestEntity : IDataBindable, ITrackingObject
         Ccy = 10,
         Ccy_Desc = -10,
         CcyN = 11,
-        CcyN_Desc = -11
+        CcyN_Desc = -11,
+        BoolValue = 12,
+        BoolValue_Desc = -12,
+        BoolValueN = 13,
+        BoolValueN_Desc = -13
     }
 
     /// <summary>
@@ -143,7 +149,9 @@ public partial record SqlWhereTestEntity : IDataBindable, ITrackingObject
             (columnDefs[7], StringName),
             (columnDefs[8], StringNameN),
             (columnDefs[9], (string)Ccy),
-            (columnDefs[10], (string?)CcyN)
+            (columnDefs[10], (string?)CcyN),
+            (columnDefs[11], BoolValue),
+            (columnDefs[12], BoolValueN)
         ];
     }
 
@@ -179,6 +187,8 @@ return [];
     private void __PropertySet_StringNameN(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("StringNameN", newValue); }
     private void __PropertySet_Ccy(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Ccy", newValue); }
     private void __PropertySet_CcyN(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CcyN", newValue); }
+    private void __PropertySet_BoolValue(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BoolValue", newValue); }
+    private void __PropertySet_BoolValueN(ref bool? newValue, ref bool? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BoolValueN", newValue); }
 
     #endregion Change Tracking Support
 }
@@ -226,6 +236,8 @@ public sealed class SqlWhereTestEntityStormController : StormControllerBase
             nameof(SqlWhereTestEntity.StringNameN) => (string?)dr.GetStringOrNull(idx++),
             nameof(SqlWhereTestEntity.Ccy) => (AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId)(string)dr.GetString(idx++),
             nameof(SqlWhereTestEntity.CcyN) => (AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId?)(string?)dr.GetStringOrNull(idx++),
+            nameof(SqlWhereTestEntity.BoolValue) => (bool)dr.GetBoolean(idx++),
+            nameof(SqlWhereTestEntity.BoolValueN) => (bool?)dr.GetBooleanOrNull(idx++),
             _ => throw new StormException($"'{propertyName}' is not a column of the table")
         };
     }
@@ -254,7 +266,9 @@ public sealed class SqlWhereTestEntityStormController : StormControllerBase
         new(nameof(SqlWhereTestEntity.StringName), null, "StringName", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, -1, 0, 0, SaveAs.Default, 0, true, null, null, typeof(string), null),
         new(nameof(SqlWhereTestEntity.StringNameN), null, "StringNameN", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, -1, 0, 0, SaveAs.Default, 0, true, null, null, typeof(string), null),
         new(nameof(SqlWhereTestEntity.Ccy), null, "Ccy", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, -1, 0, 0, SaveAs.Default, 0, false, null, null, typeof(AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId), null),
-        new(nameof(SqlWhereTestEntity.CcyN), null, "CcyN", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, -1, 0, 0, SaveAs.Default, 0, true, null, null, typeof(AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId), null)
+        new(nameof(SqlWhereTestEntity.CcyN), null, "CcyN", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, -1, 0, 0, SaveAs.Default, 0, true, null, null, typeof(AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId), null),
+        new(nameof(SqlWhereTestEntity.BoolValue), null, "BoolValue", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.Boolean, 0, 0, 0, SaveAs.Default, 0, false, null, null, typeof(bool), null),
+        new(nameof(SqlWhereTestEntity.BoolValueN), null, "BoolValueN", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.Boolean, 0, 0, 0, SaveAs.Default, 0, true, null, null, typeof(bool), null)
     };
 
     /// <summary>

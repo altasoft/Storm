@@ -125,6 +125,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
     /// <summary>
     /// Ensures bitwise operands are type-compatible by converting nullable operands to the non-nullable counterpart when needed.
     /// This prevents binary operator type errors when one operand remains Nullable&lt;T&gt; while the other is T.
+    /// Only applies conversions for integral and enum types, not for boolean logical operations.
     /// </summary>
     /// <param name="node">The original binary expression.</param>
     /// <returns>A rewritten binary expression with compatible operand types.</returns>
@@ -133,14 +134,15 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         var left = Instance.Visit(node.Left);
         var right = Instance.Visit(node.Right);
 
+        // Only apply type conversion for integral/enum types, not for boolean logical operations
         // If one side is nullable (Nullable<>) and the other is a non-nullable value type, convert the nullable side to the other's type
         if (left is { Type: var lt } && right is { Type: var rt } && lt != rt)
         {
-            if (IsNullableT(lt) && IsNonNullableValueType(rt))
+            if (IsNullableT(lt) && IsNonNullableValueType(rt) && IsIntegralOrEnumType(rt))
             {
                 left = Expression.Convert(left, rt);
             }
-            else if (IsNullableT(rt) && IsNonNullableValueType(lt))
+            else if (IsNullableT(rt) && IsNonNullableValueType(lt) && IsIntegralOrEnumType(lt))
             {
                 right = Expression.Convert(right, lt);
             }
@@ -377,4 +379,21 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
     /// <returns>True if <paramref name="t"/> is Nullable&lt;T&gt;; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsNullableT(Type t) => Nullable.GetUnderlyingType(t) is not null;
+
+    /// <summary>
+    /// Checks whether the supplied type is an integral type (byte, sbyte, short, ushort, int, uint, long, ulong) or an enum.
+    /// These are the types that support bitwise operations and need special nullable handling.
+    /// </summary>
+    /// <param name="t">Type to check.</param>
+    /// <returns>True if <paramref name="t"/> is an integral type or enum; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsIntegralOrEnumType(Type t)
+    {
+        if (t.IsEnum)
+            return true;
+
+        var typeCode = Type.GetTypeCode(t);
+        return typeCode is TypeCode.Byte or TypeCode.SByte or TypeCode.Int16 or TypeCode.UInt16 
+            or TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64;
+    }
 }

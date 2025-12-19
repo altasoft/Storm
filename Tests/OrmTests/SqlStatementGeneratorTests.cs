@@ -427,4 +427,52 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         cmd.Params.Should().HaveCount(values.Length - 1);
         cmd.Params.Select(p => p.Value).Should().Contain(values.Where(x => x is not null));
     }
+
+    [Fact]
+    public void BooleanLogicalAnd_ShouldGenerateAndOperation()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValue & x.BoolValue;
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("(([BoolValue] = @p0) AND ([BoolValue] = @p1))");
+        cmd.Params.Should().HaveCount(2);
+        cmd.Params[0].Value.Should().Be(true);
+        cmd.Params[1].Value.Should().Be(true);
+    }
+
+    [Fact]
+    public void BooleanLogicalOr_ShouldGenerateOrOperation()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValue | x.BoolValue;
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("(([BoolValue] = @p0) OR ([BoolValue] = @p1))");
+        cmd.Params.Should().HaveCount(2);
+        cmd.Params[0].Value.Should().Be(true);
+        cmd.Params[1].Value.Should().Be(true);
+    }
+
+    [Fact]
+    public void NullableBooleanLogicalAnd_ShouldGenerateAndOperation()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.BoolValueN != null && (x.BoolValueN.Value & x.BoolValue);
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("(([BoolValueN] IS NOT NULL) AND (([BoolValueN] = @p0) AND ([BoolValue] = @p1)))");
+        cmd.Params.Should().HaveCount(2);
+        cmd.Params[0].Value.Should().Be(true);
+        cmd.Params[1].Value.Should().Be(true);
+    }
 }
