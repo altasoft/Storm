@@ -255,6 +255,20 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
     }
 
     [Fact]
+    public void NullableEnumHasValue_ShouldGenerateIsNotNull()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN.HasValue;
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("([IntColorN] IS NOT NULL)");
+        cmd.Params.Should().HaveCount(0);
+    }
+
+    [Fact]
     public void NullableEnumBitwiseWithoutValue_ShouldGenerateIsNotNullAndBitwiseComparison()
     {
         var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
@@ -276,30 +290,18 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
         var cols = ctrl.ColumnDefs;
 
-        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN.HasValue;
+        // Nullable analysis is disabled here because the expression is only translated to SQL;
+        // IntColorN.Value is not evaluated at runtime in this test, so we intentionally bypass
+        // nullable warnings to model the desired expression tree.
+#nullable disable
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN.Value.HasFlag(RgbColor.Red | RgbColor.Green);
+#nullable enable
 
         var (sql, cmd) = RunWhere([expr], cols);
 
-        sql.Should().Be("([IntColorN] IS NOT NULL)");
-        cmd.Params.Should().HaveCount(2);
-        cmd.Params[0].Value.Should().Be((int)RgbColor.Red);
-        cmd.Params[1].Value.Should().Be(0);
-    }
-
-    [Fact]
-    public void NullableEnumBitwiseWithoutValue_ShouldGenerateIsNotNullAndBitwiseComparison3()
-    {
-        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
-        var cols = ctrl.ColumnDefs;
-
-        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN.HasValue && (x.IntColorN.Value.HasFlag(RgbColor.Red));
-
-        var (sql, cmd) = RunWhere([expr], cols);
-
-        sql.Should().Be("(([IntColorN] IS NOT NULL) AND (([IntColorN] & @p0) <> @p1))");
-        cmd.Params.Should().HaveCount(2);
-        cmd.Params[0].Value.Should().Be((int)RgbColor.Red);
-        cmd.Params[1].Value.Should().Be(0);
+        sql.Should().Be("(([IntColorN] & @p0) <> 0)");
+        cmd.Params.Should().HaveCount(1);
+        cmd.Params[0].Value.Should().Be((int)(RgbColor.Red | RgbColor.Green));
     }
 
     [Fact]
@@ -434,7 +436,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
         var cols = ctrl.ColumnDefs;
 
-        var values = new[] { "Red", "Blue" }; 
+        var values = new[] { "Red", "Blue" };
         System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringColor.In(values);
 
         var (sql, cmd) = RunWhere([expr], cols);

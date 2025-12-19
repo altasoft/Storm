@@ -171,12 +171,12 @@ internal sealed class UnitOfWorkInternal : IUnitOfWork
     /// </summary>
     public bool HasActiveTransaction() => !_committed && AmbientUow is { IsRollBacked: false, TransactionCount: > 0 };
 
-    /// <summary>
-    /// Gets the logger instance if logging is enabled at the Trace level; otherwise, returns null.
-    /// </summary>
-    /// <returns>The <see cref="ILogger"/> instance or null.</returns>
-    private static ILogger? GetLogger()
-        => StormManager.Logger?.IsEnabled(LogLevel.Trace) == true ? StormManager.Logger : null;
+    ///// <summary>
+    ///// Gets the logger instance if logging is enabled at the Trace level; otherwise, returns null.
+    ///// </summary>
+    ///// <returns>The <see cref="ILogger"/> instance or null.</returns>
+    //private static ILogger? GetLogger()
+    //    => StormManager.Logger?.IsEnabled(LogLevel.Trace) == true ? StormManager.Logger : null;
 
     /// <summary>
     /// Synchronously disposes the unit of work. Rolls back the transaction if CompleteAsync was not called.
