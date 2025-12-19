@@ -74,23 +74,23 @@ internal sealed class Program
         Console.WriteLine("Test completed.");
 
         await fixture.DisposeAsync();
-        X();
+        //X();
     }
 
-    private static async Task X()
-    {
-        {
-            using var uow = UnitOfWork.Create();
-            var zxy = await uow.BeginAsync(null, null, default).ConfigureAwait(false);
+    //private static async Task X()
+    //{
+    //    {
+    //        using var uow = UnitOfWork.Create();
+    //        var zxy = await uow.BeginAsync(null, null, default).ConfigureAwait(false);
 
-            //await uow.BeginAsync(null, null, default).ConfigureAwait(false);
+    //        //await uow.BeginAsync(null, null, default).ConfigureAwait(false);
 
-            //var _ = await uow.BeginAsync(null, null, default).ConfigureAwait(false);
+    //        //var _ = await uow.BeginAsync(null, null, default).ConfigureAwait(false);
 
-            //await using var tx = await uow.BeginAsync(null, null, default).ConfigureAwait(false);
-        }
-        return;
-    }
+    //        //await using var tx = await uow.BeginAsync(null, null, default).ConfigureAwait(false);
+    //    }
+    //    return;
+    //}
 
     private static async Task AssertUserUpdated(TestStormContext context, int userId, User expected)
     {

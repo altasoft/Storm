@@ -24,6 +24,9 @@ public sealed class SourceCodeBuilder
         // </auto-generated>
         //------------------------------------------------------------------------------
 
+        #pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+        // ReSharper disable all
+        
         #nullable enable
         """;
 

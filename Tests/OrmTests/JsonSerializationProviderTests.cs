@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AltaSoft.Storm.Json;
 using FluentAssertions;
 using Xunit;
@@ -31,7 +30,7 @@ public class JsonSerializationProviderTests
         result.Should().NotBeNull();
         var person = result as TestPerson;
         person.Should().NotBeNull();
-        person!.Name.Should().Be("John");
+        person.Name.Should().Be("John");
         person.Age.Should().Be(30);
     }
 
@@ -49,7 +48,7 @@ public class JsonSerializationProviderTests
         result.Should().NotBeNull();
         var person = result as TestPerson;
         person.Should().NotBeNull();
-        person!.Name.Should().Be("Jane");
+        person.Name.Should().Be("Jane");
         person.Age.Should().Be(25);
     }
 
@@ -58,7 +57,7 @@ public class JsonSerializationProviderTests
     {
         // Arrange
         var provider = new JsonSerializationProvider();
-        var json = "{\"name\":\"Bob\",\"age\":35}"; // All lowercase property names
+        const string json = "{\"name\":\"Bob\",\"age\":35}"; // All lowercase property names
 
         // Act
         var result = provider.FromJson(json, typeof(TestPerson));
@@ -67,11 +66,11 @@ public class JsonSerializationProviderTests
         result.Should().NotBeNull();
         var person = result as TestPerson;
         person.Should().NotBeNull();
-        person!.Name.Should().Be("Bob");
+        person.Name.Should().Be("Bob");
         person.Age.Should().Be(35);
     }
 
-    private class TestPerson
+    private sealed class TestPerson
     {
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }
