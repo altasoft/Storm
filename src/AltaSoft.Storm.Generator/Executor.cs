@@ -1038,7 +1038,6 @@ internal static class Executor
             else
                 builder.Append($"{contextParamWithoutParenthesis})");
 
-
             builder.Continue(" => StormCrudFactory.SelectFrom").Continue(selGenerics).Continue("(").Continue(baseParams);
             builder.ContinueLine(isCustomSql ? ", customSqlStatement, callParameters);" : ");");
 
@@ -1135,11 +1134,7 @@ internal static class Executor
                     .ContinueIf(isCustomSql, ", string customQuotedObjectFullName")
                     .Continue(") => StormCrudFactory.DeleteFromSingle").Continue(updGenerics).Continue("(").Continue(baseParams).Continue(", [").Continue(keyValues);
 
-                if (isCustomSql)
-                    builder.ContinueLine("], 0, customQuotedObjectFullName);");
-                else
-                    builder.ContinueLine("], 0);");
-
+                builder.ContinueLine(isCustomSql ? "], 0, customQuotedObjectFullName);" : "], 0);");
 
                 // Value
                 builder.AppendSummary("Delete row using 1 value");
@@ -1526,7 +1521,7 @@ internal static class Executor
                     .Continue(", ").Continue(p.Precision.ToString(CultureInfo.InvariantCulture))
                     .Continue(", ").Continue(p.Scale.ToString(CultureInfo.InvariantCulture))
                     .Continue(", SaveAs.").Continue(p.SaveAs.ToString())
-                    .Continue(", ").Continue(p.PartialLoadFlags.ToString())
+                    .Continue(", ").Continue(p.PartialLoadFlags.ToString(CultureInfo.InvariantCulture))
                     .Continue(", ").Continue(p.IsNullable || p.SaveAs == DupSaveAs.DetailTable ? "true" : "false")
                     .Continue(", ").Continue(detailType)
                     .Continue(", ").Continue(detailTableName)
@@ -1572,7 +1567,7 @@ internal static class Executor
                         .Continue(", ").Continue(subP.Precision.ToString(CultureInfo.InvariantCulture))
                         .Continue(", ").Continue(subP.Scale.ToString(CultureInfo.InvariantCulture))
                         .Continue(", SaveAs.").Continue(subP.SaveAs.ToString())
-                        .Continue(", ").Continue(subP.PartialLoadFlags.ToString())
+                        .Continue(", ").Continue(subP.PartialLoadFlags.ToString(CultureInfo.InvariantCulture))
                         .Continue(", ").Continue(subP.IsNullable ? "true" : "false")
                         .Continue(", null")
                         .Continue(", null")
@@ -1684,7 +1679,7 @@ internal static class Executor
         {
             foreach (var (name, value, isDetailTable) in partialLoadFlags)
             {
-                builder.Append(name).Continue(" = ").Continue(value.ToString()).Continue(",").ContinueIf(isDetailTable, " // Detail table").NewLine();
+                builder.Append(name).Continue(" = ").Continue(value.ToString(CultureInfo.InvariantCulture)).Continue(",").ContinueIf(isDetailTable, " // Detail table").NewLine();
             }
 
             builder.Append("All = Basic | ").Continue(string.Join(" | ", partialLoadFlags.Select(x => x.name))).ContinueLine(",");

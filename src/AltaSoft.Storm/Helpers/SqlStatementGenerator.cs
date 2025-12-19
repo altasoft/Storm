@@ -179,83 +179,86 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
     /// <inheritdoc/>
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
-        // Support instance string methods on member access, including when parameter is cast: ((T)$x).Prop.Method(...)
-        if (node.Object is MemberExpression { Expression: var expr } m && IsMemberAccessOnParameter(expr))
+        switch (node.Object)
         {
-            var memberName = m.Member.Name;
-
-            if (node.Method.Name is "Contains" or "StartsWith" or "EndsWith" && node.Arguments.Count > 0)
-            {
-                switch (GetExpressionValue(node.Arguments[0]))
+            // Support instance string methods on member access, including when parameter is cast: ((T)$x).Prop.Method(...)
+            case MemberExpression { Expression: var expr } m when IsMemberAccessOnParameter(expr):
                 {
-                    case null:
-                        _builder.Append(GetColumnName(memberName)).Append(" IS NULL ");
-                        return node;
+                    var memberName = m.Member.Name;
 
-                    case { } arg:
-                        _builder.Append(GetColumnName(memberName)).Append(" LIKE ");
-                        _currentMemberName = memberName;
-
-                        switch (node.Method.Name)
+                    if (node.Method.Name is "Contains" or "StartsWith" or "EndsWith" && node.Arguments.Count > 0)
+                    {
+                        switch (GetExpressionValue(node.Arguments[0]))
                         {
-                            case "Contains":
-                                _builder.Append("'%'+");
-                                AddConstantParam(arg.ToString(), typeof(string));
-                                _builder.Append("+'%'");
-                                break;
+                            case null:
+                                _builder.Append(GetColumnName(memberName)).Append(" IS NULL");
+                                return node;
 
-                            case "StartsWith":
-                                AddConstantParam(arg.ToString(), typeof(string));
-                                _builder.Append("+'%'");
-                                break;
+                            case { } arg:
+                                _builder.Append(GetColumnName(memberName)).Append(" LIKE ");
+                                _currentMemberName = memberName;
 
-                            case "EndsWith":
-                                _builder.Append("'%'+");
-                                AddConstantParam(arg.ToString(), typeof(string));
-                                break;
+                                switch (node.Method.Name)
+                                {
+                                    case "Contains":
+                                        _builder.Append("'%'+");
+                                        AddConstantParam(arg.ToString(), typeof(string));
+                                        _builder.Append("+'%'");
+                                        break;
+
+                                    case "StartsWith":
+                                        AddConstantParam(arg.ToString(), typeof(string));
+                                        _builder.Append("+'%'");
+                                        break;
+
+                                    case "EndsWith":
+                                        _builder.Append("'%'+");
+                                        AddConstantParam(arg.ToString(), typeof(string));
+                                        break;
+                                }
+
+                                return node;
                         }
-
-                        return node;
+                    }
+                    break;
                 }
-            }
-        }
 
-        // Support static 'In' helper: SqlWhereExt.In(x => x.Prop, collection)
-        if (node.Object is null && string.Equals(node.Method.Name, nameof(SqlWhereExt.In), StringComparison.Ordinal) && node.Arguments.Count >= 2)
-        {
-            if (node.Arguments[0] is not MemberExpression arg)
-                return node;
-
-            switch (GetExpressionValue(node.Arguments[1]))
-            {
-                case IEnumerable list:
-                    var values = list.Cast<object>().Where(v => v is not null).ToList();
-                    if (values.Count == 0)
-                    {
-                        _builder.Append(" 1=0 ");
+            // Support static 'In' helper: SqlWhereExt.In(x => x.Prop, collection)
+            case null when string.Equals(node.Method.Name, nameof(SqlWhereExt.In), StringComparison.Ordinal) && node.Arguments.Count >= 2:
+                {
+                    if (node.Arguments[0] is not MemberExpression arg)
                         return node;
-                    }
 
-                    _builder.Append(GetColumnName(arg.Member.Name)).Append(" IN ( ");
-
-                    _currentMemberName = arg.Member.Name;
-
-                    AddConstantParam(values[0], arg.Type);
-
-                    for (var i = 1; i < values.Count; i++)
+                    switch (GetExpressionValue(node.Arguments[1]))
                     {
-                        _builder.Append(',');
-                        AddConstantParam(values[i], arg.Type);
+                        case IEnumerable list:
+                            var values = list.Cast<object>().ToList();
+                            if (values.Count == 0)
+                            {
+                                _builder.Append("1=0");
+                                return node;
+                            }
+
+                            _builder.Append(GetColumnName(arg.Member.Name)).Append(" IN (");
+
+                            _currentMemberName = arg.Member.Name;
+
+                            AddConstantParam(values[0], arg.Type);
+
+                            for (var i = 1; i < values.Count; i++)
+                            {
+                                _builder.Append(',');
+                                AddConstantParam(values[i], arg.Type);
+                            }
+
+                            _builder.Append(')');
+                            return node;
+
+                        default:
+                            _builder.Append(GetColumnName(arg.Member.Name)).Append(" IS NULL");
+                            return node;
                     }
-
-                    _builder.Append(" ) ");
-
-                    return node;
-
-                default:
-                    _builder.Append(GetColumnName(arg.Member.Name)).Append(" IS NULL ");
-                    return node;
-            }
+                }
         }
 
         throw new NotSupportedException($"The method '{node.Method.Name}' is not supported");
@@ -349,6 +352,13 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
         }
 
         type ??= value.GetType();
+
+        // Treat Nullable<T> as T for parameter generation
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        if (underlyingType is not null)
+        {
+            type = underlyingType;
+        }
 
         if (type is { IsPrimitive: false, IsValueType: false } && !type.IsDomainPrimitive() && type != typeof(string))
             throw new NotSupportedException($"The constant for '{value}' is not supported");

@@ -187,10 +187,6 @@ public class UserViewTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         CheckUsers(userList, _users.OrderByDescending(x => x.UserId).ToArray());
     }
 
-    private async Task AssertUserListAsync(Expression<Func<User, bool>> listCondition, User[] expectedUsers)
-    {
-    }
-
     private static void CheckUser(User? actual, User expected)
     {
         actual.Should().NotBeNull();

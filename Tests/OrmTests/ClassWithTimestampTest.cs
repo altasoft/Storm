@@ -21,10 +21,7 @@ public class ClassWithTimestampTest : IClassFixture<DatabaseFixture>, IAsyncLife
 
     public Task InitializeAsync() => _context.GetConnection().OpenAsync();
 
-    public async Task DisposeAsync()
-    {
-        await _context.DisposeAsync().ConfigureAwait(false);
-    }
+    public async Task DisposeAsync() => await _context.DisposeAsync().ConfigureAwait(false);
 
     [Fact]
     public async Task InsertSingleObject_ShouldAddCorrectly()

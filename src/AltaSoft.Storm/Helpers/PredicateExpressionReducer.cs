@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace AltaSoft.Storm.Helpers;
 
 /// <summary>
-/// This class is responsible for reducing predicate expressions by simplifying and transforming them.
-/// It inherits from the ExpressionVisitor class.
+/// Reduces predicate expressions by simplifying and transforming expression tree constructs.
+/// This visitor rewrites certain patterns (nullable checks, boolean member access, bitwise operations, constant folding)
+/// to simpler forms that are easier to translate to SQL.
 /// </summary>
-/// <remarks>
-/// The PredicateExpressionReducer class provides methods for reducing unary and binary expressions, as well as member expressions.
-/// It also includes helper methods for checking if a member expression represents a nullable type with a "HasValue" property.
-/// The class is implemented as a singleton with a static instance property.
-/// </remarks>
 internal sealed class PredicateExpressionReducer : ExpressionVisitor
 {
     /// <summary>
-    /// Represents a static instance of the PredicateExpressionReducer class.
+    /// Singleton instance of the reducer to avoid allocating multiple visitors.
     /// </summary>
     public static readonly PredicateExpressionReducer Instance = new();
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Visits a unary expression and attempts to reduce it. Supports logical negation and preserves
+    /// conversions for nullable operand types.
+    /// </summary>
+    /// <param name="node">The unary expression to visit.</param>
+    /// <returns>The reduced expression or the original visited expression.</returns>
     protected override Expression VisitUnary(UnaryExpression node)
     {
         // Check if the unary operation is a 'Not' (logical negation).
@@ -33,18 +35,25 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
 
         // Check if the unary operation is a 'Convert' and the operand's type is a generic type.
         // This is typically used for nullable type conversions.
-        if (node is { NodeType: ExpressionType.Convert, Operand.Type: { IsGenericType: true } declaringType }
-            && declaringType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        if (node is { NodeType: ExpressionType.Convert, Operand.Type: { IsGenericType: true } declaringType } && IsNullableT(declaringType))
         {
-            // If it is, directly visit the operand, bypassing the conversion.
-            // This is likely to handle unwrapping of nullable types without an explicit conversion.
-            return Visit(node.Operand);
+            // Previously we unwrapped the conversion which caused invalid binary operations
+            // for cases like '(int)x.NullableEnum'. Preserve the conversion by visiting the operand
+            // and then applying the original conversion to the visited result.
+            var visited = Visit(node.Operand);
+            return Expression.Convert(visited, node.Type);
         }
 
         // For all other types of unary operations, defer to the base class's implementation.
         return base.VisitUnary(node);
     }
 
+    /// <summary>
+    /// Helper used when visiting the operand of a logical 'not' expression. Performs common rewrites
+    /// such as inverting comparisons and simplifying nullable checks.
+    /// </summary>
+    /// <param name="node">Operand expression of a logical NOT.</param>
+    /// <returns>Transformed expression or null if unable to reduce.</returns>
     private Expression? VisitNotOperand(Expression node) => node switch
     {
         // Handle a unary expression with a NOT operation, visit its operand directly.
@@ -84,7 +93,12 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         }
     };
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Visits a binary expression and attempts to reduce it. Special handling is provided for
+    /// logical conjunction/disjunction, equality/inequality and bitwise operations.
+    /// </summary>
+    /// <param name="node">The binary expression to visit.</param>
+    /// <returns>The reduced expression.</returns>
     protected override Expression VisitBinary(BinaryExpression node) => node.NodeType switch
     {
         // If the binary operation is an 'OrElse' (logical OR), process it with the VisitOrElse method.
@@ -101,10 +115,51 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         // If the binary operation is a non-equality check, process it with the VisitNotEqual method.
         ExpressionType.NotEqual => VisitNotEqual(node),
 
+        // For bitwise operations (&, |, ^) ensure operand types are compatible (convert nullable operands to the other side's type)
+        ExpressionType.And or ExpressionType.Or or ExpressionType.ExclusiveOr => HandleBitwise(node),
+
         // For all other types of binary operations, defer to the base class's implementation of VisitBinary.
         _ => base.VisitBinary(node)
     };
 
+    /// <summary>
+    /// Ensures bitwise operands are type-compatible by converting nullable operands to the non-nullable counterpart when needed.
+    /// This prevents binary operator type errors when one operand remains Nullable&lt;T&gt; while the other is T.
+    /// </summary>
+    /// <param name="node">The original binary expression.</param>
+    /// <returns>A rewritten binary expression with compatible operand types.</returns>
+    private static BinaryExpression HandleBitwise(BinaryExpression node)
+    {
+        var left = Instance.Visit(node.Left);
+        var right = Instance.Visit(node.Right);
+
+        // If one side is nullable (Nullable<>) and the other is a non-nullable value type, convert the nullable side to the other's type
+        if (left is { Type: var lt } && right is { Type: var rt } && lt != rt)
+        {
+            if (IsNullableT(lt) && IsNonNullableValueType(rt))
+            {
+                left = Expression.Convert(left, rt);
+            }
+            else if (IsNullableT(rt) && IsNonNullableValueType(lt))
+            {
+                right = Expression.Convert(right, lt);
+            }
+        }
+
+        return node.NodeType switch
+        {
+            ExpressionType.And => Expression.MakeBinary(ExpressionType.And, left, right),
+            ExpressionType.Or => Expression.MakeBinary(ExpressionType.Or, left, right),
+            ExpressionType.ExclusiveOr => Expression.MakeBinary(ExpressionType.ExclusiveOr, left, right),
+            _ => throw new NotSupportedException("Invalid bitwise operator")
+        };
+    }
+
+    /// <summary>
+    /// Reduces logical OR expressions with constant folding when possible.
+    /// </summary>
+    /// <param name="node">The OR expression to reduce.</param>
+    /// <returns>The reduced expression or null if no reduction is possible.</returns>
     private Expression? VisitOrElse(BinaryExpression node) => Visit(node.Left) switch
     {
         // If the left operand is a constant expression that evaluates to true, return a constant true.
@@ -137,6 +192,11 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         _ => null
     };
 
+    /// <summary>
+    /// Reduces logical AND expressions with constant folding when possible.
+    /// </summary>
+    /// <param name="node">The AND expression to reduce.</param>
+    /// <returns>The reduced expression or null if no reduction is possible.</returns>
     private Expression? VisitAndAlso(BinaryExpression node) => Visit(node.Left) switch
     {
         // If the left operand is a constant expression that evaluates to false, return a constant false.
@@ -169,6 +229,11 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         _ => null
     };
 
+    /// <summary>
+    /// Reduces equality expressions with special handling for nullable conversions and constant folding.
+    /// </summary>
+    /// <param name="node">The equality expression to reduce.</param>
+    /// <returns>The reduced expression.</returns>
     private Expression VisitEqual(BinaryExpression node)
     {
         var left = Visit(node.Left);
@@ -207,6 +272,11 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         };
     }
 
+    /// <summary>
+    /// Reduces inequality expressions with special handling for nullable conversions and constant folding.
+    /// </summary>
+    /// <param name="node">The inequality expression to reduce.</param>
+    /// <returns>The reduced expression.</returns>
     private Expression VisitNotEqual(BinaryExpression node) => (Visit(node.Left), Visit(node.Right)) switch
     {
         // When both sides are constants, return a constant expression representing the inequality of their values.
@@ -241,7 +311,11 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         var (l, r) => Expression.NotEqual(l, r)
     };
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Visits a member access expression and attempts to reduce common patterns such as boolean shorthand and nullable Value/HasValue access.
+    /// </summary>
+    /// <param name="node">The member expression to visit.</param>
+    /// <returns>The reduced expression or defers to base visitor for unsupported cases.</returns>
     protected override Expression VisitMember(MemberExpression node) => node switch
     {
         // If the member is a direct property or field of a parameter (e.g., x.MyProperty) and its type is bool,
@@ -251,6 +325,9 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         // If the member is a nested property, and it represents the 'HasValue' property of a Nullable type,
         // create an expression to check if the parent member is null.
         { Expression: MemberExpression { Expression: ParameterExpression } ime } when IsNullableHasValue(node) => Expression.Equal(ime, Expression.Constant(null)),
+
+        // Allow access to Nullable<T>.Value: convert parent nullable expression to underlying type.
+        { Expression: MemberExpression { Expression: ParameterExpression } ime, Member: PropertyInfo { Name: "Value" } } => Expression.Convert(ime, node.Type),
 
         // If the member is a nested property (e.g., x.MyProperty.MySubProperty), throw an exception as it's not supported.
         { Expression: MemberExpression { Expression: ParameterExpression } } => throw new NotSupportedException("Nested properties not supported"),
@@ -263,7 +340,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
 
         // If the member represents the 'HasValue' property of a Nullable type and its parent expression is a constant,
         // return a constant expression indicating if the parent's value is not null.
-        { Expression: { } ie } when IsNullableHasValue(node) && Visit(ie) is ConstantExpression { Value: var c } => Expression.Constant(c is { }),
+        { Expression: { } ie } when IsNullableHasValue(node) && Visit(ie) is ConstantExpression { Value: var c } => Expression.Constant(c is not null),
 
         // If the member is a field and its parent expression is a constant, return the field's value from that parent.
         { Member: FieldInfo fi, Expression: var e } when Visit(e) is ConstantExpression { Value: var c } => Expression.Constant(fi.GetValue(c)),
@@ -282,8 +359,22 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
     /// <returns>True if the member expression represents a nullable type with a "HasValue" property; otherwise, false.</returns>
     private static bool IsNullableHasValue(MemberExpression input)
     {
-        return
-            input is { Member: { Name: "HasValue", DeclaringType: { IsGenericType: true } declaringType } } &&
-            declaringType.GetGenericTypeDefinition() == typeof(Nullable<>);
+        return input is { Member: { Name: "HasValue", DeclaringType: { } declaringType } } && IsNullableT(declaringType);
     }
+
+    /// <summary>
+    /// Checks whether the supplied type is a non-nullable value type.
+    /// </summary>
+    /// <param name="t">Type to check.</param>
+    /// <returns>True if <paramref name="t"/> is a non-nullable value type; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsNonNullableValueType(Type t) => t.IsValueType && Nullable.GetUnderlyingType(t) is null;
+
+    /// <summary>
+    /// Checks whether the supplied type is a nullable generic (Nullable&lt;T&gt;).
+    /// </summary>
+    /// <param name="t">Type to check.</param>
+    /// <returns>True if <paramref name="t"/> is Nullable&lt;T&gt;; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsNullableT(Type t) => Nullable.GetUnderlyingType(t) is not null;
 }

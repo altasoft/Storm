@@ -177,7 +177,6 @@ public static partial class SqlOrm
         unquotedTableName ??= ctrl.QuotedObjectName.UnquoteSqlName();
         var columns = ctrl.ColumnDefs;
 
-
         var sb = new StringBuilder(512);
 
         if (checkNotExists)
