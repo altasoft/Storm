@@ -61,8 +61,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
 
         // If the expression is a member expression that represents checking the 'HasValue' property of a nullable type,
         // return an expression that checks if the member is not null.
-        MemberExpression { Expression: MemberExpression { Expression: ParameterExpression } ime } me
-            when IsNullableHasValue(me) => Expression.NotEqual(ime, Expression.Constant(null)),
+        MemberExpression { Expression: MemberExpression { Expression: ParameterExpression } ime } me when IsNullableHasValue(me) => Expression.NotEqual(ime, Expression.Constant(null)),
 
         // If the expression is a simple member expression (direct property of a parameter), 
         // return an expression that checks if the member is equal to false.
@@ -70,8 +69,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
 
         // If the member expression represents checking 'HasValue' of a nullable type and its parent expression is constant,
         // return a constant false expression.
-        MemberExpression m when IsNullableHasValue(m) && Visit(m.Expression) is ConstantExpression =>
-            Expression.Constant(false),
+        MemberExpression m when IsNullableHasValue(m) && Visit(m.Expression) is ConstantExpression => Expression.Constant(false),
 
         // For other cases, visit the node and then apply further processing based on its type.
         _ => Visit(node) switch
@@ -326,7 +324,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
 
         // If the member is a nested property, and it represents the 'HasValue' property of a Nullable type,
         // create an expression to check if the parent member is null.
-        { Expression: MemberExpression { Expression: ParameterExpression } ime } when IsNullableHasValue(node) => Expression.Equal(ime, Expression.Constant(null)),
+        { Expression: MemberExpression { Expression: ParameterExpression } ime } when IsNullableHasValue(node) => Expression.NotEqual(ime, Expression.Constant(null)),
 
         // Allow access to Nullable<T>.Value: convert parent nullable expression to underlying type.
         // If the member is the 'Value' property of a nullable (e.g. x.BoolN.Value) and its type is bool,

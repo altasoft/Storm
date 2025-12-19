@@ -4,13 +4,14 @@ using AltaSoft.Storm.Attributes;
 namespace AltaSoft.Storm.TestModels;
 
 [StormStringEnum<RgbColor, RgbColorExt>(16)]
+[Flags]
 public enum RgbColor : sbyte
 {
-    Red,
-    Green,
-    Blue,
-    White,
-    Black
+    Red = 1,
+    Green = 2,
+    Blue = 4,
+    White = 8,
+    Black = 16
 }
 
 internal sealed class RgbColorExt : IStormStringToEnumConverter<RgbColor>

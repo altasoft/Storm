@@ -271,6 +271,38 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
     }
 
     [Fact]
+    public void NullableEnumBitwiseWithoutValue_ShouldGenerateIsNotNullAndBitwiseComparison2()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN.HasValue;
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("([IntColorN] IS NOT NULL)");
+        cmd.Params.Should().HaveCount(2);
+        cmd.Params[0].Value.Should().Be((int)RgbColor.Red);
+        cmd.Params[1].Value.Should().Be(0);
+    }
+
+    [Fact]
+    public void NullableEnumBitwiseWithoutValue_ShouldGenerateIsNotNullAndBitwiseComparison3()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.IntColorN.HasValue && (x.IntColorN.Value.HasFlag(RgbColor.Red));
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("(([IntColorN] IS NOT NULL) AND (([IntColorN] & @p0) <> @p1))");
+        cmd.Params.Should().HaveCount(2);
+        cmd.Params[0].Value.Should().Be((int)RgbColor.Red);
+        cmd.Params[1].Value.Should().Be(0);
+    }
+
+    [Fact]
     public void NullableEnumBitwiseWithValueProperty_ShouldGenerateIsNotNullAndBitwiseComparison()
     {
         var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
