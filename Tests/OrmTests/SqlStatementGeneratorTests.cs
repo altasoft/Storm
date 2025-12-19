@@ -395,4 +395,36 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         cmd.Params.Should().HaveCount(1);
         cmd.Params[0].Value.Should().Be("A");
     }
+
+    [Fact]
+    public void InExtension_ShouldGenerateInAndParametersForStringColorProperty()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        var values = new[] { "Red", "Blue" }; 
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringColor.In(values);
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("[StringColor] IN (@p0,@p1)");
+        cmd.Params.Should().HaveCount(values.Length);
+        cmd.Params.Select(p => p.Value).Should().Contain(values);
+    }
+
+    [Fact]
+    public void InExtension_ShouldGenerateInAndParametersForStringColorPropertyWithNull()
+    {
+        var ctrl = StormControllerCache.Get<SqlWhereTestEntity>(0);
+        var cols = ctrl.ColumnDefs;
+
+        var values = new[] { null, "Red" };
+        System.Linq.Expressions.Expression<Func<SqlWhereTestEntity, bool>> expr = x => x.StringColor.In(values);
+
+        var (sql, cmd) = RunWhere([expr], cols);
+
+        sql.Should().Be("[StringColor] IN (NULL,@p0)");
+        cmd.Params.Should().HaveCount(values.Length - 1);
+        cmd.Params.Select(p => p.Value).Should().Contain(values.Where(x => x is not null));
+    }
 }
