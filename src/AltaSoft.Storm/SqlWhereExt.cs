@@ -17,7 +17,7 @@ public static class SqlWhereExt
     /// Determines whether the specified value is contained in the supplied collection.
     /// This overload is intended for use from expression trees.
     /// </summary>
-    /// <typeparam name="T">Type of elements in <paramref name="values"/>.</typeparam>
+    /// <typeparam name="T">Underlying type; can be a reference or value type. Elements in <paramref name="values"/> are nullable (<c>T?</c>).</typeparam>
     /// <param name="self">Value to locate in the collection.</param>
     /// <param name="values">Collection to search.</param>
     /// <returns><c>true</c> if <paramref name="self"/> is found in <paramref name="values"/>; otherwise <c>false</c>.</returns>
@@ -27,7 +27,7 @@ public static class SqlWhereExt
     /// Determines whether the specified value is contained in the supplied array.
     /// Convenience overload for call-sites that pass an array literal.
     /// </summary>
-    /// <typeparam name="T">Element type of <paramref name="values"/>.</typeparam>
+    /// <typeparam name="T">Underlying type; can be a reference or value type. Elements in <paramref name="values"/> are nullable (<c>T?</c>).</typeparam>
     /// <param name="self">Value to locate in the array.</param>
     /// <param name="values">Array to search.</param>
     /// <returns><c>true</c> if <paramref name="self"/> is found in <paramref name="values"/>; otherwise <c>false</c>.</returns>
