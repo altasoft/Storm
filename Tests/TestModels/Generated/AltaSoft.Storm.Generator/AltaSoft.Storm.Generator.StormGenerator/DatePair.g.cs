@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using AltaSoft.Storm.Attributes;
@@ -23,9 +26,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -128,7 +128,6 @@ public partial class DatePair : IDataBindable, IConcurrencyCheck, ITrackingObjec
     }
 
     #endregion Concurrency Support
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -149,8 +148,8 @@ return [];
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_Date1(ref System.DateOnly newValue, ref System.DateOnly oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Date1", newValue); }
-    private void __PropertySet_Date2(ref System.DateOnly? newValue, ref System.DateOnly? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Date2", newValue); }
+    private void __PropertySet_Date1(ref System.DateOnly newValue, ref System.DateOnly oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Date1), newValue); }
+    private void __PropertySet_Date2(ref System.DateOnly? newValue, ref System.DateOnly? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Date2), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -196,10 +195,7 @@ public sealed class DatePairStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

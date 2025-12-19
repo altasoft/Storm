@@ -305,9 +305,6 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
             for (var i = 0; i < nae.Expressions.Count; i++)
             {
                 var v = GetExpressionValue(nae.Expressions[i]);
-                // Convert element to array element type if necessary
-                if (v is not null && elemType != v.GetType())
-                    v = Convert.ChangeType(v, elemType, CultureInfo.InvariantCulture);
                 arr.SetValue(v, i);
             }
             return arr;

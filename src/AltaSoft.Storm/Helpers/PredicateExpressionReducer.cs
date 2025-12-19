@@ -332,7 +332,7 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         // If the member is the 'Value' property of a nullable (e.g. x.BoolN.Value) and its type is bool,
         // return an equality comparison against true. This makes nullable boolean value usage
         // behave like a boolean equality (column = true) during SQL generation.
-        { Expression: MemberExpression { Expression: ParameterExpression } ime } when node.Member is PropertyInfo { Name: "Value" } 
+        { Expression: MemberExpression { Expression: ParameterExpression } ime, Member: PropertyInfo { Name: "Value", DeclaringType: { } declaringType } } when IsNullableT(declaringType)
             => node.Type == typeof(bool) ? Expression.Equal(Expression.Convert(ime, node.Type), Expression.Constant(true)) : Expression.Convert(ime, node.Type),
 
         // If the member is a nested property (e.g., x.MyProperty.MySubProperty), throw an exception as it's not supported.

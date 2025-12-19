@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using AltaSoft.Storm.Attributes;
@@ -23,9 +26,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -232,7 +232,6 @@ public partial record SysAdmin : IDataBindableWithKey, IConcurrencyCheck, ITrack
     }
 
     #endregion Concurrency Support
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -247,8 +246,8 @@ return [
             (nameof(TrackableObject), TrackableObject)
         ];
     }
-    private void __PropertySet_JoinFailed(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("JoinFailed", newValue); }
-    private void __PropertySet_Sid(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Sid", newValue); }
+    private void __PropertySet_JoinFailed(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(JoinFailed), newValue); }
+    private void __PropertySet_Sid(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Sid), newValue); }
 
     #endregion Change Tracking Support
 }

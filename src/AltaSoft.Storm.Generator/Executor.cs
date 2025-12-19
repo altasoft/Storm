@@ -116,11 +116,9 @@ internal static class Executor
 
             var builder = ormContext.Builder;
             builder.AppendSourceHeader("AltaSoft Storm ORM Generator");
+
             GenerateUsingList(builder, [classSyntax]);
 
-            builder.AppendLine("#pragma warning disable IDE1006, CS0612, CS8618", false);
-            builder.AppendComment("ReSharper disable InconsistentNaming");
-            builder.NewLine();
             builder.AppendNamespace(classSymbol.ContainingNamespace.ToDisplayString());
 
             var modifiers = classSyntax.Modifiers.ToFullString().Trim();
@@ -347,13 +345,8 @@ internal static class Executor
         var hasBulkInsert = typeSpec.ObjectVariants.Any(x => x.BindObjectData.BulkInsert);
         GenerateUsingList(builder, classes, hasBulkInsert ? ["Microsoft.Data.SqlClient", "System.Threading.Channels"] : null);
 
-        builder.AppendLine("#pragma warning disable IDE1006, CS0612, CS8618", false);
-        builder.AppendComment("ReSharper disable InconsistentNaming");
-
-        builder.NewLine();
-
         builder.AppendNamespace(classSymbol.ContainingNamespace.ToDisplayString());
-
+        
         var baseHasStormDbObjectAttribute = classSymbol.BaseType.HasStormDbObjectAttribute();
 
         GenerateMainClass(ormContext, classSyntax, typeSpec, baseHasStormDbObjectAttribute, propertyGenSpecList);
@@ -627,32 +620,41 @@ internal static class Executor
         builder.AppendLine("/// <inheritdoc />");
         builder.Append("public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)");
         builder.OpenBracket();
-        builder.Append("return column.PropertyName switch");
-        builder.OpenBracket();
 
-        foreach (var p in propertyGenSpecList.Where(x => x.SaveAs == DupSaveAs.DetailTable))
+        var detailColumns = propertyGenSpecList.Where(x => x.SaveAs == DupSaveAs.DetailTable).ToList();
+
+        if (detailColumns.Count > 0)
         {
-            builder.Append("nameof(").Continue(typeSpec.TypeSymbol.Name).Continue(".").Continue(p.PropertyName).Continue(") => ");
+            builder.Append("return column.PropertyName switch");
+            builder.OpenBracket();
 
-            Debug.Assert(p.ListItemTypeSymbol is not null);
-            Debug.Assert(p.ListItemKind is not null);
+            foreach (var p in detailColumns)
+            {
+                builder.Append("nameof(").Continue(typeSpec.TypeSymbol.Name).Continue(".").Continue(p.PropertyName).Continue(") => ");
 
-            if (p.ListItemKind is ClassKind.KnownType or ClassKind.Enum or ClassKind.DomainPrimitive or ClassKind.SqlRowVersion or ClassKind.SqlLogSequenceNumber)
-            {
-                var readSpec = new ReadGenerationSpec(p.Property, p.Property.Type, p.DbType, DupSaveAs.Default, false, p.ListItemKind.Value, p.DbStorageTypeSymbol, null,
-                    null);
-                GenerateReadAsXxxMethodName(ormContext, readSpec);
-                builder.ContinueLine(",");
+                Debug.Assert(p.ListItemTypeSymbol is not null);
+                Debug.Assert(p.ListItemKind is not null);
+
+                if (p.ListItemKind is ClassKind.KnownType or ClassKind.Enum or ClassKind.DomainPrimitive or ClassKind.SqlRowVersion or ClassKind.SqlLogSequenceNumber)
+                {
+                    var readSpec = new ReadGenerationSpec(p.Property, p.Property.Type, p.DbType, DupSaveAs.Default, false, p.ListItemKind.Value, p.DbStorageTypeSymbol, null,
+                        null);
+                    GenerateReadAsXxxMethodName(ormContext, readSpec);
+                    builder.ContinueLine(",");
+                }
+                else
+                {
+                    builder.Continue("new ").Continue(p.ListItemTypeSymbol!.ToDisplayString()).ContinueLine("(dr, uint.MaxValue, ref idx),");
+                }
             }
-            else
-            {
-                builder.Continue("new ").Continue(p.ListItemTypeSymbol!.ToDisplayString()).ContinueLine("(dr, uint.MaxValue, ref idx),");
-            }
+
+            builder.AppendLine("_ => throw new StormException($\"'{column.PropertyName}' is not a details list\")");
+            builder.CloseBracketWithSemiColon();
         }
-
-        builder.AppendLine("_ => throw new StormException($\"'{column.PropertyName}' is not a details list\")");
-
-        builder.CloseBracketWithSemiColon();
+        else
+        {
+            builder.AppendLine("throw new StormException($\"'{column.PropertyName}' is not a details list\");");
+        }
         builder.CloseBracket();
         builder.NewLine();
     }
@@ -1765,7 +1767,7 @@ internal static class Executor
             baseIsChangeTrackable = baseTypeSpec.UpdateMode() == DupUpdateMode.ChangeTracking;
         }
 
-        builder.NewLine().AppendLine("#region Change Tracking Support").NewLine();
+        builder.AppendLine("#region Change Tracking Support").NewLine();
 
         builder.AppendLine("/// <inheritdoc />");
 
@@ -1837,8 +1839,7 @@ internal static class Executor
         {
             var typeFriendlyName = p.GetTypeAlias() + (p.IsNullable ? "?" : "");
 
-            builder.AppendLine(
-                $"private void __PropertySet_{p.PropertyName}(ref {typeFriendlyName} newValue, ref {typeFriendlyName} oldValue) {{ if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(\"{p.PropertyName}\", newValue); }}");
+            builder.AppendLine($"private void __PropertySet_{p.PropertyName}(ref {typeFriendlyName} newValue, ref {typeFriendlyName} oldValue) {{ if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof({p.PropertyName}), newValue); }}");
 
         }
         builder.NewLine().AppendLine("#endregion Change Tracking Support");

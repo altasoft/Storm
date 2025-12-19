@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using System;
@@ -23,9 +26,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels.AdventureWorks;
 
@@ -214,7 +214,6 @@ public partial record Product : IDataBindableWithKey, ITrackingObject, IEntityCo
         ];
     }
 
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -235,31 +234,31 @@ return [];
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_ProductID(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ProductID", newValue); }
-    private void __PropertySet_Name(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Name", newValue); }
-    private void __PropertySet_ProductNumber(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ProductNumber", newValue); }
-    private void __PropertySet_MakeFlag(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("MakeFlag", newValue); }
-    private void __PropertySet_FinishedGoodsFlag(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("FinishedGoodsFlag", newValue); }
-    private void __PropertySet_Color(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Color", newValue); }
-    private void __PropertySet_SafetyStockLevel(ref short newValue, ref short oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("SafetyStockLevel", newValue); }
-    private void __PropertySet_ReorderPoint(ref short newValue, ref short oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ReorderPoint", newValue); }
-    private void __PropertySet_StandardCost(ref decimal newValue, ref decimal oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("StandardCost", newValue); }
-    private void __PropertySet_ListPrice(ref decimal newValue, ref decimal oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ListPrice", newValue); }
-    private void __PropertySet_Size(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Size", newValue); }
-    private void __PropertySet_SizeUnitMeasureCode(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("SizeUnitMeasureCode", newValue); }
-    private void __PropertySet_WeightUnitMeasureCode(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("WeightUnitMeasureCode", newValue); }
-    private void __PropertySet_Weight(ref decimal? newValue, ref decimal? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Weight", newValue); }
-    private void __PropertySet_DaysToManufacture(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("DaysToManufacture", newValue); }
-    private void __PropertySet_ProductLine(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ProductLine", newValue); }
-    private void __PropertySet_Class(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Class", newValue); }
-    private void __PropertySet_Style(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Style", newValue); }
-    private void __PropertySet_ProductSubcategoryID(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ProductSubcategoryID", newValue); }
-    private void __PropertySet_ProductModelID(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ProductModelID", newValue); }
-    private void __PropertySet_SellStartDate(ref System.DateTime newValue, ref System.DateTime oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("SellStartDate", newValue); }
-    private void __PropertySet_SellEndDate(ref System.DateTime? newValue, ref System.DateTime? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("SellEndDate", newValue); }
-    private void __PropertySet_DiscontinuedDate(ref System.DateTime? newValue, ref System.DateTime? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("DiscontinuedDate", newValue); }
-    private void __PropertySet_Rowguid(ref System.Guid newValue, ref System.Guid oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Rowguid", newValue); }
-    private void __PropertySet_ModifiedDate(ref System.DateTime newValue, ref System.DateTime oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ModifiedDate", newValue); }
+    private void __PropertySet_ProductID(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ProductID), newValue); }
+    private void __PropertySet_Name(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Name), newValue); }
+    private void __PropertySet_ProductNumber(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ProductNumber), newValue); }
+    private void __PropertySet_MakeFlag(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(MakeFlag), newValue); }
+    private void __PropertySet_FinishedGoodsFlag(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(FinishedGoodsFlag), newValue); }
+    private void __PropertySet_Color(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Color), newValue); }
+    private void __PropertySet_SafetyStockLevel(ref short newValue, ref short oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(SafetyStockLevel), newValue); }
+    private void __PropertySet_ReorderPoint(ref short newValue, ref short oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ReorderPoint), newValue); }
+    private void __PropertySet_StandardCost(ref decimal newValue, ref decimal oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(StandardCost), newValue); }
+    private void __PropertySet_ListPrice(ref decimal newValue, ref decimal oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ListPrice), newValue); }
+    private void __PropertySet_Size(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Size), newValue); }
+    private void __PropertySet_SizeUnitMeasureCode(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(SizeUnitMeasureCode), newValue); }
+    private void __PropertySet_WeightUnitMeasureCode(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(WeightUnitMeasureCode), newValue); }
+    private void __PropertySet_Weight(ref decimal? newValue, ref decimal? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Weight), newValue); }
+    private void __PropertySet_DaysToManufacture(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(DaysToManufacture), newValue); }
+    private void __PropertySet_ProductLine(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ProductLine), newValue); }
+    private void __PropertySet_Class(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Class), newValue); }
+    private void __PropertySet_Style(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Style), newValue); }
+    private void __PropertySet_ProductSubcategoryID(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ProductSubcategoryID), newValue); }
+    private void __PropertySet_ProductModelID(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ProductModelID), newValue); }
+    private void __PropertySet_SellStartDate(ref System.DateTime newValue, ref System.DateTime oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(SellStartDate), newValue); }
+    private void __PropertySet_SellEndDate(ref System.DateTime? newValue, ref System.DateTime? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(SellEndDate), newValue); }
+    private void __PropertySet_DiscontinuedDate(ref System.DateTime? newValue, ref System.DateTime? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(DiscontinuedDate), newValue); }
+    private void __PropertySet_Rowguid(ref System.Guid newValue, ref System.Guid oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Rowguid), newValue); }
+    private void __PropertySet_ModifiedDate(ref System.DateTime newValue, ref System.DateTime oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ModifiedDate), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -328,10 +327,7 @@ public sealed class ProductStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using System;
@@ -23,9 +26,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -118,7 +118,6 @@ internal sealed partial class FourValues : IDataBindable, ITrackingObject
         ];
     }
 
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -139,10 +138,10 @@ return [];
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_I1(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("I1", newValue); }
-    private void __PropertySet_I2(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("I2", newValue); }
-    private void __PropertySet_I3(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("I3", newValue); }
-    private void __PropertySet_I4(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("I4", newValue); }
+    private void __PropertySet_I1(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(I1), newValue); }
+    private void __PropertySet_I2(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(I2), newValue); }
+    private void __PropertySet_I3(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(I3), newValue); }
+    private void __PropertySet_I4(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(I4), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -190,10 +189,7 @@ internal sealed class FourValuesStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

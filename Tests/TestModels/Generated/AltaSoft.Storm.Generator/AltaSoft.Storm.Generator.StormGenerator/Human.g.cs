@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using System.ComponentModel.DataAnnotations;
@@ -25,9 +28,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -137,7 +137,6 @@ public partial record Human : IDataBindableWithKey, ITrackingObject, IEntityComp
         ];
     }
 
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -158,11 +157,11 @@ return [];
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_XId(ref long newValue, ref long oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("XId", newValue); }
-    private void __PropertySet_Name(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Name", newValue); }
-    private void __PropertySet_Age(ref long newValue, ref long oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Age", newValue); }
-    private void __PropertySet_Amount(ref decimal newValue, ref decimal oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Amount", newValue); }
-    private void __PropertySet_Ccy(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Ccy", newValue); }
+    private void __PropertySet_XId(ref long newValue, ref long oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(XId), newValue); }
+    private void __PropertySet_Name(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Name), newValue); }
+    private void __PropertySet_Age(ref long newValue, ref long oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Age), newValue); }
+    private void __PropertySet_Amount(ref decimal newValue, ref decimal oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Amount), newValue); }
+    private void __PropertySet_Ccy(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Ccy), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -223,10 +222,7 @@ public sealed class HumanStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

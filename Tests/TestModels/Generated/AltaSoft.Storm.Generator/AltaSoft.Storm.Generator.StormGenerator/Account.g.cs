@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using AltaSoft.Storm.Attributes;
@@ -26,9 +29,6 @@ using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
 using Microsoft.Data.SqlClient;
 using System.Threading.Channels;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -172,7 +172,6 @@ public sealed partial record Account : IDataBindableWithKey, ITrackingObject, IE
         ];
     }
 
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -193,20 +192,20 @@ return [];
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_Id(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Id", newValue); }
-    private void __PropertySet_RelatedCustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("RelatedCustomerId", newValue); }
-    private void __PropertySet_OwnerCustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("OwnerCustomerId", newValue); }
-    private void __PropertySet_Ccy(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Ccy", newValue); }
-    private void __PropertySet_IbanAccount(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("IbanAccount", newValue); }
-    private void __PropertySet_BbanAccount(ref long newValue, ref long oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BbanAccount", newValue); }
-    private void __PropertySet_BranchId(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BranchId", newValue); }
-    private void __PropertySet_Type(ref byte newValue, ref byte oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Type", newValue); }
-    private void __PropertySet_SubType(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("SubType", newValue); }
-    private void __PropertySet_FriendlyName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("FriendlyName", newValue); }
-    private void __PropertySet_Name(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Name", newValue); }
-    private void __PropertySet_ProductName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ProductName", newValue); }
-    private void __PropertySet_CanDebit(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CanDebit", newValue); }
-    private void __PropertySet_CanCredit(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CanCredit", newValue); }
+    private void __PropertySet_Id(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Id), newValue); }
+    private void __PropertySet_RelatedCustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(RelatedCustomerId), newValue); }
+    private void __PropertySet_OwnerCustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(OwnerCustomerId), newValue); }
+    private void __PropertySet_Ccy(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Ccy), newValue); }
+    private void __PropertySet_IbanAccount(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(IbanAccount), newValue); }
+    private void __PropertySet_BbanAccount(ref long newValue, ref long oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(BbanAccount), newValue); }
+    private void __PropertySet_BranchId(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(BranchId), newValue); }
+    private void __PropertySet_Type(ref byte newValue, ref byte oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Type), newValue); }
+    private void __PropertySet_SubType(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(SubType), newValue); }
+    private void __PropertySet_FriendlyName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(FriendlyName), newValue); }
+    private void __PropertySet_Name(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Name), newValue); }
+    private void __PropertySet_ProductName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ProductName), newValue); }
+    private void __PropertySet_CanDebit(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CanDebit), newValue); }
+    private void __PropertySet_CanCredit(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CanCredit), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -264,10 +263,7 @@ public sealed class AccountStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using AltaSoft.Storm.Attributes;
@@ -24,9 +27,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -155,7 +155,6 @@ public partial record SqlWhereTestEntity : IDataBindable, ITrackingObject
         ];
     }
 
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -176,19 +175,19 @@ return [];
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_StringColor(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("StringColor", newValue); }
-    private void __PropertySet_IntColor(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("IntColor", newValue); }
-    private void __PropertySet_IntColorN(ref AltaSoft.Storm.TestModels.RgbColor? newValue, ref AltaSoft.Storm.TestModels.RgbColor? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("IntColorN", newValue); }
-    private void __PropertySet_CustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CustomerId", newValue); }
-    private void __PropertySet_CustomerIdN(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CustomerIdN", newValue); }
-    private void __PropertySet_IntValue(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("IntValue", newValue); }
-    private void __PropertySet_IntValueN(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("IntValueN", newValue); }
-    private void __PropertySet_StringName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("StringName", newValue); }
-    private void __PropertySet_StringNameN(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("StringNameN", newValue); }
-    private void __PropertySet_Ccy(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Ccy", newValue); }
-    private void __PropertySet_CcyN(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CcyN", newValue); }
-    private void __PropertySet_BoolValue(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BoolValue", newValue); }
-    private void __PropertySet_BoolValueN(ref bool? newValue, ref bool? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BoolValueN", newValue); }
+    private void __PropertySet_StringColor(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(StringColor), newValue); }
+    private void __PropertySet_IntColor(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(IntColor), newValue); }
+    private void __PropertySet_IntColorN(ref AltaSoft.Storm.TestModels.RgbColor? newValue, ref AltaSoft.Storm.TestModels.RgbColor? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(IntColorN), newValue); }
+    private void __PropertySet_CustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CustomerId), newValue); }
+    private void __PropertySet_CustomerIdN(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CustomerIdN), newValue); }
+    private void __PropertySet_IntValue(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(IntValue), newValue); }
+    private void __PropertySet_IntValueN(ref int? newValue, ref int? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(IntValueN), newValue); }
+    private void __PropertySet_StringName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(StringName), newValue); }
+    private void __PropertySet_StringNameN(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(StringNameN), newValue); }
+    private void __PropertySet_Ccy(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Ccy), newValue); }
+    private void __PropertySet_CcyN(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CcyN), newValue); }
+    private void __PropertySet_BoolValue(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(BoolValue), newValue); }
+    private void __PropertySet_BoolValueN(ref bool? newValue, ref bool? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(BoolValueN), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -245,10 +244,7 @@ public sealed class SqlWhereTestEntityStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

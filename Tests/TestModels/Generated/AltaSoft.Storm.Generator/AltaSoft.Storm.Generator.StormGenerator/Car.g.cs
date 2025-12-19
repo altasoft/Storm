@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using System;
@@ -23,9 +26,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -155,7 +155,6 @@ public partial record Car : IDataBindableWithKey, ITrackingObject, IEntityCompar
         ];
     }
 
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -178,18 +177,18 @@ return [
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_CarId(ref System.Guid newValue, ref System.Guid oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CarId", newValue); }
-    private void __PropertySet_Year(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Year", newValue); }
-    private void __PropertySet_Model(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Model", newValue); }
-    private void __PropertySet_Color(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Color", newValue); }
-    private void __PropertySet_CompressedColor(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CompressedColor", newValue); }
-    private void __PropertySet_Color2(ref AltaSoft.Storm.TestModels.BwColor newValue, ref AltaSoft.Storm.TestModels.BwColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Color2", newValue); }
-    private void __PropertySet_CompressedColor2(ref AltaSoft.Storm.TestModels.BwColor newValue, ref AltaSoft.Storm.TestModels.BwColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CompressedColor2", newValue); }
-    private void __PropertySet_StringN(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("StringN", newValue); }
-    private void __PropertySet_CompressedStringN(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CompressedStringN", newValue); }
-    private void __PropertySet_String(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("String", newValue); }
-    private void __PropertySet_CompressedString(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CompressedString", newValue); }
-    private void __PropertySet_JsonPost(ref AltaSoft.Storm.TestModels.Post? newValue, ref AltaSoft.Storm.TestModels.Post? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("JsonPost", newValue); }
+    private void __PropertySet_CarId(ref System.Guid newValue, ref System.Guid oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CarId), newValue); }
+    private void __PropertySet_Year(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Year), newValue); }
+    private void __PropertySet_Model(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Model), newValue); }
+    private void __PropertySet_Color(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Color), newValue); }
+    private void __PropertySet_CompressedColor(ref AltaSoft.Storm.TestModels.RgbColor newValue, ref AltaSoft.Storm.TestModels.RgbColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CompressedColor), newValue); }
+    private void __PropertySet_Color2(ref AltaSoft.Storm.TestModels.BwColor newValue, ref AltaSoft.Storm.TestModels.BwColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Color2), newValue); }
+    private void __PropertySet_CompressedColor2(ref AltaSoft.Storm.TestModels.BwColor newValue, ref AltaSoft.Storm.TestModels.BwColor oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CompressedColor2), newValue); }
+    private void __PropertySet_StringN(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(StringN), newValue); }
+    private void __PropertySet_CompressedStringN(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CompressedStringN), newValue); }
+    private void __PropertySet_String(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(String), newValue); }
+    private void __PropertySet_CompressedString(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CompressedString), newValue); }
+    private void __PropertySet_JsonPost(ref AltaSoft.Storm.TestModels.Post? newValue, ref AltaSoft.Storm.TestModels.Post? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(JsonPost), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -249,10 +248,7 @@ public sealed class CarStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

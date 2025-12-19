@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using System;
@@ -24,9 +27,6 @@ using AltaSoft.Storm;
 using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels;
 
@@ -243,7 +243,6 @@ public partial record User : IDataBindableWithKey, IConcurrencyCheck, ITrackingO
     }
 
     #endregion Concurrency Support
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -271,28 +270,28 @@ return [
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_UserId(ref AltaSoft.Storm.TestModels.DomainTypes.UserId newValue, ref AltaSoft.Storm.TestModels.DomainTypes.UserId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("UserId", newValue); }
-    private void __PropertySet_BranchId(ref short newValue, ref short oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BranchId", newValue); }
-    private void __PropertySet_AutoInc(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("AutoInc", newValue); }
-    private void __PropertySet_RowVersion(ref AltaSoft.Storm.SqlRowVersion newValue, ref AltaSoft.Storm.SqlRowVersion oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("RowVersion", newValue); }
-    private void __PropertySet_Lsn(ref AltaSoft.Storm.SqlLogSequenceNumber newValue, ref AltaSoft.Storm.SqlLogSequenceNumber oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Lsn", newValue); }
-    private void __PropertySet_Version(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Version", newValue); }
-    private void __PropertySet_LoginName(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("LoginName", newValue); }
-    private void __PropertySet_FullName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("FullName", newValue); }
-    private void __PropertySet_Roles(ref System.Collections.Generic.List<int>? newValue, ref System.Collections.Generic.List<int>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Roles", newValue); }
-    private void __PropertySet_DatePair(ref AltaSoft.Storm.TestModels.DatePair newValue, ref AltaSoft.Storm.TestModels.DatePair oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("DatePair", newValue); }
-    private void __PropertySet_CustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CustomerId", newValue); }
-    private void __PropertySet_CustomerId2(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CustomerId2", newValue); }
-    private void __PropertySet_CurrencyId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("CurrencyId", newValue); }
-    private void __PropertySet_TwoValues(ref AltaSoft.Storm.TestModels.TwoValues? newValue, ref AltaSoft.Storm.TestModels.TwoValues? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("TwoValues", newValue); }
-    private void __PropertySet_Dates(ref System.Collections.Generic.List<AltaSoft.Storm.TestModels.DatePair>? newValue, ref System.Collections.Generic.List<AltaSoft.Storm.TestModels.DatePair>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Dates", newValue); }
-    private void __PropertySet_Cars(ref AltaSoft.Storm.EntityTrackingList<AltaSoft.Storm.TestModels.Car>? newValue, ref AltaSoft.Storm.EntityTrackingList<AltaSoft.Storm.TestModels.Car>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Cars", newValue); }
-    private void __PropertySet_ListOfStrings(ref AltaSoft.Storm.TrackingList<string>? newValue, ref AltaSoft.Storm.TrackingList<string>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ListOfStrings", newValue); }
-    private void __PropertySet_ListOfIntegers(ref AltaSoft.Storm.TrackingList<int>? newValue, ref AltaSoft.Storm.TrackingList<int>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ListOfIntegers", newValue); }
-    private void __PropertySet_UserStatus(ref AltaSoft.Storm.TestModels.UserStatus newValue, ref AltaSoft.Storm.TestModels.UserStatus oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("UserStatus", newValue); }
-    private void __PropertySet_NullableUserStatus(ref AltaSoft.Storm.TestModels.UserStatus? newValue, ref AltaSoft.Storm.TestModels.UserStatus? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("NullableUserStatus", newValue); }
-    private void __PropertySet_TrackableObject(ref AltaSoft.Storm.TestModels.TrackableObject? newValue, ref AltaSoft.Storm.TestModels.TrackableObject? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("TrackableObject", newValue); }
-    private void __PropertySet_BigString(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BigString", newValue); }
+    private void __PropertySet_UserId(ref AltaSoft.Storm.TestModels.DomainTypes.UserId newValue, ref AltaSoft.Storm.TestModels.DomainTypes.UserId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(UserId), newValue); }
+    private void __PropertySet_BranchId(ref short newValue, ref short oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(BranchId), newValue); }
+    private void __PropertySet_AutoInc(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(AutoInc), newValue); }
+    private void __PropertySet_RowVersion(ref AltaSoft.Storm.SqlRowVersion newValue, ref AltaSoft.Storm.SqlRowVersion oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(RowVersion), newValue); }
+    private void __PropertySet_Lsn(ref AltaSoft.Storm.SqlLogSequenceNumber newValue, ref AltaSoft.Storm.SqlLogSequenceNumber oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Lsn), newValue); }
+    private void __PropertySet_Version(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Version), newValue); }
+    private void __PropertySet_LoginName(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(LoginName), newValue); }
+    private void __PropertySet_FullName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(FullName), newValue); }
+    private void __PropertySet_Roles(ref System.Collections.Generic.List<int>? newValue, ref System.Collections.Generic.List<int>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Roles), newValue); }
+    private void __PropertySet_DatePair(ref AltaSoft.Storm.TestModels.DatePair newValue, ref AltaSoft.Storm.TestModels.DatePair oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(DatePair), newValue); }
+    private void __PropertySet_CustomerId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CustomerId), newValue); }
+    private void __PropertySet_CustomerId2(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CustomerId? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CustomerId2), newValue); }
+    private void __PropertySet_CurrencyId(ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId newValue, ref AltaSoft.Storm.TestModels.VeryBadNamespace.CurrencyId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(CurrencyId), newValue); }
+    private void __PropertySet_TwoValues(ref AltaSoft.Storm.TestModels.TwoValues? newValue, ref AltaSoft.Storm.TestModels.TwoValues? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(TwoValues), newValue); }
+    private void __PropertySet_Dates(ref System.Collections.Generic.List<AltaSoft.Storm.TestModels.DatePair>? newValue, ref System.Collections.Generic.List<AltaSoft.Storm.TestModels.DatePair>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Dates), newValue); }
+    private void __PropertySet_Cars(ref AltaSoft.Storm.EntityTrackingList<AltaSoft.Storm.TestModels.Car>? newValue, ref AltaSoft.Storm.EntityTrackingList<AltaSoft.Storm.TestModels.Car>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Cars), newValue); }
+    private void __PropertySet_ListOfStrings(ref AltaSoft.Storm.TrackingList<string>? newValue, ref AltaSoft.Storm.TrackingList<string>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ListOfStrings), newValue); }
+    private void __PropertySet_ListOfIntegers(ref AltaSoft.Storm.TrackingList<int>? newValue, ref AltaSoft.Storm.TrackingList<int>? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ListOfIntegers), newValue); }
+    private void __PropertySet_UserStatus(ref AltaSoft.Storm.TestModels.UserStatus newValue, ref AltaSoft.Storm.TestModels.UserStatus oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(UserStatus), newValue); }
+    private void __PropertySet_NullableUserStatus(ref AltaSoft.Storm.TestModels.UserStatus? newValue, ref AltaSoft.Storm.TestModels.UserStatus? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(NullableUserStatus), newValue); }
+    private void __PropertySet_TrackableObject(ref AltaSoft.Storm.TestModels.TrackableObject? newValue, ref AltaSoft.Storm.TestModels.TrackableObject? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(TrackableObject), newValue); }
+    private void __PropertySet_BigString(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(BigString), newValue); }
 
     #endregion Change Tracking Support
 }
