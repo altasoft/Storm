@@ -19,7 +19,6 @@ public sealed class RewriteSettersTask : Microsoft.Build.Utilities.Task, ICancel
     [Required]
     public string TargetDir { get; set; } = default!;
 
-
     [Required]
     public string References { get; set; } = default!;
 

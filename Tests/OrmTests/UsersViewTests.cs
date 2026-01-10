@@ -25,7 +25,7 @@ public class UserViewTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         _context = new TestStormContext(fixture.ConnectionString);
     }
 
-    public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {
@@ -185,10 +185,6 @@ public class UserViewTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         userList = await _context.SelectFromUsersView().OrderBy(User.OrderBy.UserId_Desc).ListAsync();
         userList.Should().HaveCount(_users.Count);
         CheckUsers(userList, _users.OrderByDescending(x => x.UserId).ToArray());
-    }
-
-    private async Task AssertUserListAsync(Expression<Func<User, bool>> listCondition, User[] expectedUsers)
-    {
     }
 
     private static void CheckUser(User? actual, User expected)

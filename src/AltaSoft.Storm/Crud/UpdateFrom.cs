@@ -14,7 +14,6 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
 {
     private bool _checkConcurrency = true;
 
-
     /// <summary>
     /// Constructor for initializing a UpdateFrom object with a given DbConnection.
     /// </summary>
@@ -111,7 +110,7 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Update(vCommand, RowValue, _checkConcurrency, this);
+            GetController().PrepareUpdate(vCommand, RowValue, _checkConcurrency, this);
             batchCommands.Add(command);
             return;
         }
@@ -121,7 +120,7 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Update(vCommand, RowValues, _checkConcurrency, this);
+            GetController().PrepareUpdate(vCommand, RowValues, _checkConcurrency, this);
             batchCommands.Add(command);
         }
     }

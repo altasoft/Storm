@@ -50,15 +50,12 @@ public static class DbConnectionExt
 
             var sql = $"SELECT {queryParameters.SchemaName?.QuoteSqlName() ?? StormContext.GetQuotedSchema(context.GetType())}.{queryParameters.ObjectName.QuoteSqlName()} ({callParamStr})";
 
-            command.SetStormCommandBaseParameters(context, sql, queryParameters);
-
             var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
             if (queryParameters.CloseConnection)
                 commandBehavior |= CommandBehavior.CloseConnection;
 
-            var connection = context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction, sql, queryParameters);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -82,15 +79,12 @@ public static class DbConnectionExt
 
         await using (command.ConfigureAwait(false))
         {
-            command.SetStormCommandBaseParameters(context, sqlStatement, queryParameters);
-
             var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
             if (queryParameters.CloseConnection)
                 commandBehavior |= CommandBehavior.CloseConnection;
 
-            var connection = context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction, sqlStatement, queryParameters);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -110,14 +104,10 @@ public static class DbConnectionExt
         CancellationToken cancellationToken = default)
     {
         var command = StormManager.CreateCommand(false);
-
         await using (command.ConfigureAwait(false))
         {
-            command.SetStormCommandBaseParameters(context, sqlStatement, queryParameters);
-
-            var connection = context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction, sqlStatement, queryParameters);
 
             var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             return (TResult)value;
@@ -137,11 +127,9 @@ public static class DbConnectionExt
             var sql = $"{queryParameters.SchemaName?.QuoteSqlName() ?? StormContext.GetQuotedSchema(context.GetType())}.{queryParameters.ObjectName.QuoteSqlName()}";
 
             command.GenerateCallParameters(queryParameters.CallParameters, CallParameterType.StoreProcedure);
-            command.SetStormCommandBaseParameters(queryParameters.Context, sql, queryParameters, CommandType.StoredProcedure);
 
-            var connection = context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction, sql, queryParameters, CommandType.StoredProcedure);
 
             var (rowsAffected, ex) = await command.ExecuteCommand2Async(cancellationToken).ConfigureAwait(false);
 

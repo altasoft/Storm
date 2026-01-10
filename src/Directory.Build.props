@@ -3,7 +3,7 @@
 		<Summary>Fastest ORM for .NET with MSSQL support.</Summary>
 		<Authors>Gregory Nikolaishvili, Teimuraz Nikolaishvili</Authors>
 		<Company>ALTA Software llc.</Company>
-		<Copyright>Copyright 2024-2025 ALTA Software llc.</Copyright>
+		<Copyright>Copyright 2024-2026 ALTA Software llc.</Copyright>
 	</PropertyGroup>
 
 	<PropertyGroup>

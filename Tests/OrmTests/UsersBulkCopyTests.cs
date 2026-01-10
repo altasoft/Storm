@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -24,7 +23,7 @@ public class UsersBulkCopyTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         _context = new TestStormContext(fixture.ConnectionString);
     }
 
-    public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {

@@ -13,7 +13,7 @@ public sealed partial class TestStormContext : StormContext
     public TestStormContext() : base()
     {
     }
-    
+
     [StormProcedure(ObjectName = "InputOutputProc", SchemaName = "test")]
     private static int InputOutputProc(
         [StormParameter(ParameterName = "@user_id", DbType = UnifiedDbType.Int32)]

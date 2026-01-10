@@ -46,13 +46,30 @@ internal sealed class StormVirtualDbBatchCommand : IVirtualStormDbCommand
         }
     }
 
-    public void SetStormCommandBaseParameters(StormContext context, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text) =>
+    /// <inheritdoc/>
+    public void SetStormCommandBaseParameters(StormDbConnection connection, StormDbTransaction? transaction, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public void SetStormCommandBaseParameters(string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
+    {
         _command.SetStormCommandBaseParameters(sql, commandType);
+    }
+
+    /// <inheritdoc/>
+    public void SetStormCommandBaseParameters(StormDbConnection connection, StormDbTransaction? transaction)
+    {
+        throw new System.NotImplementedException();
+    }
 
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public string? GenerateCallParameters(List<StormCallParameter>? queryParametersCallParameters, CallParameterType type) =>
-        _command.GenerateCallParameters(queryParametersCallParameters, type);
+    public string? GenerateCallParameters(List<StormCallParameter>? queryParametersCallParameters, CallParameterType type)
+    {
+        return _command.GenerateCallParameters(queryParametersCallParameters, type);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public StormVirtualDbBatchCommand(StormDbBatchCommand command)

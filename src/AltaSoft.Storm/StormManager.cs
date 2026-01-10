@@ -57,6 +57,11 @@ public static class StormManager
     public static ILogger? Logger { get; private set; }
 
     /// <summary>
+    /// Indicates whether the configured logger is enabled at Trace level. Cached to avoid repeated checks.
+    /// </summary>
+    public static bool IsTraceEnabled { get; private set; }
+
+    /// <summary>
     /// Gets the delegate used to create a command.
     /// </summary>
     /// <value>The create command delegate.</value>
@@ -87,7 +92,7 @@ public static class StormManager
     /// <summary>
     /// Gets the function that adds a parameter to a <see cref="StormDbBatchCommand"/> for SQL Server, handling conversion of certain .NET types and value adjustments.
     /// </summary>
-    /// <value>The function used to add a database parameter to a DbBatchCommand.</value>
+    /// <value>The function used to add a database batch parameter to a DbBatchCommand.</value>
     /// <exception cref="StormException">Thrown if the function is not initialized.</exception>
     internal static AddDbBatchParameterDelegate AddDbBatchParameter { get; private set; } = (_, _, _, _, _, _) => throw new StormException("Not initialized");
 
@@ -244,7 +249,11 @@ public static class StormManager
     /// Sets the logger for the ORM.
     /// </summary>
     /// <param name="logger">The logger to set.</param>
-    public static void SetLogger(ILogger? logger) => Logger = logger;
+    public static void SetLogger(ILogger? logger)
+    {
+        Logger = logger;
+        IsTraceEnabled = logger?.IsEnabled(LogLevel.Trace) == true;
+    }
 }
 
 /// <summary>

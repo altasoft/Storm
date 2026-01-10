@@ -83,7 +83,7 @@ internal sealed class UpdateFromSingle<T> : ModifyQueryParameters<T>, IUpdateFro
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Update(vCommand, RowValue, false, this);
+            GetController().PrepareUpdate(vCommand, RowValue, false, this);
             batchCommands.Add(command);
         }
     }

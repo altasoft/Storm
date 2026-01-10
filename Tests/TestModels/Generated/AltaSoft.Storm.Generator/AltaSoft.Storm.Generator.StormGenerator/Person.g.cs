@@ -5,6 +5,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable IDE0001, IDE0002, IDE0004, IDE0005, IDE0051, IDE1006, CS0612, CS8618, CA2255
+// ReSharper disable all
+
 #nullable enable
 
 using System;
@@ -24,9 +27,6 @@ using AltaSoft.Storm.Crud;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
-
-#pragma warning disable IDE1006, CS0612, CS8618
-// ReSharper disable InconsistentNaming
 
 namespace AltaSoft.Storm.TestModels.AdventureWorks;
 
@@ -132,7 +132,7 @@ public partial record Person : IDataBindableWithKey, ITrackingObject, IEntityCom
     /// </summary>
     public static readonly OrderBy[] OrderByKey = new[] { OrderBy.BusinessEntityID };
 
-    private uint? __loadingFlags;
+    private readonly uint? __loadingFlags;
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public uint? __GetLoadingFlags() => __loadingFlags;
@@ -158,7 +158,6 @@ public partial record Person : IDataBindableWithKey, ITrackingObject, IEntityCom
         ];
     }
 
-
     #region Change Tracking Support
 
     /// <inheritdoc />
@@ -179,17 +178,17 @@ return [];
     public bool IsDirty() => _changeTrackingStateMachine?.IsDirty() ?? false;
     /// <inheritdoc />
     public IReadOnlySet<string> __GetChangedPropertyNames() => _changeTrackingStateMachine is null ? ChangeTrackingStateMachine.EmptyStringSet : _changeTrackingStateMachine.__GetChangedPropertyNames();
-    private void __PropertySet_BusinessEntityID(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("BusinessEntityID", newValue); }
-    private void __PropertySet_PersonType(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("PersonType", newValue); }
-    private void __PropertySet_NameStyle(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("NameStyle", newValue); }
-    private void __PropertySet_Title(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Title", newValue); }
-    private void __PropertySet_FirstName(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("FirstName", newValue); }
-    private void __PropertySet_MiddleName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("MiddleName", newValue); }
-    private void __PropertySet_LastName(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("LastName", newValue); }
-    private void __PropertySet_Suffix(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Suffix", newValue); }
-    private void __PropertySet_EmailPromotion(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("EmailPromotion", newValue); }
-    private void __PropertySet_Rowguid(ref System.Guid newValue, ref System.Guid oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("Rowguid", newValue); }
-    private void __PropertySet_ModifiedDate(ref System.DateTime newValue, ref System.DateTime oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged("ModifiedDate", newValue); }
+    private void __PropertySet_BusinessEntityID(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(BusinessEntityID), newValue); }
+    private void __PropertySet_PersonType(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(PersonType), newValue); }
+    private void __PropertySet_NameStyle(ref bool newValue, ref bool oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(NameStyle), newValue); }
+    private void __PropertySet_Title(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Title), newValue); }
+    private void __PropertySet_FirstName(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(FirstName), newValue); }
+    private void __PropertySet_MiddleName(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(MiddleName), newValue); }
+    private void __PropertySet_LastName(ref string newValue, ref string oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(LastName), newValue); }
+    private void __PropertySet_Suffix(ref string? newValue, ref string? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Suffix), newValue); }
+    private void __PropertySet_EmailPromotion(ref int newValue, ref int oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(EmailPromotion), newValue); }
+    private void __PropertySet_Rowguid(ref System.Guid newValue, ref System.Guid oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Rowguid), newValue); }
+    private void __PropertySet_ModifiedDate(ref System.DateTime newValue, ref System.DateTime oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(ModifiedDate), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -244,10 +243,7 @@ public sealed class PersonStormController : StormControllerBase
     /// <inheritdoc />
     public override object CreateDetailRow(StormColumnDef column, StormDbDataReader dr, ref int idx)
     {
-        return column.PropertyName switch
-        {
-            _ => throw new StormException($"'{column.PropertyName}' is not a details list")
-        };
+        throw new StormException($"'{column.PropertyName}' is not a details list");
     }
 
     /// <summary>

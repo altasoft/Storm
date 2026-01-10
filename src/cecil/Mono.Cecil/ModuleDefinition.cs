@@ -14,7 +14,6 @@ using System.IO;
 using System.Threading;
 using SR = System.Reflection;
 #if (NETSTANDARD)
-using StrongNameKeyPair=Mono.Cecil.StrongNameKeyPair;
 #else
 using StrongNameKeyPair=System.Reflection.StrongNameKeyPair;
 #endif

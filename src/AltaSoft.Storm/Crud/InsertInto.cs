@@ -74,7 +74,7 @@ internal class InsertInto<T> : ModifyQueryParameters<T>, IInsertInto<T> where T 
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Insert(vCommand, RowValue, this);
+            GetController().PrepareInsert(vCommand, RowValue, this);
             batchCommands.Add(command);
             return;
         }
@@ -84,7 +84,7 @@ internal class InsertInto<T> : ModifyQueryParameters<T>, IInsertInto<T> where T 
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Insert(vCommand, RowValues, this);
+            GetController().PrepareInsert(vCommand, RowValues, this);
             batchCommands.Add(command);
         }
     }

@@ -8,9 +8,6 @@
 // Licensed under the MIT/X11 license.
 //
 
-using System;
-using Mono.Cecil.PE;
-
 namespace Mono.Cecil.Metadata {
 
 	enum Table : byte {

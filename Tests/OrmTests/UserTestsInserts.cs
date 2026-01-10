@@ -20,7 +20,7 @@ public class UserTestsInserts : IClassFixture<DatabaseFixture>, IAsyncLifetime
         _context = new TestStormContext(fixture.ConnectionString);
     }
 
-    public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {
@@ -28,7 +28,7 @@ public class UserTestsInserts : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task InsertSingleUser_ShouldAddUserCorrectly()
+    public async Task InsertSingleUser_AddsUserSuccessfully()
     {
         // Arrange
         var newUser = DatabaseHelper.NewUser(100);
@@ -42,7 +42,7 @@ public class UserTestsInserts : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task InsertMultipleUsers_ShouldAddAllUsersCorrectly()
+    public async Task InsertMultipleUsers_AddsAllUsersSuccessfully()
     {
         // Arrange
         var usersToInsert = new[]

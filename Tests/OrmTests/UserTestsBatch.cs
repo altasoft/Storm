@@ -24,7 +24,7 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
         _fixture = fixture;
     }
 
-    //public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+    //public Task InitializeAsync() => Task.CompletedTask;
 
     //public async Task DisposeAsync()
     //{
@@ -32,7 +32,7 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
     //}
 
     [Fact]
-    public async Task UpdateUser_ModifyFullName_ShouldReflectChangeAndReturnSuccess()
+    public async Task Batch_UpdateMultipleUsers_CommitsWhenScopeCompleted()
     {
         // Arrange
         var user1ToUpdate = _users.Last();
@@ -43,9 +43,7 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
 
         // Act
 
-        using var uow = UnitOfWork.Create();
-
-        await using var tx = await uow.BeginAsync(_fixture.ConnectionString, CancellationToken.None);
+        using var sts = new StormTransactionScope();
 
         var context = new TestStormContext(_fixture.ConnectionString);
 
@@ -54,14 +52,14 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
             var c1 = context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate);
             var c2 = context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate);
 
-            batch.AddRange([c1, c2]);
+            batch.AddRange(new[] { c1, c2 });
 
             await batch.ExecuteAsync(CancellationToken.None);
 
             //var updateResult1 = await _context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate).GoAsync();
             //var updateResult2 = await _context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate).GoAsync();
 
-            await tx.CompleteAsync(CancellationToken.None);
+            await sts.CompleteAsync(CancellationToken.None);
         }
 
         // Assert

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Common;
 using AltaSoft.Storm.Attributes;
 using AltaSoft.Storm.TestModels.VeryBadNamespace;
