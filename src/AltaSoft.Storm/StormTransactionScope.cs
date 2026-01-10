@@ -140,7 +140,7 @@ public sealed class StormTransactionScope : IDisposable
     /// Initializes a new scope using the provided <paramref name="scopeOption"/>.
     /// </summary>
     /// <param name="scopeOption">Determines whether to join an existing ambient transaction or create a new one.</param>
-    public StormTransactionScope(StormTransactionScopeOption scopeOption) : this(scopeOption, null, null, StormManager.Logger?.IsEnabled(LogLevel.Trace) == true ? StormManager.Logger : null)
+    public StormTransactionScope(StormTransactionScopeOption scopeOption) : this(scopeOption, null, null, StormManager.Logger)
     {
     }
 
@@ -149,7 +149,7 @@ public sealed class StormTransactionScope : IDisposable
     /// state that references the provided transaction and (optionally) its connection.
     /// </summary>
     /// <param name="transactionToUse">Existing transaction which will be used by the scope.</param>
-    public StormTransactionScope(StormDbTransaction transactionToUse) : this(StormTransactionScopeOption.CreateNew, transactionToUse.Connection, transactionToUse, StormManager.Logger?.IsEnabled(LogLevel.Trace) == true ? StormManager.Logger : null)
+    public StormTransactionScope(StormDbTransaction transactionToUse) : this(StormTransactionScopeOption.CreateNew, transactionToUse.Connection, transactionToUse, StormManager.Logger)
     {
     }
 
@@ -158,7 +158,7 @@ public sealed class StormTransactionScope : IDisposable
     /// The scope will own the created transaction but will not own the provided connection instance.
     /// </summary>
     /// <param name="connectionToUse">Existing connection to use for the new scope.</param>
-    public StormTransactionScope(StormDbConnection connectionToUse) : this(StormTransactionScopeOption.CreateNew, connectionToUse, null, StormManager.Logger?.IsEnabled(LogLevel.Trace) == true ? StormManager.Logger : null)
+    public StormTransactionScope(StormDbConnection connectionToUse) : this(StormTransactionScopeOption.CreateNew, connectionToUse, null, StormManager.Logger)
     {
     }
 

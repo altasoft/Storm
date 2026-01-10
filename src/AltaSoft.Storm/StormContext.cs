@@ -347,26 +347,19 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     /// </returns>
     internal async ValueTask<(StormDbConnection connection, StormDbTransaction? transaction)> EnsureConnectionAndTransactionIsOpenAsync(CancellationToken cancellationToken)
     {
-        StormDbConnection connection;
-        StormDbTransaction? transaction = null;
-
         var ambient = StormTransactionScope.GetCurrentAmbient();
 
-        if (IsStandalone || ambient is null)
-        {
-            // Standalone context: always use an owned connection.
-            connection = _ownedConnection ??= new StormDbConnection(ConnectionString);
-        }
-        else
-        {
-            // Use the connection from the ambient.
-            connection = ambient.GetConnection(ConnectionString);
-        }
+        // Standalone context: always use an owned connection.
+        var connection = IsStandalone || ambient is null
+            ? _ownedConnection ??= new StormDbConnection(ConnectionString)
+            : ambient.GetConnection(ConnectionString); // Use the connection from the ambient.
 
         if (connection.State != ConnectionState.Open)
         {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        StormDbTransaction? transaction = null;
 
         if (!IsStandalone && ambient is not null)
         {
@@ -409,7 +402,7 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     /// Uses cached <see cref="StormManager.IsTraceEnabled"/> to avoid repeated runtime checks.
     /// </summary>
     /// <returns>The <see cref="ILogger"/> instance or null.</returns>
-    private static ILogger? GetLogger() => StormManager.IsTraceEnabled ? StormManager.Logger : null;
+    private static ILogger? GetLogger() => StormManager.Logger;
 
     /// <summary>
     /// Checks that the context's connection string matches the active unit of work's connection string, if present.
