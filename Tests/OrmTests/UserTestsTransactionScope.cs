@@ -9,12 +9,12 @@ using Xunit.Abstractions;
 
 namespace AltaSoft.Storm.Tests;
 
-public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
+public class UserTestsTransactionScope : IClassFixture<DatabaseFixture>
 {
     private readonly List<User> _users;
     private readonly DatabaseFixture _fixture;
 
-    public UserTestsUnitOfWork(DatabaseFixture fixture, ITestOutputHelper output)
+    public UserTestsTransactionScope(DatabaseFixture fixture, ITestOutputHelper output)
     {
         _users = fixture.Users;
 
@@ -37,7 +37,7 @@ public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
         int updateResult1;
         int updateResult2;
 
-        using (var uow = new StormTransactionScope())
+        using (var sts = new StormTransactionScope())
         {
             var context = new TestStormContext(_fixture.ConnectionString);
 
@@ -45,7 +45,7 @@ public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
 
             updateResult2 = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate).GoAsync();
 
-            await uow.CompleteAsync(CancellationToken.None);
+            await sts.CompleteAsync(CancellationToken.None);
         }
 
         // Assert
@@ -62,14 +62,14 @@ public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
         var usersToUpdate = new[] { _users[2], _users[3], _users[4] };
         int updateResult;
 
-        using (var uow = new StormTransactionScope())
+        using (var sts = new StormTransactionScope())
         {
             var context = new TestStormContext(_fixture.ConnectionString);
 
             // Act
             updateResult = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(usersToUpdate).GoAsync();
 
-            await uow.CompleteAsync(CancellationToken.None);
+            await sts.CompleteAsync(CancellationToken.None);
         }
 
         // Assert
@@ -94,7 +94,7 @@ public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
     {
         actual.Should().NotBeNull();
 
-        actual!.UserId.Should().Be(expected.UserId);
+        actual.UserId.Should().Be(expected.UserId);
         actual.BranchId.Should().Be(expected.BranchId);
         actual.AutoInc.Should().Be(expected.AutoInc);
         actual.FullName.Should().Be(expected.FullName);

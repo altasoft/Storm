@@ -10,6 +10,8 @@ using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
 using Microsoft.Extensions.Logging;
 
+// ReSharper disable UnusedMember.Global
+
 namespace AltaSoft.Storm;
 
 /// <summary>
@@ -20,11 +22,24 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
 {
     private readonly ILogger? _logger;
 
+    /// <summary>
+    /// Owned connection instance used by this context when not participating in an ambient transaction.
+    /// </summary>
     private StormDbConnection? _ownedConnection; // only when not in ambient
+
+    /// <summary>
+    /// Indicates whether this context has been disposed.
+    /// </summary>
     private bool _disposed;
 
-    // Should be set at app startup.
+    /// <summary>
+    /// Mapping of <see cref="Type"/> -> connection string. Should be configured at application startup.
+    /// </summary>
     private static readonly Dictionary<Type, string> s_connectionStrings = new(4);
+
+    /// <summary>
+    /// Mapping of <see cref="Type"/> -> quoted database schema name. Should be configured at application startup.
+    /// </summary>
     private static readonly Dictionary<Type, string> s_dbSchemas = new(4);
 
     /// <summary>
@@ -33,19 +48,18 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     public string ConnectionString { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the context is currently not within a transaction scope.
+    /// Gets a value indicating whether the context is operating in standalone mode (not using ambient transaction).
     /// </summary>
     public bool IsStandalone { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the context is currently within a transaction scope.
+    /// Gets a value indicating whether the context is currently within a transaction scope (i.e. not standalone).
     /// </summary>
     public bool IsInTransactionScope => !IsStandalone;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StormContext"/> class using the connection string from the static map.
-    /// The context will use its own connection if <paramref name="standalone"/> is <c>true</c>;
-    /// otherwise, it will use the connection and transaction of the ambient transaction scope if available.
+    /// Initializes a new instance of the <see cref="StormContext"/> class using the connection string registered for the concrete context type.
+    /// The context will use its own connection when running standalone; otherwise it will attempt to participate in the ambient transaction.
     /// </summary>
     /// <param name="standalone">
     /// If <c>true</c>, the context will always use its own connection and never participate in any ambient transaction.
@@ -62,9 +76,8 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StormContext"/> class with a specific connection string.
-    /// The context will use its own connection if <paramref name="standalone"/> is <c>true</c>;
-    /// otherwise, it will use the connection and transaction of the ambient transaction scope if available.
+    /// Initializes a new instance of the <see cref="StormContext"/> class with an explicit connection string.
+    /// The context will use its own connection when running standalone; otherwise it will attempt to participate in the ambient transaction.
     /// </summary>
     /// <param name="connectionString">The connection string to use for this context.</param>
     /// <param name="standalone">
@@ -101,7 +114,7 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     {
         return s_connectionStrings.TryGetValue(stormContextType, out var cs)
             ? cs
-            : throw new StormException($"Connection string is not set for type '{stormContextType.Name}'.");
+            : throw new StormException($"Connection string is not configured for type '{stormContextType.FullName}'. Configure it at application startup via StormManager.Initialize or call StormContext.SetDefaultConnectionString.");
     }
 
     /// <summary>
@@ -126,6 +139,7 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
 
     /// <summary>
     /// Executes a SQL statement using the provided <see cref="StormDbConnection"/> and returns the number of rows affected.
+    /// The method ensures a connection (and transaction when applicable) is available before executing the command.
     /// </summary>
     /// <param name="sqlStatement">The SQL statement to be executed.</param>
     /// <param name="commandType">The type of the command.</param>
@@ -322,6 +336,15 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
         return new SqlLogSequenceNumber(bytes);
     }
 
+    /// <summary>
+    /// Ensures that a database connection (and transaction if applicable) is open and available for use by this context.
+    /// If an ambient transaction scope exists and this context is not standalone, the ambient connection/transaction are used.
+    /// Otherwise an owned connection is created and opened.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to observe while opening connection/transaction.</param>
+    /// <returns>
+    /// A ValueTask that yields a tuple containing the <see cref="StormDbConnection"/> and an optional <see cref="StormDbTransaction"/> to be used for commands.
+    /// </returns>
     internal async ValueTask<(StormDbConnection connection, StormDbTransaction? transaction)> EnsureConnectionAndTransactionIsOpenAsync(CancellationToken cancellationToken)
     {
         StormDbConnection connection;
@@ -361,24 +384,32 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
 
     /// <summary>
     /// Sets the default connection string for a specific <see cref="StormContext"/> type.
+    /// Should be called at application startup to configure context types.
     /// </summary>
-    /// <param name="stormContextType">The type of the <see cref="StormContext"/>.</param>
+    /// <param name="stormContextType">The context type to configure.</param>
     /// <param name="connectionString">The connection string to associate with the context type.</param>
     internal static void SetDefaultConnectionString(Type stormContextType, string connectionString)
     {
         s_connectionStrings[stormContextType] = connectionString;
     }
 
+    /// <summary>
+    /// Sets the default quoted schema name for a specific <see cref="StormContext"/> type.
+    /// Should be called at application startup to configure context types.
+    /// </summary>
+    /// <param name="stormContextType">The context type to configure.</param>
+    /// <param name="schema">The schema name to associate with the context type.</param>
     internal static void SetDefaultSchema(Type stormContextType, string schema)
     {
         s_dbSchemas[stormContextType] = schema.QuoteSqlName();
     }
 
     /// <summary>
-    /// Gets the logger instance if logging is enabled at the Trace level; otherwise, returns null.
+    /// Gets the logger instance if logging at Trace level is enabled; otherwise, returns null.
+    /// Uses cached <see cref="StormManager.IsTraceEnabled"/> to avoid repeated runtime checks.
     /// </summary>
     /// <returns>The <see cref="ILogger"/> instance or null.</returns>
-    private static ILogger? GetLogger() => StormManager.Logger?.IsEnabled(LogLevel.Trace) == true ? StormManager.Logger : null;
+    private static ILogger? GetLogger() => StormManager.IsTraceEnabled ? StormManager.Logger : null;
 
     /// <summary>
     /// Checks that the context's connection string matches the active unit of work's connection string, if present.

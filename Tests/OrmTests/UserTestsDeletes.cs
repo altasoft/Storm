@@ -32,7 +32,7 @@ public class UserTestsDeletes : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteSingleUser_ShouldRemoveUserAndReturnOne()
+    public async Task DeleteSingleUser_RemovesUserAndReturnsOne()
     {
         // Arrange
         var userToDelete = _users.Last();
@@ -46,7 +46,7 @@ public class UserTestsDeletes : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteMultipleUsers_ShouldRemoveUsersAndReturnCorrectCount()
+    public async Task DeleteMultipleUsers_RemovesUsersAndReturnsCount()
     {
         // Arrange
         var usersToDelete = new[] { _users[2], _users[3], _users[4] };
@@ -63,7 +63,7 @@ public class UserTestsDeletes : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUserByCondition_ShouldRemoveUserWhenConditionIsMet()
+    public async Task DeleteByCondition_RemovesMatchingUser()
     {
         // Arrange
         const int userIdToDelete = 6;
@@ -77,7 +77,7 @@ public class UserTestsDeletes : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUserByCondition_ShouldNotRemoveUserWhenConditionIsNotMet()
+    public async Task DeleteByCondition_DoesNothingWhenNoMatch()
     {
         // Arrange
         const int nonExistentUserId = 16;
@@ -90,7 +90,7 @@ public class UserTestsDeletes : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUserBySpecifiedPrimaryKey_ShouldRemoveUser()
+    public async Task DeleteByPrimaryKey_RemovesUser()
     {
         // Arrange
         const int userIdToDelete = 1;
@@ -104,7 +104,7 @@ public class UserTestsDeletes : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUserByNonExistentPrimaryKey_ShouldNotRemoveUser()
+    public async Task DeleteByPrimaryKey_NonExistent_DoesNothing()
     {
         // Arrange
         const int userIdToDelete = 16;

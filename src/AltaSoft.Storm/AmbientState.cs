@@ -17,10 +17,10 @@ internal sealed class AmbientState : IDisposable
     internal StormDbConnection? _connection;
     internal StormDbTransaction? _transaction;
 
-    private bool _isRollBacked;
     internal bool _ownsConnection;
     internal bool _ownsTransaction;
 
+    internal bool IsRollBacked { get; private set; }
     internal int TransactionCount { get; set; }
 
     private readonly ILogger? _logger;
@@ -30,7 +30,7 @@ internal sealed class AmbientState : IDisposable
         Previous = previous;
         _logger = logger;
         TransactionCount = 0;
-        _isRollBacked = false;
+        IsRollBacked = false;
     }
 
 #pragma warning disable IDE0032
@@ -41,7 +41,7 @@ internal sealed class AmbientState : IDisposable
 
     internal async Task CommitAsync(CancellationToken cancellationToken)
     {
-        if (_isRollBacked)
+        if (IsRollBacked)
             throw new StormException("Transaction has already been rolled back. Commit is not allowed.");
 
         if (TransactionCount != 0)
@@ -57,7 +57,7 @@ internal sealed class AmbientState : IDisposable
 
     internal async Task RollbackAsync(CancellationToken cancellationToken)
     {
-        if (_isRollBacked)
+        if (IsRollBacked)
             return;
 
         try
@@ -71,14 +71,14 @@ internal sealed class AmbientState : IDisposable
         }
         finally
         {
-            _isRollBacked = true;
+            IsRollBacked = true;
             TransactionCount = 0;
         }
     }
 
     internal void Rollback()
     {
-        if (_isRollBacked)
+        if (IsRollBacked)
             return;
 
         try
@@ -92,7 +92,7 @@ internal sealed class AmbientState : IDisposable
         }
         finally
         {
-            _isRollBacked = true;
+            IsRollBacked = true;
             TransactionCount = 0;
         }
     }

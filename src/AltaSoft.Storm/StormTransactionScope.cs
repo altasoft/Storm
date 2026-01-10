@@ -163,6 +163,11 @@ public sealed class StormTransactionScope : IDisposable
     }
 
     /// <summary>
+    /// Determines whether there is an active transaction in the unit of work.
+    /// </summary>
+    public bool HasActiveTransaction() => !IsCompleted && Ambient is { IsRollBacked: false, TransactionCount: > 0 };
+
+    /// <summary>
     /// Marks the scope as completed (successful) and attempts to commit the ambient transaction when this is the outermost scope.
     /// If the commit fails an attempt to rollback is made and the original exception is rethrown.
     /// </summary>
