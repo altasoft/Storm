@@ -31,7 +31,7 @@
 
 //        PushScope();
 //    }
-    
+
 //    public TransactionScopeXXX(
 //        TransactionScopeOption scopeOption,
 //        TransactionOptions transactionOptions
@@ -142,7 +142,6 @@
 
 //        PushScope();
 //    }
-
 
 //    // We don't have a finalizer (~TransactionScope) because all it would be able to do is try to
 //    // operate on other managed objects (the transaction), which is not safe to do because they may
@@ -679,7 +678,6 @@
 //        _threadContextData!.CurrentTransaction = _contextTransaction;
 //    }
 
-
 //    // ValidateInteropOption
 //    //
 //    // Validate a given interop Option
@@ -690,7 +688,6 @@
 //            throw new ArgumentOutOfRangeException(nameof(interopOption));
 //        }
 //    }
-
 
 //  // The validate method assumes that the existing parent ambient transaction scope is already looked up.
 //    private void ValidateAsyncFlowOptionAndESInteropOption()
@@ -776,7 +773,6 @@
 //        private set;
 //    }
 //}
-
 
 //internal enum TransactionScopeResult
 //{

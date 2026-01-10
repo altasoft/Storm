@@ -8,8 +8,6 @@
 // Licensed under the MIT/X11 license.
 //
 
-using System;
-
 namespace Mono.Cecil {
 
 	public sealed class ExportedType : IMetadataTokenProvider {

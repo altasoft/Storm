@@ -26,116 +26,77 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
     [Fact]
     public async Task CompleteAsync_WithExternalTransaction_DoesNotDisposeConnectionOrTransaction()
     {
-        var connection = new SqlConnection(_fixture.ConnectionString);
-        try
+        await using var connection = new SqlConnection(_fixture.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
+
+        // act
+        using (var sts = new StormTransactionScope(transaction))
         {
-            await connection.OpenAsync();
-            var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
-            try
-            {
-                // act
-                using (var sts = new StormTransactionScope(transaction))
-                {
-                    Assert.True(sts.IsRoot);
-                    Assert.Equal(1, sts.Ambient.TransactionCount);
+            Assert.True(sts.IsRoot);
+            Assert.Equal(1, sts.Ambient.TransactionCount);
 
-                    await sts.CompleteAsync(CancellationToken.None);
+            await sts.CompleteAsync(CancellationToken.None);
 
-                    // assert
-                    Assert.Equal(0, sts.Ambient.TransactionCount);
-                }
-
-                // verify transaction was not committed and neither connection nor transaction were disposed
-                Assert.Equal(ConnectionState.Open, connection.State);
-                Assert.NotNull(transaction.Connection); // transaction should be not commited
-
-                await transaction.CommitAsync(CancellationToken.None); // commit transaction manually
-            }
-            finally
-            {
-                await transaction.DisposeAsync();
-            }
+            // assert
+            Assert.Equal(0, sts.Ambient.TransactionCount);
         }
-        finally
-        {
-            await connection.DisposeAsync();
-        }
+
+        // verify transaction was not committed and neither connection nor transaction were disposed
+        Assert.Equal(ConnectionState.Open, connection.State);
+        Assert.NotNull(transaction.Connection); // transaction should be not commited
+
+        await transaction.CommitAsync(CancellationToken.None); // commit transaction manually
     }
 
     [Fact]
     public async Task Dispose_WithoutCompleteAsync_RollsBackExternalTransaction()
     {
-        var connection = new SqlConnection(_fixture.ConnectionString);
-        try
+        await using var connection = new SqlConnection(_fixture.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
+
+        // act
+        using (var sts = new StormTransactionScope(transaction))
         {
-            await connection.OpenAsync();
-            var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
-            try
-            {
-                // act
-                using (var sts = new StormTransactionScope(transaction))
-                {
-                    // do not call CompleteAsync (commit)
+            // do not call CompleteAsync (commit)
 
-                    Assert.True(sts.IsRoot);
-                    Assert.Equal(1, sts.Ambient.TransactionCount);
-                }
-
-                // verify transaction was rollbacked
-                Assert.Equal(ConnectionState.Open, connection.State);
-                Assert.Null(transaction.Connection); // transaction should be rollbacked
-
-                await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                    transaction.CommitAsync(CancellationToken.None)); // cannot commit a rolled back transaction
-            }
-            finally
-            {
-                await transaction.DisposeAsync();
-            }
+            Assert.True(sts.IsRoot);
+            Assert.Equal(1, sts.Ambient.TransactionCount);
         }
-        finally
-        {
-            await connection.DisposeAsync();
-        }
+
+        // verify transaction was rollbacked
+        Assert.Equal(ConnectionState.Open, connection.State);
+        Assert.Null(transaction.Connection);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            transaction.CommitAsync(CancellationToken.None)); // cannot commit a rolled back transaction
     }
 
     [Fact]
     public async Task Dispose_WithoutCompleteAsync_RollsBackExternalTransaction_AlternatePath()
     {
-        var connection = new SqlConnection(_fixture.ConnectionString);
-        try
+        await using var connection = new SqlConnection(_fixture.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
+
+        // act
+        using (var sts = new StormTransactionScope(transaction))
         {
-            await connection.OpenAsync();
-            var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
-            try
-            {
-                // act
-                using (var sts = new StormTransactionScope(transaction))
-                {
-                    // await using var tx = is missing here, so the transaction is not disposed automatically
+            // await using var tx = is missing here, so the transaction is not disposed automatically
 
-                    // do not call CompleteAsync (commit)
+            // do not call CompleteAsync (commit)
 
-                    Assert.True(sts.IsRoot);
-                    Assert.Equal(1, sts.Ambient.TransactionCount);
-                }
-
-                // verify transaction was rollbacked
-                Assert.Equal(ConnectionState.Open, connection.State);
-                Assert.Null(transaction.Connection); // transaction should be rollbacked
-
-                await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                    transaction.CommitAsync(CancellationToken.None)); // cannot commit a rolled back transaction
-            }
-            finally
-            {
-                await transaction.DisposeAsync();
-            }
+            Assert.True(sts.IsRoot);
+            Assert.Equal(1, sts.Ambient.TransactionCount);
         }
-        finally
-        {
-            await connection.DisposeAsync();
-        }
+
+        // verify transaction was rollbacked
+        Assert.Equal(ConnectionState.Open, connection.State);
+        Assert.Null(transaction.Connection); // transaction should be rollbacked
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            transaction.CommitAsync(CancellationToken.None)); // cannot commit a rolled back transaction
     }
 
     [Fact]

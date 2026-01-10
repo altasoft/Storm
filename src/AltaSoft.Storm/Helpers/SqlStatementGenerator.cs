@@ -508,7 +508,6 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
         }
     }
 
-
     private void Append(string value)
     {
         if (!_suspended)

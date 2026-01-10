@@ -8,7 +8,6 @@
 // Licensed under the MIT/X11 license.
 //
 
-using System;
 using System.IO;
 
 namespace Mono.Cecil.PE {

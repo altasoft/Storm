@@ -13,8 +13,6 @@ using System.IO;
 
 using Mono.Cecil.Cil;
 using Mono.Cecil.Metadata;
-using Mono.Collections.Generic;
-
 using RVA = System.UInt32;
 
 namespace Mono.Cecil.PE {

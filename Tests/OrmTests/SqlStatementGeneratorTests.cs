@@ -65,8 +65,6 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
 
         public void SetStormCommandBaseParameters(SqlConnection connection, SqlTransaction? transaction) => throw new NotImplementedException();
 
-        public void SetStormCommandBaseParameters(StormContext context, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text) { }
-
         public string? GenerateCallParameters(List<StormCallParameter>? queryParametersCallParameters, CallParameterType type) => null;
     }
 

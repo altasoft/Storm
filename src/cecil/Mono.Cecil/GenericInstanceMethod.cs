@@ -8,7 +8,6 @@
 // Licensed under the MIT/X11 license.
 //
 
-using System;
 using System.Text;
 using System.Threading;
 using Mono.Collections.Generic;

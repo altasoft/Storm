@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 	<LangVersion>Latest</LangVersion>
 	<Nullable>enable</Nullable>
 	<RootNamespace>AltaSoft.Storm</RootNamespace>
@@ -21,6 +21,8 @@
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Data.SqlClient" />
+	<PackageReference Include="System.Text.Json" />
+
   <ProjectReference Include="..\AltaSoft.Storm\AltaSoft.Storm.csproj">
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>none</IncludeAssets>

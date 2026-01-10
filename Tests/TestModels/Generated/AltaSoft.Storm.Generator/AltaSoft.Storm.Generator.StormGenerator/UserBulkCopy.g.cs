@@ -10,11 +10,11 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using AltaSoft.Storm.Attributes;
 using AltaSoft.Storm.TestModels.VeryBadNamespace;
+using System;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
