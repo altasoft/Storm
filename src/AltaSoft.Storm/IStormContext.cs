@@ -16,14 +16,14 @@ internal interface IStormContext
     /// </summary>
     string ConnectionString { get; }
 
-    /// <summary>
-    /// Gets the current <see cref="StormDbConnection"/> instance to be used for database operations.
-    /// If <see cref="IsStandalone"/> is <c>true</c>, always returns an owned connection.
-    /// Otherwise, returns the connection from the ambient unit of work if available; 
-    /// falls back to an owned connection if not.
-    /// </summary>
-    /// <returns>The <see cref="StormDbConnection"/> to use.</returns>
-    StormDbConnection GetConnection();
+    ///// <summary>
+    ///// Gets the current <see cref="StormDbConnection"/> instance to be used for database operations.
+    ///// If <see cref="IsStandalone"/> is <c>true</c>, always returns an owned connection.
+    ///// Otherwise, returns the connection from the ambient unit of work if available; 
+    ///// falls back to an owned connection if not.
+    ///// </summary>
+    ///// <returns>The <see cref="StormDbConnection"/> to use.</returns>
+    //StormDbConnection GetConnection();
 
     /// <summary>
     /// Executes a SQL statement using the provided <see cref="StormDbConnection"/> and returns the number of rows affected.
@@ -47,7 +47,7 @@ internal interface IStormContext
     /// <summary>
     /// Gets a value indicating whether the context is currently within a unit of work.
     /// </summary>
-    bool IsInUnitOfWork { get; }
+    bool IsInTransactionScope { get; }
 
     /// <summary>
     /// Creates a new <see cref="Batch"/> operation for grouping multiple SQL commands for execution.

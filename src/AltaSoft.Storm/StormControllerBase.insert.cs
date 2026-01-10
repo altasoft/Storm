@@ -30,11 +30,10 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Insert(vCommand, value, queryParameters);
+            PrepareInsert(vCommand, value, queryParameters);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var autoIncColumn = __GetAutoIncColumn();
             if (autoIncColumn is null)
@@ -63,13 +62,12 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            var (autoIncColumn, valueList) = Insert(vCommand, values, queryParameters);
+            var (autoIncColumn, valueList) = PrepareInsert(vCommand, values, queryParameters);
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             if (autoIncColumn is null)
                 return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -91,7 +89,7 @@ public abstract partial class StormControllerBase
 
     #region Inserts
 
-    internal void Insert<T>(
+    internal void PrepareInsert<T>(
         IVirtualStormDbCommand command,
         T value,
         ModifyQueryParameters<T> queryParameters)
@@ -102,10 +100,10 @@ public abstract partial class StormControllerBase
 
         GenerateInsertSql(command, value, ref paramIndex, -1, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    internal (StormColumnDef? autoIncColumn, IList<T> valueList) Insert<T>(
+    internal (StormColumnDef? autoIncColumn, IList<T> valueList) PrepareInsert<T>(
         IVirtualStormDbCommand command,
         IEnumerable<T> values,
         ModifyQueryParameters<T> queryParameters)
@@ -136,12 +134,12 @@ public abstract partial class StormControllerBase
             sb.AppendLine("SELECT [Id] FROM @__storm_id_values;");
         }
 
-        if (!queryParameters.Context.IsInUnitOfWork)
+        if (!queryParameters.Context.IsInTransactionScope)
         {
             sb.WrapIntoBeginTranCommit();
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
         return (autoIncColumn, valueList);
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.TestModels;
 using Xunit;
@@ -19,7 +20,7 @@ namespace AltaSoft.Storm.Tests
             _context = new TestStormContext(fixture.ConnectionString);
         }
 
-        public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+        public Task InitializeAsync() => Task.CompletedTask;
 
         public async Task DisposeAsync()
         {
@@ -29,7 +30,7 @@ namespace AltaSoft.Storm.Tests
         [Fact]
         public async Task AllMethodsForDynamicTableShouldWorkFine()
         {
-            await using var conn = _context.GetConnection();
+            var (conn, _) = await _context.EnsureConnectionAndTransactionIsOpenAsync(CancellationToken.None);
             await conn.CreateTableAsync<Blob>(true, unquotedSchemaName: "dbo", unquotedTableName: "BlobTest1");
             const string tableName = "dbo.BlobTest1";
 

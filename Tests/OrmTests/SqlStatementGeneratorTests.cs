@@ -10,6 +10,7 @@ using AltaSoft.Storm.Helpers;
 using AltaSoft.Storm.Interfaces;
 using AltaSoft.Storm.TestModels;
 using FluentAssertions;
+using Microsoft.Data.SqlClient;
 using Xunit;
 using Xunit.Abstractions;
 using StormDbParameter = Microsoft.Data.SqlClient.SqlParameter;
@@ -29,7 +30,7 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         _context = new TestStormContext(fixture.ConnectionString);
     }
 
-    public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync() => await _context.DisposeAsync().ConfigureAwait(false);
 
@@ -55,6 +56,14 @@ public class SqlStatementGeneratorTests : IClassFixture<DatabaseFixture>, IAsync
         }
 
         public void AddDbParameters(List<StormCallParameter> callParameters) { }
+
+        public void SetStormCommandBaseParameters(SqlConnection connection, SqlTransaction? transaction, string sql,
+            QueryParameters queryParameters, CommandType commandType = CommandType.Text) => throw new NotImplementedException();
+
+        public void SetStormCommandBaseParameters(string sql, QueryParameters queryParameters,
+            CommandType commandType = CommandType.Text) => throw new NotImplementedException();
+
+        public void SetStormCommandBaseParameters(SqlConnection connection, SqlTransaction? transaction) => throw new NotImplementedException();
 
         public void SetStormCommandBaseParameters(StormContext context, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text) { }
 

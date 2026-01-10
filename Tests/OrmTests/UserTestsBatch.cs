@@ -24,7 +24,7 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
         _fixture = fixture;
     }
 
-    //public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+    //public Task InitializeAsync() => Task.CompletedTask;
 
     //public async Task DisposeAsync()
     //{
@@ -43,9 +43,7 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
 
         // Act
 
-        using var uow = UnitOfWork.Create();
-
-        await using var tx = await uow.BeginAsync(_fixture.ConnectionString, CancellationToken.None);
+        using var uow = new StormTransactionScope();
 
         var context = new TestStormContext(_fixture.ConnectionString);
 
@@ -61,7 +59,7 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
             //var updateResult1 = await _context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate).GoAsync();
             //var updateResult2 = await _context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate).GoAsync();
 
-            await tx.CompleteAsync(CancellationToken.None);
+            await uow.CompleteAsync(CancellationToken.None);
         }
 
         // Assert

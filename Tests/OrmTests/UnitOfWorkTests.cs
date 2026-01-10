@@ -29,18 +29,15 @@ public sealed class UnitOfWorkTests : IClassFixture<DatabaseFixture>
         var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
 
         // act
-        using (var uow = UnitOfWork.Create())
+        using (var uow = new StormTransactionScope(transaction))
         {
-            await using var tx = await uow.BeginAsync(connection, transaction, CancellationToken.None);
+            Assert.True(uow.IsRoot);
+            Assert.Equal(1, uow.Ambient.TransactionCount);
 
-            Assert.Equal(1, uow.AmbientUow.TransactionCount);
-
-            await tx.CompleteAsync(CancellationToken.None);
+            await uow.CompleteAsync(CancellationToken.None);
 
             // assert
-            Assert.True(uow.IsRoot);
-            Assert.False(uow.AmbientUow.IsRollBacked);
-            Assert.Equal(0, uow.AmbientUow.TransactionCount);
+            Assert.Equal(0, uow.Ambient.TransactionCount);
         }
 
         // verify transaction was not committed and neither connection nor transaction were disposed
@@ -60,15 +57,12 @@ public sealed class UnitOfWorkTests : IClassFixture<DatabaseFixture>
         var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
 
         // act
-        using (var uow = UnitOfWork.Create())
+        using (var uow = new StormTransactionScope(transaction))
         {
-            await using var tx = await uow.BeginAsync(connection, transaction, CancellationToken.None);
-
             // do not call CompleteAsync (commit)
 
             Assert.True(uow.IsRoot);
-            Assert.False(uow.AmbientUow.IsRollBacked);
-            Assert.Equal(1, uow.AmbientUow.TransactionCount);
+            Assert.Equal(1, uow.Ambient.TransactionCount);
         }
 
         // verify transaction was rollbacked
@@ -89,16 +83,14 @@ public sealed class UnitOfWorkTests : IClassFixture<DatabaseFixture>
         var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
 
         // act
-        using (var uow = UnitOfWork.Create())
+        using (var uow = new StormTransactionScope(transaction))
         {
             // await using var tx = is missing here, so the transaction is not disposed automatically
-            await uow.BeginAsync(connection, transaction, CancellationToken.None);
 
             // do not call CompleteAsync (commit)
 
             Assert.True(uow.IsRoot);
-            Assert.False(uow.AmbientUow.IsRollBacked);
-            Assert.Equal(1, uow.AmbientUow.TransactionCount);
+            Assert.Equal(1, uow.Ambient.TransactionCount);
         }
 
         // verify transaction was rollbacked
@@ -114,84 +106,97 @@ public sealed class UnitOfWorkTests : IClassFixture<DatabaseFixture>
     [Fact]
     public async Task Nested_UnitOfWork_OnlyRootDisposes()
     {
-        SqlConnection connection;
-        SqlTransaction transaction;
+        SqlConnection? connection;
+        SqlTransaction? transaction;
 
         // act
-        using (var uow1 = UnitOfWork.Create())
+        using (var uow1 = new StormTransactionScope())
         {
-            await using var tx1 = await uow1.BeginAsync(_fixture.ConnectionString, CancellationToken.None);
+            Assert.True(uow1.IsRoot);
+            Assert.NotNull(uow1.Ambient);
+            Assert.Equal(1, uow1.Ambient.TransactionCount);
 
-            Assert.True(uow1.AmbientUow.IsInitialized);
+            await using var usersContext = new TestStormContext(_fixture.ConnectionString);
 
-            Assert.NotNull(uow1.AmbientUow.Connection);
-            Assert.NotNull(uow1.AmbientUow.Transaction);
+            Assert.True(usersContext.IsInTransactionScope);
+            Assert.False(usersContext.IsStandalone);
 
-            connection = uow1.AmbientUow.Connection;
-            transaction = uow1.AmbientUow.Transaction;
+            (connection, transaction) = await usersContext.EnsureConnectionAndTransactionIsOpenAsync(CancellationToken.None);
 
-            using (var uow2 = UnitOfWork.Create())
+            Assert.Same(uow1.Ambient.Connection, connection);
+            Assert.Same(uow1.Ambient.Transaction, transaction);
+
+            using (var uow2 = new StormTransactionScope())
             {
-                await using var tx2 = await uow2.BeginAsync(_fixture.ConnectionString, CancellationToken.None);
+                Assert.Same(uow1.Ambient, uow2.Ambient);
 
                 // assert
                 Assert.False(uow2.IsRoot);
-                Assert.False(uow2.AmbientUow.IsRollBacked);
-                Assert.Equal(2, uow2.AmbientUow.TransactionCount);
+                Assert.Equal(2, uow2.Ambient.TransactionCount);
 
-                Assert.Same(uow1.AmbientUow, uow2.AmbientUow);
+                Assert.NotNull(uow2.Ambient.Connection);
+                Assert.NotNull(uow2.Ambient.Transaction);
 
-                Assert.NotNull(uow2.AmbientUow.Connection);
-                Assert.NotNull(uow2.AmbientUow.Transaction);
+                Assert.Same(connection, uow2.Ambient.Connection);
+                Assert.Same(transaction, uow2.Ambient.Transaction);
 
-                var connection2 = uow2.AmbientUow.Connection;
-                var transaction2 = uow2.AmbientUow.Transaction;
+                await uow2.CompleteAsync(CancellationToken.None);
 
-                Assert.Same(connection, connection2);
-                Assert.Same(transaction, transaction2);
-
-                await tx2.CompleteAsync(CancellationToken.None);
-
-                Assert.False(uow2.AmbientUow.IsRollBacked);
-                Assert.Equal(1, uow2.AmbientUow.TransactionCount);
+                Assert.Equal(1, uow2.Ambient.TransactionCount);
             }
 
-            await tx1.CompleteAsync(CancellationToken.None);
+            await uow1.CompleteAsync(CancellationToken.None);
 
             // assert
             Assert.True(uow1.IsRoot);
-            Assert.False(uow1.AmbientUow.IsRollBacked);
-            Assert.Equal(0, uow1.AmbientUow.TransactionCount);
+            Assert.Equal(0, uow1.Ambient.TransactionCount);
         }
 
         // verify transaction was committed and disposed
         Assert.Equal(ConnectionState.Closed, connection.State);
+        Assert.NotNull(transaction);
         Assert.Null(transaction.Connection);
     }
 
     [Fact]
     public async Task RootUnitOfWork_OwnsConnection_AndDisposesIt()
     {
+        SqlConnection? connection;
+        SqlTransaction? transaction;
+
         // act
-        var uow = UnitOfWork.Create();
-
-        await using (var tx = await uow.BeginAsync(_fixture.ConnectionString, CancellationToken.None))
+        var uow = new StormTransactionScope();
+        try
         {
-            var connection = uow.AmbientUow.Connection;
-            var transaction = uow.AmbientUow.Transaction;
+            await using var usersContext = new TestStormContext(_fixture.ConnectionString);
 
-            await tx.CompleteAsync(CancellationToken.None);
+            Assert.True(usersContext.IsInTransactionScope);
+            Assert.False(usersContext.IsStandalone);
 
-            // assert
-            // verify transaction was committed and disposed
-            Assert.NotNull(connection);
+            (connection, transaction) = await usersContext.EnsureConnectionAndTransactionIsOpenAsync(CancellationToken.None);
+
+            Assert.Same(uow.Ambient.Connection, connection);
+            Assert.Same(uow.Ambient.Transaction, transaction);
+
+            Assert.False(uow.IsCompleted);
+            Assert.Equal(ConnectionState.Open, connection.State);
             Assert.NotNull(transaction);
+            Assert.NotNull(transaction.Connection);
 
+            await uow.CompleteAsync(CancellationToken.None);
+
+            Assert.True(uow.IsCompleted);
             Assert.Equal(ConnectionState.Open, connection.State);
             Assert.Null(transaction.Connection);
         }
+        finally
+        {
+            uow.Dispose();
+        }
 
-        uow.Dispose();
+        // verify connection was disposed
+        Assert.Equal(ConnectionState.Closed, connection.State);
+        Assert.Null(transaction.Connection);
     }
 
 
@@ -205,7 +210,7 @@ public sealed class UnitOfWorkTests : IClassFixture<DatabaseFixture>
 
         await using var usersContext = new TestStormContext(_fixture.ConnectionString);
 
-        Assert.False(usersContext.IsInUnitOfWork);
+        Assert.False(usersContext.IsInTransactionScope);
         Assert.True(usersContext.IsStandalone);
 
         // Stream users with UserId > lastUserId, ordered by UserId, take batchSize
@@ -217,12 +222,10 @@ public sealed class UnitOfWorkTests : IClassFixture<DatabaseFixture>
             .Top(batchSize)
             .StreamAsync(cancellationToken);
 
-        using var uow = UnitOfWork.CreateStandalone();
+        using var uow = new StormTransactionScope();
 
-        Assert.False(usersContext.IsInUnitOfWork);
+        Assert.False(usersContext.IsInTransactionScope);
         Assert.True(usersContext.IsStandalone);
-
-        await using var tx = await uow.BeginAsync(_fixture.ConnectionString, cancellationToken);
 
         await using var batchContext = new TestStormContext(_fixture.ConnectionString);
         await using var batch = batchContext.CreateBatch();
@@ -247,6 +250,6 @@ public sealed class UnitOfWorkTests : IClassFixture<DatabaseFixture>
             Assert.Fail("No users streamed for update.");
         }
 
-        await tx.CompleteAsync(cancellationToken);
+        await uow.CompleteAsync(CancellationToken.None);
     }
 }

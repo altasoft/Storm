@@ -75,11 +75,9 @@ public abstract partial class StormControllerBase
     {
         var context = queryParameters.Context;
 
-        var connection = context.GetConnection();
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-        var bulkCopy = new SqlBulkCopy(connection, queryParameters.BulkCopyOptions, context.GetTransaction());
+        var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        
+        var bulkCopy = new SqlBulkCopy(connection, queryParameters.BulkCopyOptions, transaction);
 
         bulkCopy.DestinationTableName = QuotedObjectFullName;
         bulkCopy.BatchSize = queryParameters.BatchSize ?? 1_000;

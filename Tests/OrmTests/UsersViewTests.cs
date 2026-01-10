@@ -25,7 +25,7 @@ public class UserViewTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         _context = new TestStormContext(fixture.ConnectionString);
     }
 
-    public Task InitializeAsync() => _context.GetConnection().OpenAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {

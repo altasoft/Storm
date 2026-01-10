@@ -105,7 +105,7 @@ internal sealed class MergeInto<T> : ModifyQueryParameters<T>, IMergeInto<T> whe
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Merge(vCommand, RowValue, _checkConcurrency, _updateThenInsert, this);
+            GetController().PrepareMerge(vCommand, RowValue, _checkConcurrency, _updateThenInsert, this);
             batchCommands.Add(command);
             return;
         }
@@ -115,7 +115,7 @@ internal sealed class MergeInto<T> : ModifyQueryParameters<T>, IMergeInto<T> whe
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Merge(vCommand, RowValues, _checkConcurrency, _updateThenInsert, this);
+            GetController().PrepareMerge(vCommand, RowValues, _checkConcurrency, _updateThenInsert, this);
             batchCommands.Add(command);
         }
     }

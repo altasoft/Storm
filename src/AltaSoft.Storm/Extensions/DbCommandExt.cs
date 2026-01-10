@@ -80,7 +80,7 @@ internal static class DbCommandExt
         }
         return null;
     }
-
+   
     /// <summary>
     /// Sets the parameters for a database command, including the command text, connection, transaction, command timeout, and command type.
     /// </summary>
@@ -89,16 +89,31 @@ internal static class DbCommandExt
     /// <param name="commandText">The command text to set for the command.</param>
     /// <param name="queryParameters">The query parameters.</param>
     /// <param name="commandType">The command type to set for the command. Optional.</param>
-    internal static void SetStormCommandBaseParameters(this StormDbCommand command, StormContext context, string commandText, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
+    internal static void SetStormCommandBaseParameters(this StormDbCommand command, StormDbConnection connection, StormDbTransaction? transaction, string commandText, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
     {
-        command.Connection = context.GetConnection();
-        command.Transaction = context.GetTransaction();
+        command.Connection = connection;
+        command.Transaction = transaction;
 
         command.CommandText = commandText;
         command.CommandType = commandType;
 
         if (queryParameters.CommandTimeout.HasValue)
             command.CommandTimeout = queryParameters.CommandTimeout.Value;
+    }
+
+    internal static void SetStormCommandBaseParameters(this StormDbCommand command, string commandText, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
+    {
+        command.CommandText = commandText;
+        command.CommandType = commandType;
+
+        if (queryParameters.CommandTimeout.HasValue)
+            command.CommandTimeout = queryParameters.CommandTimeout.Value;
+    }
+
+    internal static void SetStormCommandBaseParameters(this StormDbCommand command, StormDbConnection connection, StormDbTransaction? transaction)
+    {
+        command.Connection = connection;
+        command.Transaction = transaction;
     }
 
     /// <summary>

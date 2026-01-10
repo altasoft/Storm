@@ -48,11 +48,20 @@ internal interface IVirtualStormDbCommand
     /// <summary>
     /// Sets the base parameters for the Storm command, including context, SQL, query parameters, and command type.
     /// </summary>
-    /// <param name="context">The <see cref="StormContext"/> for the command.</param>
     /// <param name="sql">The SQL statement to execute.</param>
     /// <param name="queryParameters">The query parameters to use.</param>
     /// <param name="commandType">The type of the command. Defaults to <see cref="CommandType.Text"/>.</param>
-    void SetStormCommandBaseParameters(StormContext context, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text);
+    void SetStormCommandBaseParameters(StormDbConnection connection, StormDbTransaction? transaction, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text);
+
+    /// <summary>
+    /// Sets the base parameters for the Storm command, including context, SQL, query parameters, and command type.
+    /// </summary>
+    /// <param name="sql">The SQL statement to execute.</param>
+    /// <param name="queryParameters">The query parameters to use.</param>
+    /// <param name="commandType">The type of the command. Defaults to <see cref="CommandType.Text"/>.</param>
+    void SetStormCommandBaseParameters(string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text);
+
+    void SetStormCommandBaseParameters(StormDbConnection connection, StormDbTransaction? transaction);
 
     /// <summary>
     /// Generates a string representation of the call parameters for the command.

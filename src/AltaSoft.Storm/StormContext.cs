@@ -20,13 +20,12 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
 {
     private readonly ILogger? _logger;
 
-    private StormDbConnection? _ownedConnection; // only when not in UoW
+    private StormDbConnection? _ownedConnection; // only when not in ambient
     private bool _disposed;
 
     // Should be set at app startup.
     private static readonly Dictionary<Type, string> s_connectionStrings = new(4);
     private static readonly Dictionary<Type, string> s_dbSchemas = new(4);
-    private readonly bool _standalone;
 
     /// <summary>
     /// Gets the connection string associated with this context.
@@ -34,94 +33,52 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     public string ConnectionString { get; }
 
     /// <summary>
+    /// Gets a value indicating whether the context is currently not within a transaction scope.
+    /// </summary>
+    public bool IsStandalone { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the context is currently within a transaction scope.
+    /// </summary>
+    public bool IsInTransactionScope => !IsStandalone;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="StormContext"/> class using the connection string from the static map.
     /// The context will use its own connection if <paramref name="standalone"/> is <c>true</c>;
-    /// otherwise, it will use the connection and transaction of the ambient unit of work if available.
+    /// otherwise, it will use the connection and transaction of the ambient transaction scope if available.
     /// </summary>
     /// <param name="standalone">
-    /// If <c>true</c>, the context will always use its own connection and never participate in any ambient unit of work.
-    /// If <c>false</c> (default), the context will participate in a unit of work if present.
+    /// If <c>true</c>, the context will always use its own connection and never participate in any ambient transaction.
+    /// If <c>false</c> (default), the context will participate in a transaction scope if present.
     /// </param>
     protected StormContext(bool standalone = false)
     {
         ConnectionString = GetConnectionString(GetType());
-        _standalone = standalone;
+        IsStandalone = standalone || StormTransactionScope.GetCurrentAmbient() is null;
         _logger = GetLogger();
 
-        if (!standalone)
-            _standalone = CheckConnectionString();
+        if (!IsStandalone)
+            CheckConnectionString();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormContext"/> class with a specific connection string.
     /// The context will use its own connection if <paramref name="standalone"/> is <c>true</c>;
-    /// otherwise, it will use the connection and transaction of the ambient unit of work if available.
+    /// otherwise, it will use the connection and transaction of the ambient transaction scope if available.
     /// </summary>
     /// <param name="connectionString">The connection string to use for this context.</param>
     /// <param name="standalone">
-    /// If <c>true</c>, the context will always use its own connection and never participate in any ambient unit of work.
-    /// If <c>false</c> (default), the context will participate in a unit of work if present.
+    /// If <c>true</c>, the context will always use its own connection and never participate in any ambient transaction.
+    /// If <c>false</c> (default), the context will participate in a transaction scope if present.
     /// </param>
     protected StormContext(string connectionString, bool standalone = false)
     {
         ConnectionString = connectionString;
-        _standalone = standalone;
+        IsStandalone = standalone || StormTransactionScope.GetCurrentAmbient() is null;
         _logger = GetLogger();
 
-        if (!standalone)
-            _standalone = CheckConnectionString();
-    }
-
-    /// <summary>
-    /// Gets the current <see cref="StormDbConnection"/> instance to be used for database operations.
-    /// If <see cref="_standalone"/> is <c>true</c>, always returns an owned connection.
-    /// Otherwise, returns the connection from the ambient unit of work if available; 
-    /// falls back to an owned connection if not.
-    /// </summary>
-    /// <returns>The <see cref="StormDbConnection"/> to use.</returns>
-    public StormDbConnection GetConnection()
-    {
-        if (_standalone)
-        {
-            // Standalone context: always use an owned connection.
-            return _ownedConnection ??= new StormDbConnection(ConnectionString);
-        }
-
-        var uow = AmbientUnitOfWork.Ambient;
-        if (uow is not null)
-        {
-            if (!uow.IsInitialized)
-                throw new StormException("StormContext: The ambient UnitOfWork is not initialized.");
-
-            // Use the connection from the ambient unit of work.
-            return uow.Connection;
-        }
-
-        // Not in a unit of work: use an owned connection.
-        return _ownedConnection ??= new StormDbConnection(ConnectionString);
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether the context is currently not within a unit of work.
-    /// </summary>
-    public bool IsStandalone => _standalone || AmbientUnitOfWork.Ambient is null;
-
-    /// <summary>
-    /// Gets a value indicating whether the context is currently within a unit of work.
-    /// </summary>
-    public bool IsInUnitOfWork => !_standalone && AmbientUnitOfWork.Ambient is not null;
-
-    /// <summary>
-    /// Gets the current <see cref="StormDbTransaction"/>, or null if none is active.
-    /// </summary>
-    /// <returns>The current <see cref="StormDbTransaction"/>, or null if not in a unit of work.</returns>
-    internal StormDbTransaction? GetTransaction()
-    {
-        if (_standalone)
-            return null; // Standalone context does not use transactions.
-
-        var uow = AmbientUnitOfWork.Ambient;
-        return uow?.Transaction; // Null if not in UoW.
+        if (!IsStandalone)
+            CheckConnectionString();
     }
 
     /// <summary>
@@ -144,7 +101,7 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     {
         return s_connectionStrings.TryGetValue(stormContextType, out var cs)
             ? cs
-            : throw new StormException($"Connection string is not set for {stormContextType.Name}.");
+            : throw new StormException($"Connection string is not set for type '{stormContextType.Name}'.");
     }
 
     /// <summary>
@@ -181,12 +138,12 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
         string sqlStatement, CommandType commandType = CommandType.Text, Action<StormDbCommand>? commandSetup = null,
         CancellationToken cancellationToken = default)
     {
-        var connection = await EnsureConnectionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
         return await connection.ExecuteSqlStatementAsync(sqlStatement, commandType,
             command =>
             {
-                command.Transaction = GetTransaction();
+                command.Transaction = transaction;
                 commandSetup?.Invoke(command);
             }, cancellationToken).ConfigureAwait(false);
     }
@@ -365,19 +322,35 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
         return new SqlLogSequenceNumber(bytes);
     }
 
-    /// <summary>
-    /// Ensures that the current connection is open asynchronously.
-    /// </summary>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the asynchronous operation.</param>
-    /// <returns>
-    /// A <see cref="ValueTask{TResult}"/> representing the asynchronous operation, with the open <see cref="StormDbConnection"/>.
-    /// </returns>
-    private async ValueTask<StormDbConnection> EnsureConnectionIsOpenAsync(CancellationToken cancellationToken = default)
+    internal async ValueTask<(StormDbConnection connection, StormDbTransaction? transaction)> EnsureConnectionAndTransactionIsOpenAsync(CancellationToken cancellationToken)
     {
-        var connection = GetConnection();
+        StormDbConnection connection;
+        StormDbTransaction? transaction = null;
+
+        var ambient = StormTransactionScope.GetCurrentAmbient();
+
+        if (IsStandalone || ambient is null)
+        {
+            // Standalone context: always use an owned connection.
+            connection = _ownedConnection ??= new StormDbConnection(ConnectionString);
+        }
+        else
+        {
+            // Use the connection from the ambient.
+            connection = ambient.GetConnection(ConnectionString);
+        }
+
         if (connection.State != ConnectionState.Open)
+        {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        return connection;
+        }
+
+        if (!IsStandalone && ambient is not null)
+        {
+            transaction = await ambient.GetTransactionAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        return (connection, transaction);
     }
 
     /// <summary>
@@ -411,30 +384,23 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     /// Checks that the context's connection string matches the active unit of work's connection string, if present.
     /// </summary>
     /// <exception cref="StormException">
-    /// Thrown if the context connection string does not match the active unit of work connection string.
+    /// Thrown if the context connection string does not match the active UnitOfWork connection string.
     /// </exception>
-    private bool CheckConnectionString()
+    private void CheckConnectionString()
     {
-        var uow = AmbientUnitOfWork.Ambient;
-        if (uow is null)
-        {
-            return true; // No active unit of work, no check needed.
-        }
+        var ambient = StormTransactionScope.GetCurrentAmbient();
 
-        if (!uow.IsInitialized)
+        if (ambient?.Connection is null)
         {
-            _logger?.LogError("StormContext: The ambient UnitOfWork is not initialized.");
-            throw new StormException("StormContext: The ambient UnitOfWork is not initialized.");
+            return; // No active ambient, no check needed.
         }
 
         // If the context is not standalone, ensure the connection strings match.
-        if (!ConnectionString.IsSameConnectionString(uow.Connection.ConnectionString))
+        if (!ConnectionString.IsSameConnectionString(ambient.Connection.ConnectionString))
         {
-            _logger?.LogError("StormContext: The context connection string '{ConnectionString1}' does not match the active UnitOfWork connection string '{ConnectionString2}'.", ConnectionString, uow.Connection.ConnectionString);
-            throw new StormException($"StormContext: The context connection string '{ConnectionString}' does not match the active UnitOfWork connection string '{uow.Connection.ConnectionString}'.");
+            _logger?.LogError("StormContext: The context connection string '{ConnectionString1}' does not match the active ambient connection string '{ConnectionString2}'.", ConnectionString, ambient.Connection.ConnectionString);
+            throw new StormException($"StormContext: The context connection string '{ConnectionString}' does not match the active ambient connection string '{ambient.Connection.ConnectionString}'.");
         }
-
-        return false;
     }
 
     /// <summary>

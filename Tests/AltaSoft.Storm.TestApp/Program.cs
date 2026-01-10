@@ -34,21 +34,19 @@ internal sealed class Program
         int updateResult1;
         int updateResult2;
 
-        var uow1 = UnitOfWork.Create();
+        var uow1 = new StormTransactionScope();
         {
-            await using var tx1 = await uow1.BeginAsync(fixture.ConnectionString, CancellationToken.None).ConfigureAwait(false);
+            //await using var tx1 = await uow1.BeginAsync(fixture.ConnectionString, CancellationToken.None).ConfigureAwait(false);
 
-            if (uow1.AmbientUow is null)
+            if (uow1.Ambient is null)
                 throw new Exception("Master unit of work should not be null.");
 
-            using (var uow2 = UnitOfWork.Create())
+            using (var uow2 = new StormTransactionScope())
             {
-                await using var tx2 = await uow2.BeginAsync(fixture.ConnectionString, CancellationToken.None).ConfigureAwait(false);
-
-                if (uow2.AmbientUow is null)
+                if (uow2.Ambient is null)
                     throw new Exception("Master unit of work should not be null.");
 
-                if (uow1.AmbientUow != uow2.AmbientUow)
+                if (uow1.Ambient != uow2.Ambient)
                     throw new Exception("Ambient Unit of work should be the same.");
 
                 var context = new TestStormContext(fixture.ConnectionString);
@@ -56,10 +54,10 @@ internal sealed class Program
                 updateResult1 = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate).GoAsync();
                 updateResult2 = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate).GoAsync();
 
-                await tx2.CompleteAsync(CancellationToken.None);
+                await uow2.CompleteAsync(CancellationToken.None);
             }
 
-            await tx1.CompleteAsync(CancellationToken.None);
+            await uow1.CompleteAsync(CancellationToken.None);
         }
 
         uow1.Dispose();

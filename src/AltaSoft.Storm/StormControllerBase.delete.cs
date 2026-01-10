@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,11 +23,10 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Delete(vCommand, queryParameters);
+            PrepareDelete(vCommand, queryParameters);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -42,7 +40,10 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Delete(vCommand, value, queryParameters);
+            PrepareDelete(vCommand, value, queryParameters);
+
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -56,13 +57,12 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Delete(vCommand, valueList, queryParameters);
+            PrepareDelete(vCommand, valueList, queryParameters);
             if (vCommand.CommandText.Length == 0)
                 return -1;
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -70,7 +70,7 @@ public abstract partial class StormControllerBase
 
     #region Deletes
 
-    internal void Delete<T>(
+    internal void PrepareDelete<T>(
         IVirtualStormDbCommand command,
         ModifyQueryParameters<T> queryParameters)
         where T : IDataBindable
@@ -79,10 +79,10 @@ public abstract partial class StormControllerBase
 
         GenerateDeleteSql(command, queryParameters, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    internal void Delete<T>(
+    internal void PrepareDelete<T>(
         IVirtualStormDbCommand command,
         T value,
         ModifyQueryParameters<T> queryParameters) where T : IDataBindable
@@ -92,10 +92,10 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateDeleteSql(command, value, ref paramIndex, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    internal void Delete<T>(
+    internal void PrepareDelete<T>(
         IVirtualStormDbCommand command,
         IEnumerable<T> valueList,
         ModifyQueryParameters<T> queryParameters)
@@ -115,12 +115,12 @@ public abstract partial class StormControllerBase
             return;
         }
 
-        if (!queryParameters.Context.IsInUnitOfWork)
+        if (!queryParameters.Context.IsInTransactionScope)
         {
             sb.WrapIntoBeginTranCommit();
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
     private void GenerateDeleteSql<T>(IVirtualStormDbCommand command, IKeyAndWhereExpression<T> queryParameters, StringBuilder sb) where T : IDataBindable
