@@ -8,13 +8,11 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Text;
-
-using Mono.Collections.Generic;
 
 namespace Mono.Cecil {
 
@@ -217,7 +215,8 @@ namespace Mono.Cecil {
 						continue;
 					try {
 						return GetAssembly (file, parameters);
-					} catch (System.BadImageFormatException) {
+					}
+					catch (System.BadImageFormatException) {
 						continue;
 					}
 				}

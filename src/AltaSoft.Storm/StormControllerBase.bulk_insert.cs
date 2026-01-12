@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -75,11 +73,9 @@ public abstract partial class StormControllerBase
     {
         var context = queryParameters.Context;
 
-        var connection = context.GetConnection();
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        var bulkCopy = new SqlBulkCopy(connection, queryParameters.BulkCopyOptions, context.GetTransaction());
+        var bulkCopy = new SqlBulkCopy(connection, queryParameters.BulkCopyOptions, transaction);
 
         bulkCopy.DestinationTableName = QuotedObjectFullName;
         bulkCopy.BatchSize = queryParameters.BatchSize ?? 1_000;

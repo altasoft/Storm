@@ -9,12 +9,12 @@ using Xunit.Abstractions;
 
 namespace AltaSoft.Storm.Tests;
 
-public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
+public class UserTestsTransactionScope : IClassFixture<DatabaseFixture>
 {
     private readonly List<User> _users;
     private readonly DatabaseFixture _fixture;
 
-    public UserTestsUnitOfWork(DatabaseFixture fixture, ITestOutputHelper output)
+    public UserTestsTransactionScope(DatabaseFixture fixture, ITestOutputHelper output)
     {
         _users = fixture.Users;
 
@@ -34,17 +34,19 @@ public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
         var user2ToUpdate = _users.First();
         user2ToUpdate.FullName = "UpdatedFirstName";
 
-        using var uow = UnitOfWork.Create();
+        int updateResult1;
+        int updateResult2;
 
-        await using var tx = await uow.BeginAsync(_fixture.ConnectionString, CancellationToken.None);
+        using (var sts = new StormTransactionScope())
+        {
+            var context = new TestStormContext(_fixture.ConnectionString);
 
-        var context = new TestStormContext(_fixture.ConnectionString);
+            updateResult1 = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate).GoAsync();
 
-        var updateResult1 = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate).GoAsync();
+            updateResult2 = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate).GoAsync();
 
-        var updateResult2 = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate).GoAsync();
-
-        await tx.CompleteAsync(CancellationToken.None);
+            await sts.CompleteAsync(CancellationToken.None);
+        }
 
         // Assert
         updateResult1.Should().Be(1);
@@ -58,17 +60,17 @@ public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
     {
         // Arrange
         var usersToUpdate = new[] { _users[2], _users[3], _users[4] };
+        int updateResult;
 
-        using var uow = UnitOfWork.Create();
+        using (var sts = new StormTransactionScope())
+        {
+            var context = new TestStormContext(_fixture.ConnectionString);
 
-        await using var tx = await uow.BeginAsync(_fixture.ConnectionString, CancellationToken.None);
+            // Act
+            updateResult = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(usersToUpdate).GoAsync();
 
-        var context = new TestStormContext(_fixture.ConnectionString);
-
-        // Act
-        var updateResult = await context.UpdateUsersTable().WithoutConcurrencyCheck().Set(usersToUpdate).GoAsync();
-
-        await tx.CompleteAsync(CancellationToken.None);
+            await sts.CompleteAsync(CancellationToken.None);
+        }
 
         // Assert
         updateResult.Should().Be(usersToUpdate.Length);
@@ -92,7 +94,7 @@ public class UserTestsUnitOfWork : IClassFixture<DatabaseFixture>
     {
         actual.Should().NotBeNull();
 
-        actual!.UserId.Should().Be(expected.UserId);
+        actual.UserId.Should().Be(expected.UserId);
         actual.BranchId.Should().Be(expected.BranchId);
         actual.AutoInc.Should().Be(expected.AutoInc);
         actual.FullName.Should().Be(expected.FullName);

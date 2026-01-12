@@ -1,21 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+	<TargetFrameworks>$(DefaultTargetFrameworks)</TargetFrameworks>
 	<LangVersion>Latest</LangVersion>
 	<Nullable>enable</Nullable>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	</PropertyGroup>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
 
   <Import Project="../SharedAssemblyInfo.props" />
 
   <ItemGroup>
-	  <Compile Include="..\StormGlobalTypeAliases.cs" Link="StormGlobalTypeAliases.cs" />
+	<Compile Include="..\StormGlobalTypeAliases.cs" Link="StormGlobalTypeAliases.cs" />
   </ItemGroup>
-	
+
   <ItemGroup Condition="'$(DefineConstants.Contains(STORM_MSSQL))'">
-	  <PackageReference Include="Microsoft.Data.SqlClient" />
+	<PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +25,5 @@
 	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 	<PackageReference Include="Microsoft.Extensions.ObjectPool" />
 	<PackageReference Include="Microsoft.OData.Core" />
-	<PackageReference Include="System.Text.Json" />
   </ItemGroup>
 </Project>

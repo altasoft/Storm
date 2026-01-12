@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" TreatAsLocalProperty="TaskAssembly">
   <PropertyGroup>
-    <TaskAssembly>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'altasoft.storm.generator.mssql\1.1.0\tasks\netstandard2.0\AltaSoft.Storm.Weaver.dll'))</TaskAssembly>
+    <TaskAssembly>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'altasoft.storm.generator.mssql\3.0.0\tasks\netstandard2.0\AltaSoft.Storm.Weaver.dll'))</TaskAssembly>
   </PropertyGroup>
   <UsingTask TaskFactory="TaskHostFactory" TaskName="AltaSoft.Storm.Weaver.RewriteSettersTask" AssemblyFile="$(TaskAssembly)" />
   <Target Name="RewriteSetters" AfterTargets="AfterCompile" Condition="Exists(@(IntermediateAssembly)) And ($(DesignTimeBuild) != true Or $(BuildingForLiveUnitTesting) == true)">

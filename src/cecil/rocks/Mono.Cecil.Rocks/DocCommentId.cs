@@ -292,7 +292,7 @@ namespace Mono.Cecil.Rocks {
 
 		void WriteItemName (string name)
 		{
-			id.Append (name.Replace('.', '#').Replace('<', '{').Replace('>', '}'));
+			id.Append (name.Replace ('.', '#').Replace ('<', '{').Replace ('>', '}'));
 		}
 
 		public override string ToString ()

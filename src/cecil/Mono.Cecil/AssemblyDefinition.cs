@@ -8,10 +8,10 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Collections.Generic;
 using System;
 using System.IO;
 using System.Threading;
-using Mono.Collections.Generic;
 
 namespace Mono.Cecil {
 

@@ -139,11 +139,10 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, partialLoadFlags, shouldLoadDetails) = GenerateSelectSql(vCommand, queryParameters, true);
+            var (commandBehavior, partialLoadFlags, shouldLoadDetails) = await PrepareGenerateSelectSql(vCommand, queryParameters, true, cancellationToken).ConfigureAwait(false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -205,11 +204,7 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName) = GetColumnValue(vCommand, columnSelector, queryParameters);
-
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, propertyName) = await PrepareColumnValueAsync(vCommand, columnSelector, queryParameters, cancellationToken).ConfigureAwait(false);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -234,11 +229,10 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2) = GetColumnValues(vCommand, columnSelector1, columnSelector2, queryParameters);
+            var (commandBehavior, propertyName1, propertyName2) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -267,11 +261,10 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2, propertyName3) = GetColumnValues(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters);
+            var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -373,11 +366,10 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName) = ListColumnValues(vCommand, columnSelector, queryParameters);
+            var (commandBehavior, propertyName) = await PrepareListColumnValuesAsync(vCommand, columnSelector, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -403,11 +395,10 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2) = ListColumnValues(vCommand, columnSelector1, columnSelector2, queryParameters);
+            var (commandBehavior, propertyName1, propertyName2) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -437,11 +428,10 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2, propertyName3) = ListColumnValues(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters);
+            var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -465,10 +455,11 @@ public abstract partial class StormControllerBase
 
     #region Private methods
 
-    private (CommandBehavior commandBehavior, string propertyName) GetColumnValue<T, TColumn>(
+    private async Task<(CommandBehavior commandBehavior, string propertyName)> PrepareColumnValueAsync<T, TColumn>(
         StormVirtualDbCommand command,
         Expression<Func<T, TColumn>> columnSelector,
-        SelectQueryParameters<T> queryParameters) where T : IDataBindable
+        SelectQueryParameters<T> queryParameters,
+        CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName = columnSelector.GetPropertyNameFromExpression();
         var columnDef = Array.Find(ColumnDefs, x => string.Equals(x.PropertyName, propertyName, StringComparison.Ordinal))
@@ -497,20 +488,22 @@ public abstract partial class StormControllerBase
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, true, true, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
+
         return (commandBehavior, propertyName);
     }
 
-    private (CommandBehavior commandBehavior, string propertyName1, string propertyName2) GetColumnValues<T, TColumn1, TColumn2>(
+    private async Task<(CommandBehavior commandBehavior, string propertyName1, string propertyName2)> PrepareColumnValuesAsync<T, TColumn1, TColumn2>(
         StormVirtualDbCommand command,
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
-        SelectQueryParameters<T> queryParameters) where T : IDataBindable
+        SelectQueryParameters<T> queryParameters,
+        CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
         var propertyName2 = columnSelector2.GetPropertyNameFromExpression();
@@ -543,21 +536,23 @@ public abstract partial class StormControllerBase
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, true, true, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
+
         return (commandBehavior, propertyName1, propertyName2);
     }
 
-    private (CommandBehavior commandBehavior, string propertyName1, string propertyName2, string propertyName3) GetColumnValues<T, TResult1, TResult2, TResult3>(
+    private async Task<(CommandBehavior commandBehavior, string propertyName1, string propertyName2, string propertyName3)> PrepareColumnValuesAsync<T, TResult1, TResult2, TResult3>(
         StormVirtualDbCommand command,
         Expression<Func<T, TResult1>> columnSelector1,
         Expression<Func<T, TResult2>> columnSelector2,
         Expression<Func<T, TResult3>> columnSelector3,
-        SelectQueryParameters<T> queryParameters) where T : IDataBindable
+        SelectQueryParameters<T> queryParameters,
+        CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
         var propertyName2 = columnSelector2.GetPropertyNameFromExpression();
@@ -593,19 +588,21 @@ public abstract partial class StormControllerBase
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, true, true, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
+
         return (commandBehavior, propertyName1, propertyName2, propertyName3);
     }
 
-    private (CommandBehavior commandBehavior, string propertyName) ListColumnValues<T, TColumn>(
+    private async Task<(CommandBehavior commandBehavior, string propertyName)> PrepareListColumnValuesAsync<T, TColumn>(
         StormVirtualDbCommand command,
         Expression<Func<T, TColumn>> columnSelector,
-        SelectQueryParameters<T> queryParameters) where T : IDataBindable
+        SelectQueryParameters<T> queryParameters,
+        CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName = columnSelector.GetPropertyNameFromExpression();
         var columnDef = Array.Find(ColumnDefs,
@@ -633,20 +630,22 @@ public abstract partial class StormControllerBase
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, false, true, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
+
         return (commandBehavior, propertyName);
     }
 
-    private (CommandBehavior commandBehavior, string propertyName1, string propertyName2) ListColumnValues<T, TColumn1, TColumn2>(
+    private async Task<(CommandBehavior commandBehavior, string propertyName1, string propertyName2)> PrepareListColumnValuesAsync<T, TColumn1, TColumn2>(
         StormVirtualDbCommand command,
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
-        SelectQueryParameters<T> queryParameters) where T : IDataBindable
+        SelectQueryParameters<T> queryParameters,
+        CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
         var propertyName2 = columnSelector2.GetPropertyNameFromExpression();
@@ -677,21 +676,23 @@ public abstract partial class StormControllerBase
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, false, true, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
+
         return (commandBehavior, propertyName1, propertyName2);
     }
 
-    private (CommandBehavior commandBehavior, string propertyName1, string propertyName2, string propertyName3) ListColumnValues<T, TColumn1, TColumn2, TColumn3>(
+    private async Task<(CommandBehavior commandBehavior, string propertyName1, string propertyName2, string propertyName3)> PrepareListColumnValuesAsync<T, TColumn1, TColumn2, TColumn3>(
         StormVirtualDbCommand command,
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
         Expression<Func<T, TColumn3>> columnSelector3,
-        SelectQueryParameters<T> queryParameters) where T : IDataBindable
+        SelectQueryParameters<T> queryParameters,
+        CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
         var propertyName2 = columnSelector2.GetPropertyNameFromExpression();
@@ -725,11 +726,12 @@ public abstract partial class StormControllerBase
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, false, true, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
+
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, propertyName1, propertyName2, propertyName3);
     }
@@ -868,11 +870,8 @@ public abstract partial class StormControllerBase
     /// </returns>
     private static async Task<T> InternalExecuteScalarQueryAsync<T>(StormDbCommand command, string sql, QueryParameters queryParameters, CancellationToken cancellationToken)
     {
-        command.SetStormCommandBaseParameters(queryParameters.Context, sql, queryParameters);
-
-        var connection = queryParameters.Context.GetConnection();
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sql, queryParameters);
 
         return (T)await command.ExecuteScalarCommandAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -1003,10 +1002,11 @@ public abstract partial class StormControllerBase
         return (startIndex, sb.Length - startIndex);
     }
 
-    private (CommandBehavior commandBehavior, uint partialLoadFlags, bool shouldLoadDetails) GenerateSelectSql<T>(
+    private async Task<(CommandBehavior commandBehavior, uint partialLoadFlags, bool shouldLoadDetails)> PrepareGenerateSelectSql<T>(
          StormVirtualDbCommand command,
          SelectQueryParameters<T> queryParameters,
-         bool getOnlyFirstRow)
+         bool getOnlyFirstRow,
+         CancellationToken cancellationToken)
          where T : IDataBindable
     {
         var partialLoadFlags = queryParameters.PartialLoadFlags;
@@ -1027,8 +1027,6 @@ public abstract partial class StormControllerBase
             GenerateSelectDetailsSql(whereLocation, partialLoadFlags, sb);
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess;
         if (!shouldLoadDetails)
         {
@@ -1039,6 +1037,9 @@ public abstract partial class StormControllerBase
 
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
+
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, partialLoadFlags, shouldLoadDetails);
     }
@@ -1079,8 +1080,6 @@ public abstract partial class StormControllerBase
             GenerateSelectDetailsSql(whereLocation, partialLoadFlags, sb);
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
-
         var commandBehavior = CommandBehavior.SequentialAccess;
         if (!shouldLoadDetails)
         {
@@ -1092,9 +1091,8 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var connection = queryParameters.Context.GetConnection();
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
     }

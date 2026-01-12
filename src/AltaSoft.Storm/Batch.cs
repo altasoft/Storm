@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.Crud;
@@ -11,7 +10,7 @@ namespace AltaSoft.Storm;
 /// <summary>
 /// Represents a batch operation that groups multiple SQL commands for execution.
 /// </summary>
-public sealed class Batch : IDisposable, IAsyncDisposable
+public sealed class Batch : IAsyncDisposable, IDisposable
 {
     private readonly StormContext _context;
     private readonly StormDbBatch _batch;
@@ -23,7 +22,7 @@ public sealed class Batch : IDisposable, IAsyncDisposable
     internal Batch(StormContext context)
     {
         _context = context;
-        _batch = new StormDbBatch(context.GetConnection());
+        _batch = new StormDbBatch();
     }
 
     /// <summary>
@@ -70,12 +69,10 @@ public sealed class Batch : IDisposable, IAsyncDisposable
         if (_batch.Commands.Count == 0)
             return 0;
 
-        var connection = _context.GetConnection();
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await _context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         _batch.Connection = connection;
-        _batch.Transaction = _context.GetTransaction();
+        _batch.Transaction = transaction;
 
         return await _batch.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
     }

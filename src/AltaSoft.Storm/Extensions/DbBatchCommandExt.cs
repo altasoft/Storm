@@ -87,7 +87,7 @@ internal static class DbBatchCommandExt
     /// <param name="command">The database command to set the parameters for.</param>
     /// <param name="commandText">The command text to set for the command.</param>
     /// <param name="commandType">The command type to set for the command. Optional.</param>
-    internal static void SetStormCommandBaseParameters(this StormDbBatchCommand command, string commandText,CommandType commandType = CommandType.Text)
+    internal static void SetStormCommandBaseParameters(this StormDbBatchCommand command, string commandText, CommandType commandType = CommandType.Text)
     {
         command.CommandText = commandText;
         command.CommandType = commandType;

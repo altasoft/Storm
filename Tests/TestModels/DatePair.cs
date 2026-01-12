@@ -1,5 +1,5 @@
-﻿using AltaSoft.Storm.Attributes;
-using System;
+﻿using System;
+using AltaSoft.Storm.Attributes;
 
 namespace AltaSoft.Storm.TestModels;
 

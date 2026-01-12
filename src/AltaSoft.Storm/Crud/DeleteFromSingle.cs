@@ -68,7 +68,7 @@ internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFro
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Delete(vCommand, this);
+            GetController().PrepareDelete(vCommand, this);
             batchCommands.Add(command);
             return;
         }
@@ -78,7 +78,7 @@ internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFro
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Delete(vCommand, RowValue, this);
+            GetController().PrepareDelete(vCommand, RowValue, this);
             batchCommands.Add(command);
             return;
         }
@@ -88,7 +88,7 @@ internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFro
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().Delete(vCommand, RowValues, this);
+            GetController().PrepareDelete(vCommand, RowValues, this);
             batchCommands.Add(command);
         }
     }

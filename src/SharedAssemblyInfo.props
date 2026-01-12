@@ -6,8 +6,8 @@
 	<Description>AltaSoft.Storm - Fastest ORM</Description>
 	<Authors>Gregory Nikolaishvili, Teimuraz Nikolaishvili</Authors>
 	<Company>ALTA Software llc.</Company>
-	<Copyright>Copyright © 2024-2025 ALTA Software llc.</Copyright>
-	<Version>2.5.1</Version>
+	<Copyright>Copyright © 2024-2026 ALTA Software llc.</Copyright>
+	<Version>3.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>

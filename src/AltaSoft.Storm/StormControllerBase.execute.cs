@@ -37,11 +37,10 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var commandBehavior = GenerateExec(vCommand, queryParameters, false);
+            var commandBehavior = PrepareGenerateExec(vCommand, queryParameters, false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -88,11 +87,10 @@ public abstract partial class StormControllerBase
             var result = new List<T>(16);
 
             var vCommand = new StormVirtualDbCommand(command);
-            var commandBehavior = GenerateExec(vCommand, queryParameters, false);
+            var commandBehavior = PrepareGenerateExec(vCommand, queryParameters, false);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -143,11 +141,10 @@ public abstract partial class StormControllerBase
             T? row = default;
 
             var vCommand = new StormVirtualDbCommand(command);
-            var commandBehavior = GenerateExec(vCommand, queryParameters, true);
+            var commandBehavior = PrepareGenerateExec(vCommand, queryParameters, true);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -168,8 +165,8 @@ public abstract partial class StormControllerBase
         }
     }
 
-    private CommandBehavior GenerateExec<T>(
-        IVirtualStormDbCommand command,
+    private CommandBehavior PrepareGenerateExec<T>(
+        StormVirtualDbCommand command,
         SelectQueryParameters<T> queryParameters,
         bool getOnlyFirstRow) where T : IDataBindable
     {
@@ -177,7 +174,7 @@ public abstract partial class StormControllerBase
         if (callParameters is not null)
             command.AddDbParameters(callParameters);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, QuotedObjectFullName, queryParameters, CommandType.StoredProcedure);
+        command.SetStormCommandBaseParameters(QuotedObjectFullName, queryParameters, CommandType.StoredProcedure);
 
         var commandBehavior = CommandBehavior.SequentialAccess;
         commandBehavior |= CommandBehavior.SingleResult;

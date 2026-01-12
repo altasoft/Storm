@@ -48,8 +48,22 @@ internal readonly struct StormVirtualDbCommand : IVirtualStormDbCommand
 
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetStormCommandBaseParameters(StormContext context, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text) =>
-        _command.SetStormCommandBaseParameters(context, sql, queryParameters, commandType);
+    public void SetStormCommandBaseParameters(StormDbConnection connection, StormDbTransaction? transaction, string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
+    {
+        _command.SetStormCommandBaseParameters(connection, transaction, sql, queryParameters, commandType);
+    }
+
+    /// <inheritdoc/>
+    public void SetStormCommandBaseParameters(string sql, QueryParameters queryParameters, CommandType commandType = CommandType.Text)
+    {
+        _command.SetStormCommandBaseParameters(sql, queryParameters, commandType);
+    }
+
+    /// <inheritdoc/>
+    public void SetStormCommandBaseParameters(StormDbConnection connection, StormDbTransaction? transaction)
+    {
+        _command.SetStormCommandBaseParameters(connection, transaction);
+    }
 
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

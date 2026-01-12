@@ -14,7 +14,6 @@ using System.IO;
 using System.Threading;
 using SR = System.Reflection;
 #if (NETSTANDARD)
-using StrongNameKeyPair=Mono.Cecil.StrongNameKeyPair;
 #else
 using StrongNameKeyPair=System.Reflection.StrongNameKeyPair;
 #endif
@@ -689,14 +688,14 @@ namespace Mono.Cecil {
 			if (position > 0)
 				return GetNestedType (fullName);
 
-			return ((TypeDefinitionCollection) this.Types).GetType (fullName);
+			return ((TypeDefinitionCollection)this.Types).GetType (fullName);
 		}
 
 		public TypeDefinition GetType (string @namespace, string name)
 		{
 			Mixin.CheckName (name);
 
-			return ((TypeDefinitionCollection) this.Types).GetType (@namespace ?? string.Empty, name);
+			return ((TypeDefinitionCollection)this.Types).GetType (@namespace ?? string.Empty, name);
 		}
 
 		public IEnumerable<TypeDefinition> GetTypes ()
@@ -926,14 +925,14 @@ namespace Mono.Cecil {
 
 		public IMetadataTokenProvider LookupToken (int token)
 		{
-			return LookupToken (new MetadataToken ((uint) token));
+			return LookupToken (new MetadataToken ((uint)token));
 		}
 
 		public IMetadataTokenProvider LookupToken (MetadataToken token)
 		{
 			return Read (token, (t, reader) => reader.LookupToken (t));
 		}
-		
+
 		public void ImmediateRead ()
 		{
 			if (!HasImage)
@@ -943,7 +942,7 @@ namespace Mono.Cecil {
 			moduleReader.ReadModule (this, resolve_attributes: true);
 		}
 
-		readonly object module_lock = new object();
+		readonly object module_lock = new object ();
 
 		internal object SyncRoot {
 			get { return module_lock; }
@@ -1022,7 +1021,7 @@ namespace Mono.Cecil {
 				architecture = parameters.Architecture,
 				mvid = Guid.NewGuid (),
 				Attributes = ModuleAttributes.ILOnly,
-				Characteristics = (ModuleCharacteristics) 0x8540,
+				Characteristics = (ModuleCharacteristics)0x8540,
 			};
 
 			if (parameters.AssemblyResolver != null)
@@ -1068,7 +1067,7 @@ namespace Mono.Cecil {
 
 		public void ReadSymbols (ISymbolReader reader)
 		{
-			ReadSymbols(reader, throwIfSymbolsAreNotMaching: true);
+			ReadSymbols (reader, throwIfSymbolsAreNotMaching: true);
 		}
 
 		public void ReadSymbols (ISymbolReader reader, bool throwIfSymbolsAreNotMaching)
@@ -1103,7 +1102,7 @@ namespace Mono.Cecil {
 			var stream = GetFileStream (fileName, FileMode.Open, parameters.ReadWrite ? FileAccess.ReadWrite : FileAccess.Read, FileShare.Read);
 
 			if (parameters.InMemory) {
-				var memory = new MemoryStream (stream.CanSeek ? (int) stream.Length : 0);
+				var memory = new MemoryStream (stream.CanSeek ? (int)stream.Length : 0);
 				using (stream)
 					stream.CopyTo (memory);
 
@@ -1113,7 +1112,8 @@ namespace Mono.Cecil {
 
 			try {
 				return ReadModule (Disposable.Owned (stream), fileName, parameters);
-			} catch (Exception) {
+			}
+			catch (Exception) {
 				stream.Dispose ();
 				throw;
 			}
@@ -1284,7 +1284,7 @@ namespace Mono.Cecil {
 
 		public static uint GetTimestamp ()
 		{
-			return (uint) DateTime.UtcNow.Subtract (new DateTime (1970, 1, 1)).TotalSeconds;
+			return (uint)DateTime.UtcNow.Subtract (new DateTime (1970, 1, 1)).TotalSeconds;
 		}
 
 		public static bool HasImage (this ModuleDefinition self)
@@ -1342,7 +1342,7 @@ namespace Mono.Cecil {
 		public static byte [] ReadAll (this Stream self)
 		{
 			int read;
-			var memory = new MemoryStream ((int) self.Length);
+			var memory = new MemoryStream ((int)self.Length);
 			var buffer = new byte [1024];
 
 			while ((read = self.Read (buffer, 0, buffer.Length)) != 0)

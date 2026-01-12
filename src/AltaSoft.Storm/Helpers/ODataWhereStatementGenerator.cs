@@ -166,7 +166,7 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         if (_lastIdentifierVisitedColumnDef.PropertyType.IsEnum)
         {
             if (!Enum.TryParse(_lastIdentifierVisitedColumnDef.PropertyType, ((ODataEnumValue)value).Value, true, out var enumValue))
-                throw new ODataException($"Invalid `{_lastIdentifierVisitedColumnDef.PropertyType.Name}` enum value: `{nodeIn.Value}`");
+                throw new ODataException($"Invalid '{_lastIdentifierVisitedColumnDef.PropertyType.Name}' enum value: '{nodeIn.Value}'");
 
             value = dbType switch
             {
@@ -185,8 +185,8 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         {
             value = value switch
             {
-                Date { Year: var year, Month: var month, Day: var day } => new DateOnly(year, month, day),
-                TimeOfDay { Ticks: var ticks } => new TimeOnly(ticks),
+                //Date { Year: var year, Month: var month, Day: var day } => new DateOnly(year, month, day),
+                //TimeOfDay { Ticks: var ticks } => new TimeOnly(ticks),
                 DateTimeOffset { DateTime: var dt } when dbType is UnifiedDbType.DateTime or UnifiedDbType.DateTime2 or UnifiedDbType.SmallDateTime => dt,
                 _ => value
             };
@@ -207,9 +207,9 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         {
             { Left: ConvertNode { Source: var s } } => new BinaryOperatorNode(nodeIn.OperatorKind, s, nodeIn.Right).Accept(this),
             { Right: ConvertNode { Source: var s } } => new BinaryOperatorNode(nodeIn.OperatorKind, nodeIn.Left, s).Accept(this),
-            { Left: ConstantNode _, Right: ConstantNode _ } => throw new ArgumentException($"Both parts of binary operation `{nodeIn.OperatorKind}` are constants"),
+            { Left: ConstantNode _, Right: ConstantNode _ } => throw new ArgumentException($"Both parts of binary operation '{nodeIn.OperatorKind}' are constants"),
             { Left: ConstantNode l, Right: SingleValuePropertyAccessNode r } => new BinaryOperatorNode(ReverseComparison(nodeIn.OperatorKind), r, l).Accept(this),
-            _ => VisitBinary(nodeIn!)
+            _ => VisitBinary(nodeIn)
         };
 
         QueryNode VisitBinary(BinaryOperatorNode input)
@@ -259,7 +259,7 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         {
             BinaryOperatorKind.Equal => "IS NULL",
             BinaryOperatorKind.NotEqual => "IS NOT NULL",
-            _ => throw new ArgumentException($"Invalid operator {input} usage for `NULL` constant")
+            _ => throw new ArgumentException($"Invalid operator {input} usage for 'NULL' constant")
         };
 
         static string ToSqlBinaryOpPre(BinaryOperatorKind input) => input switch
@@ -337,7 +337,7 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
                 parameters[1] = new ConstantNode(string.Format(CultureInfo.InvariantCulture, ToLikePattern(nodeIn.Name), constant)).Accept(this);
                 return new SingleValueFunctionCallNode(nodeIn.Name, nodeIn.Functions, parameters, nodeIn.TypeReference, nodeIn.Source);
 
-            default: throw new NotSupportedException($"function `{nodeIn.Name}` argument 2 is not string constant");
+            default: throw new NotSupportedException($"function '{nodeIn.Name}' argument 2 is not string constant");
         }
 
         static string ToLikePattern(string input) => input switch
@@ -345,7 +345,7 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
             "startswith" => "{0}%",
             "endswith" => "%{0}",
             "contains" => "%{0}%",
-            _ => throw new NotSupportedException($"Function: `{input}` not supported")
+            _ => throw new NotSupportedException($"Function: '{input}' not supported")
         };
     }
 

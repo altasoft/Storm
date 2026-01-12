@@ -30,11 +30,10 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Merge(vCommand, value, checkConcurrency, updateThenInsert, queryParameters);
+            PrepareMerge(vCommand, value, checkConcurrency, updateThenInsert, queryParameters);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var autoIncColumn = __GetAutoIncColumn();
             if (autoIncColumn is null)
@@ -68,11 +67,10 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            var (autoIncColumn, valueList) = Merge(vCommand, values, checkConcurrency, updateThenInsert, queryParameters);
+            var (autoIncColumn, valueList) = PrepareMerge(vCommand, values, checkConcurrency, updateThenInsert, queryParameters);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             if (autoIncColumn is null)
                 return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -92,7 +90,7 @@ public abstract partial class StormControllerBase
 
     #region Merges
 
-    internal void Merge<T>(
+    internal void PrepareMerge<T>(
         IVirtualStormDbCommand command,
         T value,
         bool checkConcurrency,
@@ -114,13 +112,13 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateMergeSql(command, value, checkConcurrency, updateThenInsert, ref paramIndex, -1, sb);
 
-        if (!queryParameters.Context.IsInUnitOfWork)
+        if (!queryParameters.Context.IsInTransactionScope)
             sb.WrapIntoBeginTranCommit();
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    internal (StormColumnDef? autoIncColumn, IList<T> valueList) Merge<T>(
+    internal (StormColumnDef? autoIncColumn, IList<T> valueList) PrepareMerge<T>(
         IVirtualStormDbCommand command,
         IEnumerable<T> values,
         bool checkConcurrency,
@@ -155,12 +153,12 @@ public abstract partial class StormControllerBase
             sb.AppendLine("SELECT [Index],[Id] FROM @__storm_id_values;");
         }
 
-        if (!queryParameters.Context.IsInUnitOfWork)
+        if (!queryParameters.Context.IsInTransactionScope)
         {
             sb.WrapIntoBeginTranCommit();
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
         return (autoIncColumn, valueList);
     }
 

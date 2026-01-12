@@ -24,7 +24,7 @@ public sealed class ObjectVariant
     /// Gets the Virtual View Sql.
     /// </summary>
     public string VirtualViewSql { get; }
-    
+
     /// <summary>
     /// Gets the BindObjectData object used to bind data to a table.
     /// </summary>

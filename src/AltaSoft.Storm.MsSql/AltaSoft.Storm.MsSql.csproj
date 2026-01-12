@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+	<TargetFrameworks>$(DefaultTargetFrameworks)</TargetFrameworks>
 	<LangVersion>Latest</LangVersion>
 	<Nullable>enable</Nullable>
 	<RootNamespace>AltaSoft.Storm</RootNamespace>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <Import Project="../SharedAssemblyInfo.props" />
@@ -16,12 +18,13 @@
   </ItemGroup>
 
   <PropertyGroup>
-	  <NuspecFile>AltaSoft.Storm.MsSql.nuspec</NuspecFile>
+	<NuspecFile>AltaSoft.Storm.MsSql.nuspec</NuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Data.SqlClient" />
-  <ProjectReference Include="..\AltaSoft.Storm\AltaSoft.Storm.csproj">
+
+	<ProjectReference Include="..\AltaSoft.Storm\AltaSoft.Storm.csproj">
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>none</IncludeAssets>
 	</ProjectReference>

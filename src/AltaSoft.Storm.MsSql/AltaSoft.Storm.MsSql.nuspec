@@ -2,36 +2,43 @@
 <package>
   <metadata>
     <id>AltaSoft.Storm.MsSql</id>
-    <version>1.1.0</version>
+    <version>3.0.0</version>
     <title>AltaSoft.Storm</title>
     <authors>Gregory Nikolaishvili, Teimuraz Nikolaishvili</authors>
     <owners>ALTA Software llc.</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>AltaSoft.Storm - Fastest ORM</description>
     <summary>Fastest ORM for .NET with MSSQL support.</summary>
-    <copyright>Copyright 2024-2025 ALTA Software llc.</copyright>
+    <copyright>Copyright 2024-2026 ALTA Software llc.</copyright>
     <readme>README.md</readme>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/altasoft/Storm</projectUrl>
     <repository type="git" url="https://github.com/altasoft/Storm" />
     <tags>orm;sql;database;dotnet;storm;mssql;altasoft</tags>
-    <releaseNotes>Initial release supporting .NET 8 and .NET 9.</releaseNotes>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="AltaSoft.DomainPrimitives" version="6.0.3" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.10" />
-        <dependency id="Microsoft.Extensions.ObjectPool" version="9.0.10" />
-        <dependency id="Microsoft.OData.Core" version="8.4.2" />
-        <dependency id="System.Text.Json" version="9.0.10" />
-        <dependency id="Microsoft.Data.SqlClient" version="6.1.2" />
+        <dependency id="AltaSoft.DomainPrimitives" version="7.0.1" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="8.0.3" />
+        <dependency id="Microsoft.Extensions.ObjectPool" version="8.0.22" />
+        <dependency id="Microsoft.OData.Core" version="8.4.3" />
+        <dependency id="System.Text.Json" version="8.0.6" />
+        <dependency id="Microsoft.Data.SqlClient" version="6.1.3" />
       </group>
       <group targetFramework="net9.0">
-        <dependency id="AltaSoft.DomainPrimitives" version="6.0.3" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.10" />
-        <dependency id="Microsoft.Extensions.ObjectPool" version="9.0.10" />
-        <dependency id="Microsoft.OData.Core" version="8.4.2" />
-        <dependency id="System.Text.Json" version="9.0.10" />
-        <dependency id="Microsoft.Data.SqlClient" version="6.1.2" />
+        <dependency id="AltaSoft.DomainPrimitives" version="7.0.1" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.11" />
+        <dependency id="Microsoft.Extensions.ObjectPool" version="9.0.11" />
+        <dependency id="Microsoft.OData.Core" version="8.4.3" />
+        <dependency id="System.Text.Json" version="9.0.11" />
+        <dependency id="Microsoft.Data.SqlClient" version="6.1.3" />
+      </group>
+      <group targetFramework="net10.0">
+        <dependency id="AltaSoft.DomainPrimitives" version="7.0.1" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.1" />
+        <dependency id="Microsoft.Extensions.ObjectPool" version="10.0.1" />
+        <dependency id="Microsoft.OData.Core" version="8.4.3" />
+        <dependency id="System.Text.Json" version="10.0.1" />
+        <dependency id="Microsoft.Data.SqlClient" version="6.1.3" />
       </group>
     </dependencies>
     <contentFiles>
@@ -41,8 +48,10 @@
   <files>
     <file src="..\AltaSoft.Storm.MsSql\bin\Release\net8.0\AltaSoft.Storm.MsSql.dll" target="lib\net8.0\" />
     <file src="..\AltaSoft.Storm.MsSql\bin\Release\net9.0\AltaSoft.Storm.MsSql.dll" target="lib\net9.0\" />
+    <file src="..\AltaSoft.Storm.MsSql\bin\Release\net10.0\AltaSoft.Storm.MsSql.dll" target="lib\net10.0\" />
     <file src="..\AltaSoft.Storm\bin\Release\net8.0\AltaSoft.Storm.dll" target="lib\net8.0\" />
     <file src="..\AltaSoft.Storm\bin\Release\net9.0\AltaSoft.Storm.dll" target="lib\net9.0\" />
+    <file src="..\AltaSoft.Storm\bin\Release\net10.0\AltaSoft.Storm.dll" target="lib\net10.0\" />
     <file src="..\AltaSoft.Storm.Analyzers\bin\Release\netstandard2.0\AltaSoft.Storm.Analyzers.dll" target="analyzers\dotnet\cs" />
     <file src="..\..\README.md" target="README.md" />
     <file src="..\StormGlobalTypeAliases.cs" target="contentFiles\cs\any" />

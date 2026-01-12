@@ -30,11 +30,10 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Insert(vCommand, value, queryParameters);
+            PrepareInsert(vCommand, value, queryParameters);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             var autoIncColumn = __GetAutoIncColumn();
             if (autoIncColumn is null)
@@ -63,13 +62,12 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            var (autoIncColumn, valueList) = Insert(vCommand, values, queryParameters);
+            var (autoIncColumn, valueList) = PrepareInsert(vCommand, values, queryParameters);
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             if (autoIncColumn is null)
                 return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -91,7 +89,7 @@ public abstract partial class StormControllerBase
 
     #region Inserts
 
-    internal void Insert<T>(
+    internal void PrepareInsert<T>(
         IVirtualStormDbCommand command,
         T value,
         ModifyQueryParameters<T> queryParameters)
@@ -102,10 +100,10 @@ public abstract partial class StormControllerBase
 
         GenerateInsertSql(command, value, ref paramIndex, -1, sb);
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    internal (StormColumnDef? autoIncColumn, IList<T> valueList) Insert<T>(
+    internal (StormColumnDef? autoIncColumn, IList<T> valueList) PrepareInsert<T>(
         IVirtualStormDbCommand command,
         IEnumerable<T> values,
         ModifyQueryParameters<T> queryParameters)
@@ -136,12 +134,12 @@ public abstract partial class StormControllerBase
             sb.AppendLine("SELECT [Id] FROM @__storm_id_values;");
         }
 
-        if (!queryParameters.Context.IsInUnitOfWork)
+        if (!queryParameters.Context.IsInTransactionScope)
         {
             sb.WrapIntoBeginTranCommit();
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
         return (autoIncColumn, valueList);
     }
 
@@ -275,102 +273,102 @@ public abstract partial class StormControllerBase
         return (masterPkColumnNames, masterPkParamNames);
     }
 
-    /// <summary>
-    /// Generates an SQL INSERT command for a given value and appends it to a StringBuilder.
-    /// </summary>
-    /// <param name="command">The database command object to which parameters will be added.</param>
-    /// <param name="value">The value implementing IDataBindable from which to derive the values for insertion.</param>
-    /// <param name="paramIndex">The starting index for parameterization in the SQL command.</param>
-    /// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
-    /// <returns>The StringBuilder with the appended SQL INSERT command.</returns>
-    private void GenerateBatchInsertSql(StormDbBatchCommand command, IDataBindable value, ref int paramIndex, StringBuilder sb)
-    {
-        value.BeforeSave(SaveAction.Insert);
+    ///// <summary>
+    ///// Generates an SQL INSERT command for a given value and appends it to a StringBuilder.
+    ///// </summary>
+    ///// <param name="command">The database command object to which parameters will be added.</param>
+    ///// <param name="value">The value implementing IDataBindable from which to derive the values for insertion.</param>
+    ///// <param name="paramIndex">The starting index for parameterization in the SQL command.</param>
+    ///// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
+    ///// <returns>The StringBuilder with the appended SQL INSERT command.</returns>
+    //private void GenerateBatchInsertSql(StormDbBatchCommand command, IDataBindable value, ref int paramIndex, StringBuilder sb)
+    //{
+    //    value.BeforeSave(SaveAction.Insert);
 
-        var (masterValues, detailValues) = value.__GetColumnValues().GetMaterAndDetailColumnsForInsert();
+    //    var (masterValues, detailValues) = value.__GetColumnValues().GetMaterAndDetailColumnsForInsert();
 
-        List<string>? masterPkColumnNames = null;
-        List<string>? masterPkParamNames = null;
-        var pid = paramIndex;
+    //    List<string>? masterPkColumnNames = null;
+    //    List<string>? masterPkParamNames = null;
+    //    var pid = paramIndex;
 
-        sb.Append("INSERT INTO ").Append(QuotedObjectFullName).Append(" (");
-        sb.AppendJoin(',', masterValues.Select(x =>
-                {
-                    var column = x.column;
-                    if (detailValues is not null && (column.Flags & StormColumnFlags.Key) != StormColumnFlags.None)
-                    {
-                        masterPkColumnNames ??= new List<string>(2);
-                        masterPkColumnNames.Add(column.ColumnName);
-                    }
-                    return column.ColumnName;
-                }));
-        sb.Append(')').AppendLine();
+    //    sb.Append("INSERT INTO ").Append(QuotedObjectFullName).Append(" (");
+    //    sb.AppendJoin(',', masterValues.Select(x =>
+    //            {
+    //                var column = x.column;
+    //                if (detailValues is not null && (column.Flags & StormColumnFlags.Key) != StormColumnFlags.None)
+    //                {
+    //                    masterPkColumnNames ??= new List<string>(2);
+    //                    masterPkColumnNames.Add(column.ColumnName);
+    //                }
+    //                return column.ColumnName;
+    //            }));
+    //    sb.Append(')').AppendLine();
 
-        sb.Append("VALUES (");
-        sb.AppendJoin(',', masterValues.Select(x =>
-                {
-                    var column = x.column;
-                    var parameterName = command.AddDbParameter(pid++, column, column.GetValueForDbParameter(x.value, x.column.PropertySerializationType));
-                    if (detailValues is not null && (column.Flags & StormColumnFlags.Key) != StormColumnFlags.None)
-                    {
-                        masterPkParamNames ??= new List<string>(2);
-                        masterPkParamNames.Add(parameterName);
-                    }
-                    return parameterName;
-                }));
-        sb.AppendLine(")");
+    //    sb.Append("VALUES (");
+    //    sb.AppendJoin(',', masterValues.Select(x =>
+    //            {
+    //                var column = x.column;
+    //                var parameterName = command.AddDbParameter(pid++, column, column.GetValueForDbParameter(x.value, x.column.PropertySerializationType));
+    //                if (detailValues is not null && (column.Flags & StormColumnFlags.Key) != StormColumnFlags.None)
+    //                {
+    //                    masterPkParamNames ??= new List<string>(2);
+    //                    masterPkParamNames.Add(parameterName);
+    //                }
+    //                return parameterName;
+    //            }));
+    //    sb.AppendLine(")");
 
-        if (detailValues is not null && masterPkColumnNames is not null && masterPkParamNames is not null)
-        {
-            var noCountAdded = false;
+    //    if (detailValues is not null && masterPkColumnNames is not null && masterPkParamNames is not null)
+    //    {
+    //        var noCountAdded = false;
 
-            foreach (var (column, detailList) in detailValues)
-            {
-                switch (detailList)
-                {
-                    case null:
-                        continue;
+    //        foreach (var (column, detailList) in detailValues)
+    //        {
+    //            switch (detailList)
+    //            {
+    //                case null:
+    //                    continue;
 
-                    case IEnumerable<IDataBindable> dataBindableList:
-                        Debug.Assert(column.DetailType is not null);
-                        Debug.Assert(column.QuotedDetailTableName is not null);
+    //                case IEnumerable<IDataBindable> dataBindableList:
+    //                    Debug.Assert(column.DetailType is not null);
+    //                    Debug.Assert(column.QuotedDetailTableName is not null);
 
-                        var detCtrl = StormControllerCache.Get(column.DetailType, 0);
+    //                    var detCtrl = StormControllerCache.Get(column.DetailType, 0);
 
-                        foreach (var detailValue in dataBindableList)
-                        {
-                            EnsureNoCountOn();
-                            detCtrl.GenerateInsertBatchDetailSql(command, column.QuotedDetailTableName, detailValue, masterPkColumnNames, masterPkParamNames, ref pid, sb);
-                        }
+    //                    foreach (var detailValue in dataBindableList)
+    //                    {
+    //                        EnsureNoCountOn();
+    //                        detCtrl.GenerateInsertBatchDetailSql(command, column.QuotedDetailTableName, detailValue, masterPkColumnNames, masterPkParamNames, ref pid, sb);
+    //                    }
 
-                        break;
+    //                    break;
 
-                    case IEnumerable<string> stringList:
-                        Debug.Assert(column.QuotedDetailTableName is not null);
+    //                case IEnumerable<string> stringList:
+    //                    Debug.Assert(column.QuotedDetailTableName is not null);
 
-                        foreach (var detValue in stringList)
-                        {
-                            var parameterName = command.AddDbParameter(pid++, column, detValue);
+    //                    foreach (var detValue in stringList)
+    //                    {
+    //                        var parameterName = command.AddDbParameter(pid++, column, detValue);
 
-                            EnsureNoCountOn();
-                            sb.Append("INSERT INTO ").Append(QuotedSchemaName).Append('.').Append(column.QuotedDetailTableName).Append(" (").AppendJoinFast(',', masterPkColumnNames).Append(',').Append(column.ColumnName).Append(')').AppendLine();
-                            sb.Append("VALUES (").AppendJoinFast(',', masterPkParamNames).Append(',').Append(parameterName).AppendLine(")");
-                        }
+    //                        EnsureNoCountOn();
+    //                        sb.Append("INSERT INTO ").Append(QuotedSchemaName).Append('.').Append(column.QuotedDetailTableName).Append(" (").AppendJoinFast(',', masterPkColumnNames).Append(',').Append(column.ColumnName).Append(')').AppendLine();
+    //                        sb.Append("VALUES (").AppendJoinFast(',', masterPkParamNames).Append(',').Append(parameterName).AppendLine(")");
+    //                    }
 
-                        break;
-                }
-            }
+    //                    break;
+    //            }
+    //        }
 
-            void EnsureNoCountOn()
-            {
-                if (noCountAdded)
-                    return;
-                sb.AppendLine("SET NOCOUNT ON;");
-                noCountAdded = true;
-            }
-        }
-        paramIndex = pid;
-    }
+    //        void EnsureNoCountOn()
+    //        {
+    //            if (noCountAdded)
+    //                return;
+    //            sb.AppendLine("SET NOCOUNT ON;");
+    //            noCountAdded = true;
+    //        }
+    //    }
+    //    paramIndex = pid;
+    //}
 
     /// <summary>
     /// Generates an SQL INSERT command for a detail table associated with the main value.
@@ -395,36 +393,36 @@ public abstract partial class StormControllerBase
         paramIndex = pid;
     }
 
-    /// <summary>
-    /// Generates an SQL INSERT command for a detail table associated with the main value.
-    /// </summary>
-    /// <param name="command">The database command object to which parameters will be added.</param>
-    /// <param name="quotedDetailTableName">The quoted name of the detail table for insertion.</param>
-    /// <param name="detailValue">The detail value implementing IDataBindable from which to derive the values for insertion.</param>
-    /// <param name="masterPkColumnNames">A comma-separated string of primary key column names in the detail table.</param>
-    /// <param name="masterPkParamNames">A comma-separated string of primary key parameter names for the SQL command.</param>
-    /// <param name="paramIndex">The starting index for parameterization in the SQL command.</param>
-    /// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
-    /// <returns>The StringBuilder with the appended SQL INSERT command for the detail table.</returns>
-    private void GenerateInsertBatchDetailSql(StormDbBatchCommand command, string quotedDetailTableName,
-        IDataBindable detailValue, List<string> masterPkColumnNames, List<string> masterPkParamNames, ref int paramIndex, StringBuilder sb)
-    {
-        detailValue.BeforeSave(SaveAction.Insert);
+    ///// <summary>
+    ///// Generates an SQL INSERT command for a detail table associated with the main value.
+    ///// </summary>
+    ///// <param name="command">The database command object to which parameters will be added.</param>
+    ///// <param name="quotedDetailTableName">The quoted name of the detail table for insertion.</param>
+    ///// <param name="detailValue">The detail value implementing IDataBindable from which to derive the values for insertion.</param>
+    ///// <param name="masterPkColumnNames">A comma-separated string of primary key column names in the detail table.</param>
+    ///// <param name="masterPkParamNames">A comma-separated string of primary key parameter names for the SQL command.</param>
+    ///// <param name="paramIndex">The starting index for parameterization in the SQL command.</param>
+    ///// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
+    ///// <returns>The StringBuilder with the appended SQL INSERT command for the detail table.</returns>
+    //private void GenerateInsertBatchDetailSql(StormDbBatchCommand command, string quotedDetailTableName,
+    //    IDataBindable detailValue, List<string> masterPkColumnNames, List<string> masterPkParamNames, ref int paramIndex, StringBuilder sb)
+    //{
+    //    detailValue.BeforeSave(SaveAction.Insert);
 
-        var pid = paramIndex;
-        var detailColumnValues = detailValue.__GetColumnValues().GetColumnsForInsert();
+    //    var pid = paramIndex;
+    //    var detailColumnValues = detailValue.__GetColumnValues().GetColumnsForInsert();
 
-        sb.Append("INSERT INTO ").Append(QuotedSchemaName).Append('.').Append(quotedDetailTableName).Append(" (").AppendJoinFast(',', masterPkColumnNames).Append(',');
+    //    sb.Append("INSERT INTO ").Append(QuotedSchemaName).Append('.').Append(quotedDetailTableName).Append(" (").AppendJoinFast(',', masterPkColumnNames).Append(',');
 
-        sb.AppendJoin(',', detailColumnValues.Select(x => x.column.ColumnName));
-        sb.Append(')').AppendLine();
+    //    sb.AppendJoin(',', detailColumnValues.Select(x => x.column.ColumnName));
+    //    sb.Append(')').AppendLine();
 
-        sb.Append("VALUES (").AppendJoinFast(',', masterPkParamNames).Append(',');
-        sb.AppendJoin(',', detailColumnValues.Select(x => command.AddDbParameter(pid++, x.column, x.column.GetValueForDbParameter(x.value, x.column.PropertySerializationType))));
-        sb.AppendLine(")");
+    //    sb.Append("VALUES (").AppendJoinFast(',', masterPkParamNames).Append(',');
+    //    sb.AppendJoin(',', detailColumnValues.Select(x => command.AddDbParameter(pid++, x.column, x.column.GetValueForDbParameter(x.value, x.column.PropertySerializationType))));
+    //    sb.AppendLine(")");
 
-        paramIndex = pid;
-    }
+    //    paramIndex = pid;
+    //}
 
     #endregion Inserts
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -31,11 +30,10 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Update(vCommand, setInstructions, queryParameters);
+            PrepareUpdate(vCommand, setInstructions, queryParameters);
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -56,13 +54,12 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Update(vCommand, value, checkConcurrency, queryParameters);
+            PrepareUpdate(vCommand, value, checkConcurrency, queryParameters);
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -83,13 +80,12 @@ public abstract partial class StormControllerBase
         {
             var vCommand = new StormVirtualDbCommand(command);
 
-            Update(vCommand, valueList, checkConcurrency, queryParameters);
+            PrepareUpdate(vCommand, valueList, checkConcurrency, queryParameters);
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
-            var connection = queryParameters.Context.GetConnection();
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -97,7 +93,7 @@ public abstract partial class StormControllerBase
 
     #region Updates
 
-    internal void Update<T>(
+    internal void PrepareUpdate<T>(
         IVirtualStormDbCommand command,
         List<(StormColumnDef column, object? value)> setInstructions,
         ModifyQueryParameters<T> queryParameters)
@@ -137,10 +133,10 @@ public abstract partial class StormControllerBase
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         sb.AppendLine();
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    internal void Update<T>(
+    internal void PrepareUpdate<T>(
         IVirtualStormDbCommand command,
         T value,
         bool checkConcurrency,
@@ -166,10 +162,10 @@ public abstract partial class StormControllerBase
             return;
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    internal void Update<T>(
+    internal void PrepareUpdate<T>(
         IVirtualStormDbCommand command,
         IEnumerable<T> valueList,
         bool checkConcurrency,
@@ -197,12 +193,12 @@ public abstract partial class StormControllerBase
             return;
         }
 
-        if (!queryParameters.Context.IsInUnitOfWork)
+        if (!queryParameters.Context.IsInTransactionScope)
         {
             sb.WrapIntoBeginTranCommit();
         }
 
-        command.SetStormCommandBaseParameters(queryParameters.Context, sb.ToStringAndReturnToPool(), queryParameters);
+        command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
     private (List<string> whereStatements, List<string> pkColumnNames, List<string> pkParamNames)
