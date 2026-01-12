@@ -6,8 +6,6 @@
 	<Nullable>enable</Nullable>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<IncludeSymbols>true</IncludeSymbols>
-	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <Import Project="../SharedAssemblyInfo.props" />

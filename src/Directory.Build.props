@@ -24,11 +24,6 @@
 		<PackageTags>orm;sql;database;dotnet;storm;mssql;altasoft</PackageTags>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-		<EmbedAllSources>false</EmbedAllSources>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
