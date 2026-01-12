@@ -8,9 +8,9 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Mono.Collections.Generic;
 
 namespace Mono.Cecil {
 

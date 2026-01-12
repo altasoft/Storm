@@ -30,7 +30,7 @@ namespace AltaSoft.Storm.Tests
         [Fact]
         public async Task AllMethodsForDynamicTableShouldWorkFine()
         {
-            var (conn, _) = await _context.EnsureConnectionAndTransactionIsOpenAsync(CancellationToken.None);
+            var (conn, _) = await _context.EnsureConnectionAsync(CancellationToken.None);
             await conn.CreateTableAsync<Blob>(true, unquotedSchemaName: "dbo", unquotedTableName: "BlobTest1");
             const string tableName = "dbo.BlobTest1";
 

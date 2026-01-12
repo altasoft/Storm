@@ -152,7 +152,7 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
         string sqlStatement, CommandType commandType = CommandType.Text, Action<StormDbCommand>? commandSetup = null,
         CancellationToken cancellationToken = default)
     {
-        var (connection, transaction) = await EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         return await connection.ExecuteSqlStatementAsync(sqlStatement, commandType,
             command =>
@@ -339,13 +339,13 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     /// <summary>
     /// Ensures that a database connection (and transaction if applicable) is open and available for use by this context.
     /// If an ambient transaction scope exists and this context is not standalone, the ambient connection/transaction are used.
-    /// Otherwise an owned connection is created and opened.
+    /// Otherwise, an owned connection is created and opened.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to observe while opening connection/transaction.</param>
     /// <returns>
     /// A ValueTask that yields a tuple containing the <see cref="StormDbConnection"/> and an optional <see cref="StormDbTransaction"/> to be used for commands.
     /// </returns>
-    internal async ValueTask<(StormDbConnection connection, StormDbTransaction? transaction)> EnsureConnectionAndTransactionIsOpenAsync(CancellationToken cancellationToken)
+    public async ValueTask<(StormDbConnection connection, StormDbTransaction? transaction)> EnsureConnectionAsync(CancellationToken cancellationToken)
     {
         var ambient = StormTransactionScope.GetCurrentAmbient();
 
@@ -422,7 +422,8 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
         // If the context is not standalone, ensure the connection strings match.
         if (!ConnectionString.IsSameConnectionString(ambient.Connection.ConnectionString))
         {
-            _logger?.LogError("StormContext: The context connection string '{ConnectionString1}' does not match the active ambient connection string '{ConnectionString2}'.", ConnectionString, ambient.Connection.ConnectionString);
+            if (_logger is not null && _logger.IsEnabled(LogLevel.Error))
+                _logger.LogError("StormContext: The context connection string '{ConnectionString1}' does not match the active ambient connection string '{ConnectionString2}'.", ConnectionString, ambient.Connection.ConnectionString);
             throw new StormException($"StormContext: The context connection string '{ConnectionString}' does not match the active ambient connection string '{ambient.Connection.ConnectionString}'.");
         }
     }

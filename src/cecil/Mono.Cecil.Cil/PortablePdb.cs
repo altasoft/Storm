@@ -8,13 +8,13 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Cecil.Metadata;
+using Mono.Cecil.PE;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
-using Mono.Cecil.Metadata;
-using Mono.Cecil.PE;
 
 namespace Mono.Cecil.Cil {
 
@@ -171,7 +171,7 @@ namespace Mono.Cecil.Cil {
 				throw new InvalidOperationException ();
 
 			return new EmbeddedPortablePdbReader (
-				(PortablePdbReader) new PortablePdbReaderProvider ().GetSymbolReader (module, GetPortablePdbStream (entry)));
+				(PortablePdbReader)new PortablePdbReaderProvider ().GetSymbolReader (module, GetPortablePdbStream (entry)));
 		}
 
 		static Stream GetPortablePdbStream (ImageDebugHeaderEntry entry)
@@ -194,8 +194,7 @@ namespace Mono.Cecil.Cil {
 		}
 	}
 
-	public sealed class EmbeddedPortablePdbReader : ISymbolReader
-	{
+	public sealed class EmbeddedPortablePdbReader : ISymbolReader {
 		private readonly PortablePdbReader reader;
 
 		internal EmbeddedPortablePdbReader (PortablePdbReader reader)
@@ -227,8 +226,7 @@ namespace Mono.Cecil.Cil {
 		}
 	}
 
-	public sealed class PortablePdbWriterProvider : ISymbolWriterProvider
-	{
+	public sealed class PortablePdbWriterProvider : ISymbolWriterProvider {
 		public ISymbolWriter GetSymbolWriter (ModuleDefinition module, string fileName)
 		{
 			Mixin.CheckModule (module);
@@ -246,7 +244,7 @@ namespace Mono.Cecil.Cil {
 			// In order to compute the PDB checksum, the stream we're writing to needs to be able to
 			// seek and read as well. We can't assume this about a stream provided by the user.
 			// So in this case, create a memory stream to cache the PDB.
-			return GetSymbolWriter (module, Disposable.Owned (new MemoryStream() as Stream), Disposable.NotOwned (symbolStream));
+			return GetSymbolWriter (module, Disposable.Owned (new MemoryStream () as Stream), Disposable.NotOwned (symbolStream));
 		}
 
 		ISymbolWriter GetSymbolWriter (ModuleDefinition module, Disposable<Stream> stream, Disposable<Stream> final_stream)
@@ -442,7 +440,7 @@ namespace Mono.Cecil.Cil {
 				if (tables [i] == null || tables [i].Length == 0)
 					continue;
 
-				pdb_heap.WriteUInt32 ((uint) tables [i].Length);
+				pdb_heap.WriteUInt32 ((uint)tables [i].Length);
 			}
 		}
 
@@ -488,7 +486,7 @@ namespace Mono.Cecil.Cil {
 			Mixin.CheckFileName (fileName);
 
 			var stream = new MemoryStream ();
-			var pdb_writer = (PortablePdbWriter) new PortablePdbWriterProvider ().GetSymbolWriter (module, stream);
+			var pdb_writer = (PortablePdbWriter)new PortablePdbWriterProvider ().GetSymbolWriter (module, stream);
 			return new EmbeddedPortablePdbWriter (stream, pdb_writer);
 		}
 
@@ -537,14 +535,14 @@ namespace Mono.Cecil.Cil {
 			w.WriteByte (0x44);
 			w.WriteByte (0x42);
 
-			w.WriteInt32 ((int) stream.Length);
+			w.WriteInt32 ((int)stream.Length);
 
 			stream.Position = 0;
 
 			using (var compress_stream = new DeflateStream (data, CompressionMode.Compress, leaveOpen: true))
 				stream.CopyTo (compress_stream);
 
-			directory.SizeOfData = (int) data.Length;
+			directory.SizeOfData = (int)data.Length;
 
 			var debugHeaderEntries = new ImageDebugHeaderEntry [pdbDebugHeader.Entries.Length + 1];
 			for (int i = 0; i < pdbDebugHeader.Entries.Length; i++)

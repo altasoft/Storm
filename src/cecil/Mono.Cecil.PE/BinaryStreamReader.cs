@@ -15,12 +15,12 @@ namespace Mono.Cecil.PE {
 	class BinaryStreamReader : BinaryReader {
 
 		public int Position {
-			get { return (int) BaseStream.Position; }
+			get { return (int)BaseStream.Position; }
 			set { BaseStream.Position = value; }
 		}
 
 		public int Length {
-			get { return (int) BaseStream.Length; }
+			get { return (int)BaseStream.Length; }
 		}
 
 		public BinaryStreamReader (Stream stream)

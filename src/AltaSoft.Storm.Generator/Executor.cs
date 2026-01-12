@@ -346,7 +346,7 @@ internal static class Executor
         GenerateUsingList(builder, classes, hasBulkInsert ? ["Microsoft.Data.SqlClient", "System.Threading.Channels"] : null);
 
         builder.AppendNamespace(classSymbol.ContainingNamespace.ToDisplayString());
-        
+
         var baseHasStormDbObjectAttribute = classSymbol.BaseType.HasStormDbObjectAttribute();
 
         GenerateMainClass(ormContext, classSyntax, typeSpec, baseHasStormDbObjectAttribute, propertyGenSpecList);

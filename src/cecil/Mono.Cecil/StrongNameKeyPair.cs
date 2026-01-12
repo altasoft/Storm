@@ -20,7 +20,7 @@ namespace Mono.Cecil {
 					_publicKey = ComputePublicKey ();
 				}
 
-				byte [] array = new byte[_publicKey.Length];
+				byte [] array = new byte [_publicKey.Length];
 				Array.Copy (_publicKey, array, _publicKey.Length);
 				return array;
 			}
@@ -32,8 +32,8 @@ namespace Mono.Cecil {
 				throw new ArgumentNullException ("keyPairFile");
 			}
 
-			var num = (int) keyPairFile.Length;
-			_keyPairArray = new byte[num];
+			var num = (int)keyPairFile.Length;
+			_keyPairArray = new byte [num];
 			keyPairFile.Read (_keyPairArray, 0, num);
 			_keyPairExported = true;
 		}
@@ -44,7 +44,7 @@ namespace Mono.Cecil {
 				throw new ArgumentNullException ("keyPairArray");
 			}
 
-			_keyPairArray = new byte[keyPairArray.Length];
+			_keyPairArray = new byte [keyPairArray.Length];
 			Array.Copy (keyPairArray, _keyPairArray, keyPairArray.Length);
 			_keyPairExported = true;
 		}
@@ -61,17 +61,17 @@ namespace Mono.Cecil {
 
 		protected StrongNameKeyPair (SerializationInfo info, StreamingContext context)
 		{
-			_keyPairExported = (bool) info.GetValue ("_keyPairExported", typeof(bool));
-			_keyPairArray = (byte []) info.GetValue ("_keyPairArray", typeof(byte []));
-			_keyPairContainer = (string) info.GetValue ("_keyPairContainer", typeof(string));
-			_publicKey = (byte []) info.GetValue ("_publicKey", typeof(byte []));
+			_keyPairExported = (bool)info.GetValue ("_keyPairExported", typeof (bool));
+			_keyPairArray = (byte [])info.GetValue ("_keyPairArray", typeof (byte []));
+			_keyPairContainer = (string)info.GetValue ("_keyPairContainer", typeof (string));
+			_publicKey = (byte [])info.GetValue ("_publicKey", typeof (byte []));
 		}
 
 		byte [] ComputePublicKey ()
 		{
 			using (var rsa = Mixin.CreateRSA (this)) {
 				var cspBlob = ToCapiPublicKeyBlob (rsa);
-				var publicKey = new byte[12 + cspBlob.Length];
+				var publicKey = new byte [12 + cspBlob.Length];
 				Buffer.BlockCopy (cspBlob, 0, publicKey, 12, cspBlob.Length);
 				// The first 12 bytes are documented at:
 				// http://msdn.microsoft.com/library/en-us/cprefadd/html/grfungethashfromfile.asp
@@ -81,10 +81,10 @@ namespace Mono.Cecil {
 				publicKey [4] = 4;
 				publicKey [5] = 128;
 				// Length of Public Key (in bytes)
-				publicKey [8] = (byte) (cspBlob.Length >> 0);
-				publicKey [9] = (byte) (cspBlob.Length >> 8);
-				publicKey [10] = (byte) (cspBlob.Length >> 16);
-				publicKey [11] = (byte) (cspBlob.Length >> 24);
+				publicKey [8] = (byte)(cspBlob.Length >> 0);
+				publicKey [9] = (byte)(cspBlob.Length >> 8);
+				publicKey [10] = (byte)(cspBlob.Length >> 16);
+				publicKey [11] = (byte)(cspBlob.Length >> 24);
 				return publicKey;
 			}
 		}
@@ -100,14 +100,14 @@ namespace Mono.Cecil {
 		static byte [] ToCapiPublicKeyBlob (RSA rsa)
 		{
 			var rsap = rsa.ExportParameters (false);
-			var blob = new byte[rsap.Modulus.Length + 20];
+			var blob = new byte [rsap.Modulus.Length + 20];
 			blob [0] = 0x06; // PUBLICKEYBLOB (0x06)
 			blob [1] = 0x02; // Version (0x02)
 			blob [2] = 0x00; // Reserved (word)
 			blob [3] = 0x00;
 			blob [5] = 0x24; // ALGID
 			WriteUInt32LE (blob, 8, 0x31415352); // DWORD magic = RSA1
-			WriteUInt32LE (blob, 12, (uint) rsap.Modulus.Length << 3); // DWORD bitlen
+			WriteUInt32LE (blob, 12, (uint)rsap.Modulus.Length << 3); // DWORD bitlen
 
 			// DWORD public exponent
 			blob [18] = rsap.Exponent [0];
@@ -122,10 +122,10 @@ namespace Mono.Cecil {
 
 		static void WriteUInt32LE (byte [] bytes, int offset, uint value)
 		{
-			bytes [offset + 3] = (byte) (value >> 24);
-			bytes [offset + 2] = (byte) (value >> 16);
-			bytes [offset + 1] = (byte) (value >> 8);
-			bytes [offset] = (byte) value;
+			bytes [offset + 3] = (byte)(value >> 24);
+			bytes [offset + 2] = (byte)(value >> 16);
+			bytes [offset + 1] = (byte)(value >> 8);
+			bytes [offset] = (byte)value;
 		}
 	}
 }

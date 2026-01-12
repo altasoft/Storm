@@ -26,7 +26,7 @@ namespace Mono.Cecil.Metadata {
 
 		public bool HasTable (Table table)
 		{
-			return (TypeSystemTables & (1L << (int) table)) != 0;
+			return (TypeSystemTables & (1L << (int)table)) != 0;
 		}
 	}
 }

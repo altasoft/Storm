@@ -8,9 +8,9 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Collections.Generic;
 using System;
 using System.Text;
-using Mono.Collections.Generic;
 using MD = Mono.Cecil.Metadata;
 
 namespace Mono.Cecil {

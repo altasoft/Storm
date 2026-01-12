@@ -32,7 +32,7 @@ public abstract partial class StormControllerBase
 
             PrepareMerge(vCommand, value, checkConcurrency, updateThenInsert, queryParameters);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var autoIncColumn = __GetAutoIncColumn();
@@ -69,7 +69,7 @@ public abstract partial class StormControllerBase
 
             var (autoIncColumn, valueList) = PrepareMerge(vCommand, values, checkConcurrency, updateThenInsert, queryParameters);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             if (autoIncColumn is null)

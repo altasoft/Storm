@@ -15,7 +15,7 @@ namespace Mono.Cecil.PE {
 	class BinaryStreamWriter : BinaryWriter {
 
 		public int Position {
-			get { return (int) BaseStream.Position; }
+			get { return (int)BaseStream.Position; }
 			set { BaseStream.Position = value; }
 		}
 

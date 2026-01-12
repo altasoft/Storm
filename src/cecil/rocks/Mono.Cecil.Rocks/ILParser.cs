@@ -8,10 +8,9 @@
 // Licensed under the MIT/X11 license.
 //
 
-using System;
-
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
+using System;
 
 namespace Mono.Cecil.Rocks {
 
@@ -192,14 +191,14 @@ namespace Mono.Cecil.Rocks {
 					case TokenType.TypeDef:
 					case TokenType.TypeRef:
 					case TokenType.TypeSpec:
-						visitor.OnInlineType (opcode, (TypeReference) member);
+						visitor.OnInlineType (opcode, (TypeReference)member);
 						break;
 					case TokenType.Method:
 					case TokenType.MethodSpec:
-						visitor.OnInlineMethod (opcode, (MethodReference) member);
+						visitor.OnInlineMethod (opcode, (MethodReference)member);
 						break;
 					case TokenType.Field:
-						visitor.OnInlineField (opcode, (FieldReference) member);
+						visitor.OnInlineField (opcode, (FieldReference)member);
 						break;
 					case TokenType.MemberRef:
 						var field_ref = member as FieldReference;

@@ -86,7 +86,7 @@ internal static class DbCommandExt
         }
         return null;
     }
-   
+
     /// <summary>
     /// Sets base parameters on the specified <see cref="StormDbCommand"/>, including connection, transaction, command text, command type and optional timeout.
     /// </summary>

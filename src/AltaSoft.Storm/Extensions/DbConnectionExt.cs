@@ -54,7 +54,7 @@ public static class DbConnectionExt
             if (queryParameters.CloseConnection)
                 commandBehavior |= CommandBehavior.CloseConnection;
 
-            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction, sql, queryParameters);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -83,7 +83,7 @@ public static class DbConnectionExt
             if (queryParameters.CloseConnection)
                 commandBehavior |= CommandBehavior.CloseConnection;
 
-            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction, sqlStatement, queryParameters);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -106,7 +106,7 @@ public static class DbConnectionExt
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
-            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction, sqlStatement, queryParameters);
 
             var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
@@ -128,7 +128,7 @@ public static class DbConnectionExt
 
             command.GenerateCallParameters(queryParameters.CallParameters, CallParameterType.StoreProcedure);
 
-            var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction, sql, queryParameters, CommandType.StoredProcedure);
 
             var (rowsAffected, ex) = await command.ExecuteCommand2Async(cancellationToken).ConfigureAwait(false);

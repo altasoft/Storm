@@ -73,8 +73,8 @@ public abstract partial class StormControllerBase
     {
         var context = queryParameters.Context;
 
-        var (connection, transaction) = await context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
-        
+        var (connection, transaction) = await context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+
         var bulkCopy = new SqlBulkCopy(connection, queryParameters.BulkCopyOptions, transaction);
 
         bulkCopy.DestinationTableName = QuotedObjectFullName;

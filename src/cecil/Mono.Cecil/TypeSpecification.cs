@@ -48,7 +48,7 @@ namespace Mono.Cecil {
 		}
 
 		public override MetadataType MetadataType {
-			get { return (MetadataType) etype; }
+			get { return (MetadataType)etype; }
 		}
 
 		internal TypeSpecification (TypeReference type)

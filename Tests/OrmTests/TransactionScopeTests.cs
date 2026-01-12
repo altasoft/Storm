@@ -117,7 +117,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
             Assert.True(usersContext.IsInTransactionScope);
             Assert.False(usersContext.IsStandalone);
 
-            (connection, transaction) = await usersContext.EnsureConnectionAndTransactionIsOpenAsync(CancellationToken.None);
+            (connection, transaction) = await usersContext.EnsureConnectionAsync(CancellationToken.None);
 
             Assert.Same(uow1.Ambient.Connection, connection);
             Assert.Same(uow1.Ambient.Transaction, transaction);
@@ -168,7 +168,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
             Assert.True(usersContext.IsInTransactionScope);
             Assert.False(usersContext.IsStandalone);
 
-            (connection, transaction) = await usersContext.EnsureConnectionAndTransactionIsOpenAsync(CancellationToken.None);
+            (connection, transaction) = await usersContext.EnsureConnectionAsync(CancellationToken.None);
 
             Assert.Same(sts.Ambient.Connection, connection);
             Assert.Same(sts.Ambient.Transaction, transaction);

@@ -141,7 +141,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var (commandBehavior, partialLoadFlags, shouldLoadDetails) = await PrepareGenerateSelectSql(vCommand, queryParameters, true, cancellationToken).ConfigureAwait(false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -231,7 +231,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var (commandBehavior, propertyName1, propertyName2) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -263,7 +263,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -368,7 +368,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var (commandBehavior, propertyName) = await PrepareListColumnValuesAsync(vCommand, columnSelector, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -397,7 +397,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var (commandBehavior, propertyName1, propertyName2) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -430,7 +430,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, cancellationToken).ConfigureAwait(false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -492,7 +492,7 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, propertyName);
@@ -540,7 +540,7 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, propertyName1, propertyName2);
@@ -592,7 +592,7 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, propertyName1, propertyName2, propertyName3);
@@ -634,7 +634,7 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, propertyName);
@@ -680,7 +680,7 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, propertyName1, propertyName2);
@@ -730,7 +730,7 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, propertyName1, propertyName2, propertyName3);
@@ -870,7 +870,7 @@ public abstract partial class StormControllerBase
     /// </returns>
     private static async Task<T> InternalExecuteScalarQueryAsync<T>(StormDbCommand command, string sql, QueryParameters queryParameters, CancellationToken cancellationToken)
     {
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sql, queryParameters);
 
         return (T)await command.ExecuteScalarCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -1038,7 +1038,7 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
 
         return (commandBehavior, partialLoadFlags, shouldLoadDetails);
@@ -1091,9 +1091,9 @@ public abstract partial class StormControllerBase
         if (queryParameters.CloseConnection)
             commandBehavior |= CommandBehavior.CloseConnection;
 
-        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         command.SetStormCommandBaseParameters(connection, transaction, sb.ToStringAndReturnToPool(), queryParameters);
-        
+
         return await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
     }
 

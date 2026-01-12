@@ -77,7 +77,7 @@ namespace Mono.Cecil {
 			int read;
 
 			if (stream.CanSeek) {
-				var length = (int) stream.Length;
+				var length = (int)stream.Length;
 				var data = new byte [length];
 				int offset = 0;
 

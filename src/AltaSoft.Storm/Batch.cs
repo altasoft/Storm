@@ -69,7 +69,7 @@ public sealed class Batch : IAsyncDisposable, IDisposable
         if (_batch.Commands.Count == 0)
             return 0;
 
-        var (connection, transaction) = await _context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+        var (connection, transaction) = await _context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         _batch.Connection = connection;
         _batch.Transaction = transaction;

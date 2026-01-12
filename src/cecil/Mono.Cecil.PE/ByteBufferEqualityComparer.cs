@@ -39,9 +39,9 @@ namespace Mono.Cecil.PE {
 			var bytes = buffer.buffer;
 
 			for (int i = 0; i < buffer.length; i++)
-				hash_code = unchecked ((hash_code ^ bytes [i]) * fnv_prime);
+				hash_code = unchecked((hash_code ^ bytes [i]) * fnv_prime);
 
 			return hash_code;
- 		}
+		}
 	}
 }

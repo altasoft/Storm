@@ -44,7 +44,7 @@ namespace Mono.Cecil.Metadata {
 		protected virtual string ReadStringAt (uint index)
 		{
 			int length = 0;
-			int start = (int) index;
+			int start = (int)index;
 
 			for (int i = start; ; i++) {
 				if (data [i] == 0)

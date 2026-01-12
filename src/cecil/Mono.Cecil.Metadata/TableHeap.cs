@@ -85,7 +85,7 @@ namespace Mono.Cecil.Metadata {
 		public readonly TableInformation [] Tables = new TableInformation [Mixin.TableCount];
 
 		public TableInformation this [Table table] {
-			get { return Tables [(int) table]; }
+			get { return Tables [(int)table]; }
 		}
 
 		public TableHeap (byte [] data)
@@ -95,7 +95,7 @@ namespace Mono.Cecil.Metadata {
 
 		public bool HasTable (Table table)
 		{
-			return (Valid & (1L << (int) table)) != 0;
+			return (Valid & (1L << (int)table)) != 0;
 		}
 	}
 }

@@ -42,3 +42,12 @@ if %errorlevel% neq 0 (
     echo Failed to update version in buildMultiTargeting\AltaSoft.Storm.MsSql.targets
     exit /b %errorlevel%
 )
+
+
+dotnet build -c Release src/AltaSoft.Storm.Weaver/
+dotnet build -c Release src/AltaSoft.Storm/
+dotnet build -c Release src/AltaSoft.Storm.Analyzers/
+dotnet build -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
+
+dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
+dotnet pack -o ./nupkgs src/AltaSoft.Storm.MsSql/

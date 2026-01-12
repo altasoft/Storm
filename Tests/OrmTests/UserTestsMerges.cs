@@ -1,7 +1,7 @@
-﻿using AltaSoft.Storm.TestModels;
-using FluentAssertions;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using AltaSoft.Storm.TestModels;
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 

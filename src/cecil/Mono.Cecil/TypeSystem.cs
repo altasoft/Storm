@@ -8,12 +8,11 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Cecil.Metadata;
 using System;
 
-using Mono.Cecil.Metadata;
-
 namespace Mono.Cecil {
-	[Obsolete("Use BaseModuleWeaver.TypeSystem")]
+	[Obsolete ("Use BaseModuleWeaver.TypeSystem")]
 	public abstract class TypeSystem {
 
 		sealed class CoreTypeSystem : TypeSystem {
@@ -43,7 +42,7 @@ namespace Mono.Cecil {
 
 					for (int i = 0; i < types.Length; i++) {
 						if (types [i] == null)
-							types [i] = reader.GetTypeDefinition ((uint) i + 1);
+							types [i] = reader.GetTypeDefinition ((uint)i + 1);
 
 						var type = types [i];
 

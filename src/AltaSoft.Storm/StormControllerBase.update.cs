@@ -32,7 +32,7 @@ public abstract partial class StormControllerBase
 
             PrepareUpdate(vCommand, setInstructions, queryParameters);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -58,7 +58,7 @@ public abstract partial class StormControllerBase
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -84,7 +84,7 @@ public abstract partial class StormControllerBase
             if (vCommand.CommandText.Length == 0) // no changes, return
                 return 0;
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);

@@ -8,16 +8,15 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Cecil.Cil;
+using Mono.Cecil.PE;
+using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using SR = System.Reflection;
-
-using Mono.Collections.Generic;
-using Mono.Cecil.Cil;
-using Mono.Cecil.PE;
 
 namespace Mono.Cecil.Cil {
 
@@ -313,13 +312,13 @@ namespace Mono.Cecil.Cil {
 		}
 
 		public VariableAttributes Attributes {
-			get { return (VariableAttributes) attributes; }
-			set { attributes = (ushort) value; }
+			get { return (VariableAttributes)attributes; }
+			set { attributes = (ushort)value; }
 		}
 
 		public bool IsDebuggerHidden {
-			get { return attributes.GetAttributes ((ushort) VariableAttributes.DebuggerHidden); }
-			set { attributes = attributes.SetAttributes ((ushort) VariableAttributes.DebuggerHidden, value); }
+			get { return attributes.GetAttributes ((ushort)VariableAttributes.DebuggerHidden); }
+			set { attributes = attributes.SetAttributes ((ushort)VariableAttributes.DebuggerHidden, value); }
 		}
 
 		internal VariableDebugInformation (int index, string name)
@@ -439,8 +438,7 @@ namespace Mono.Cecil.Cil {
 		}
 
 		public Collection<ImportTarget> Targets {
-			get
-			{
+			get {
 				if (targets == null)
 					Interlocked.CompareExchange (ref targets, new Collection<ImportTarget> (), null);
 
@@ -804,7 +802,7 @@ namespace Mono.Cecil.Cil {
 			if (scope == null)
 				return Empty<ScopeDebugInformation>.Array;
 
-			return GetScopes (new[] { scope });
+			return GetScopes (new [] { scope });
 		}
 
 		static IEnumerable<ScopeDebugInformation> GetScopes (IList<ScopeDebugInformation> scopes)
@@ -933,7 +931,8 @@ namespace Mono.Cecil.Cil {
 
 				try {
 					return SymbolProvider.GetReaderProvider (SymbolKind.NativePdb).GetSymbolReader (module, fileName);
-				} catch (Exception) {
+				}
+				catch (Exception) {
 					// We might not include support for native pdbs.
 				}
 			}
@@ -942,7 +941,8 @@ namespace Mono.Cecil.Cil {
 			if (File.Exists (mdb_file_name)) {
 				try {
 					return SymbolProvider.GetReaderProvider (SymbolKind.Mdb).GetSymbolReader (module, fileName);
-				} catch (Exception) {
+				}
+				catch (Exception) {
 					// We might not include support for mdbs.
 				}
 			}
@@ -987,7 +987,7 @@ namespace Mono.Cecil.Cil {
 			var isNativePdb = true;
 
 			for (var i = 0; i < bytesHeader.Length; i++) {
-				if (bytesHeader [i] != (byte) nativePdbHeader [i]) {
+				if (bytesHeader [i] != (byte)nativePdbHeader [i]) {
 					isNativePdb = false;
 					break;
 				}
@@ -996,7 +996,8 @@ namespace Mono.Cecil.Cil {
 			if (isNativePdb) {
 				try {
 					return SymbolProvider.GetReaderProvider (SymbolKind.NativePdb).GetSymbolReader (module, symbolStream);
-				} catch (Exception) {
+				}
+				catch (Exception) {
 					// We might not include support for native pdbs.
 				}
 			}
@@ -1009,7 +1010,8 @@ namespace Mono.Cecil.Cil {
 			if (longHeader == mdbHeader) {
 				try {
 					return SymbolProvider.GetReaderProvider (SymbolKind.Mdb).GetSymbolReader (module, symbolStream);
-				} catch (Exception) {
+				}
+				catch (Exception) {
 					// We might not include support for mdbs.
 				}
 			}
@@ -1070,8 +1072,10 @@ namespace Mono.Cecil.Cil {
 				var assembly = SR.Assembly.Load (assembly_name);
 				if (assembly != null)
 					return assembly.GetType (fullname);
-			} catch (FileNotFoundException) {
-			} catch (FileLoadException) {
+			}
+			catch (FileNotFoundException) {
+			}
+			catch (FileLoadException) {
 			}
 
 			return null;
@@ -1089,7 +1093,7 @@ namespace Mono.Cecil.Cil {
 			if (type == null)
 				throw new TypeLoadException ("Could not find symbol provider type " + provider_name);
 
-			return (ISymbolReaderProvider) Activator.CreateInstance (type);
+			return (ISymbolReaderProvider)Activator.CreateInstance (type);
 		}
 
 		static string GetSymbolTypeName (SymbolKind kind, string name)
@@ -1220,7 +1224,8 @@ namespace Mono.Cecil {
 			try {
 				var reader = new BinaryReader (stream);
 				return reader.ReadUInt32 () == ppdb_signature;
-			} finally {
+			}
+			finally {
 				stream.Position = position;
 			}
 		}

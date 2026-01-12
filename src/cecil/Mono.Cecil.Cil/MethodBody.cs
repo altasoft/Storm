@@ -8,10 +8,9 @@
 // Licensed under the MIT/X11 license.
 //
 
+using Mono.Collections.Generic;
 using System;
 using System.Threading;
-
-using Mono.Collections.Generic;
 
 namespace Mono.Cecil.Cil {
 
@@ -405,7 +404,7 @@ namespace Mono.Cecil.Cil {
 
 			public int LastOffset { get => cache_offset; }
 
-			public InstructionOffsetResolver (Instruction[] instructions, Instruction removedInstruction, Instruction existingInstruction)
+			public InstructionOffsetResolver (Instruction [] instructions, Instruction removedInstruction, Instruction existingInstruction)
 			{
 				items = instructions;
 				removed_instruction = removedInstruction;

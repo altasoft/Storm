@@ -39,7 +39,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var commandBehavior = PrepareGenerateExec(vCommand, queryParameters, false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -89,7 +89,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var commandBehavior = PrepareGenerateExec(vCommand, queryParameters, false);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
@@ -143,7 +143,7 @@ public abstract partial class StormControllerBase
             var vCommand = new StormVirtualDbCommand(command);
             var commandBehavior = PrepareGenerateExec(vCommand, queryParameters, true);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);

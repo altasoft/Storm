@@ -25,7 +25,7 @@ public abstract partial class StormControllerBase
 
             PrepareDelete(vCommand, queryParameters);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -42,7 +42,7 @@ public abstract partial class StormControllerBase
 
             PrepareDelete(vCommand, value, queryParameters);
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
@@ -61,7 +61,7 @@ public abstract partial class StormControllerBase
             if (vCommand.CommandText.Length == 0)
                 return -1;
 
-            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAndTransactionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
 
             return await command.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);

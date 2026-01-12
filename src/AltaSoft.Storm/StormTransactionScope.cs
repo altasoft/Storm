@@ -74,49 +74,60 @@ public sealed class StormTransactionScope : IDisposable
         switch (scopeOption)
         {
             case StormTransactionScopeOption.JoinExisting:
-                if (connectionToUse is not null)
-                    throw new ArgumentException("Cannot provide existing connection when joining existing scope.", nameof(connectionToUse));
-                if (transactionToUse is not null)
-                    throw new ArgumentException("Cannot provide existing transaction when joining existing scope.", nameof(transactionToUse));
-
                 if (previousAmbient is not null)
                 {
                     Ambient = previousAmbient; // join existing ambient from previous scope
                     IsRoot = false;
+
+                    connectionToUse ??= transactionToUse?.Connection;
+                    if (connectionToUse is not null)
+                    {
+                        if (Ambient._connection != connectionToUse)
+                            throw new StormException("Cannot join existing ambient with different connection instance.");
+
+                        if (transactionToUse is not null)
+                        {
+                            if (Ambient._transaction != transactionToUse)
+                                throw new StormException("Cannot join existing ambient with different transaction instance.");
+                        }
+                    }
                     _logger?.LogTrace("[StormTransactionScope] Joined existing ambient transaction state.");
                 }
                 else
                 {
                     Ambient = new AmbientState(null, _logger);
                     IsRoot = true;
+
+                    connectionToUse ??= transactionToUse?.Connection;
+                    if (connectionToUse is not null)
+                    {
+                        Ambient._connection = connectionToUse;
+                        Ambient._ownsConnection = false;
+
+                        if (transactionToUse is not null)
+                        {
+                            Ambient._transaction = transactionToUse;
+                            Ambient._ownsTransaction = false;
+                        }
+                    }
                     _logger?.LogTrace("[StormTransactionScope] Created new ambient transaction state (JoinExisting - no existing).");
                 }
                 break;
 
             case StormTransactionScopeOption.CreateNew:
                 var ambient = new AmbientState(previousAmbient, _logger);
-                connectionToUse ??= transactionToUse?.Connection;
-                if (connectionToUse is not null)
-                {
-                    ambient._connection = connectionToUse;
-                    ambient._ownsConnection = false;
-
-                    if (transactionToUse is not null)
-                    {
-                        ambient._transaction = transactionToUse;
-                        ambient._ownsTransaction = false;
-                    }
-                }
                 Ambient = ambient;
                 IsRoot = true;
 
                 if (logger is not null)
                 {
+                    // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                     if (transactionToUse is not null)
                         logger.LogTrace("[StormTransactionScope] Created new ambient transaction state (CreateNew) using provided transaction.");
                     else
                         logger.LogTrace("[StormTransactionScope] Created new ambient transaction state (CreateNew).");
                 }
+
                 break;
 
             default:
@@ -126,7 +137,8 @@ public sealed class StormTransactionScope : IDisposable
         s_current.Value = this;
 
         Ambient.TransactionCount++;
-        _logger?.LogTrace("[StormTransactionScope] Scope created, TransactionCount={TransactionCount}", Ambient.TransactionCount);
+        if (_logger is not null && _logger.IsEnabled(LogLevel.Trace))
+            _logger.LogTrace("[StormTransactionScope] Scope created, TransactionCount={TransactionCount}", Ambient.TransactionCount);
     }
 
     /// <summary>
@@ -145,11 +157,11 @@ public sealed class StormTransactionScope : IDisposable
     }
 
     /// <summary>
-    /// Initializes a new scope that uses an existing transaction instance. The scope will create a new ambient
+    /// Initializes a new scope that uses an existing transaction instance. The scope will try to join existing ambient
     /// state that references the provided transaction and (optionally) its connection.
     /// </summary>
     /// <param name="transactionToUse">Existing transaction which will be used by the scope.</param>
-    public StormTransactionScope(StormDbTransaction transactionToUse) : this(StormTransactionScopeOption.CreateNew, transactionToUse.Connection, transactionToUse, StormManager.Logger)
+    public StormTransactionScope(StormDbTransaction transactionToUse) : this(StormTransactionScopeOption.JoinExisting, transactionToUse.Connection, transactionToUse, StormManager.Logger)
     {
     }
 
@@ -158,7 +170,7 @@ public sealed class StormTransactionScope : IDisposable
     /// The scope will own the created transaction but will not own the provided connection instance.
     /// </summary>
     /// <param name="connectionToUse">Existing connection to use for the new scope.</param>
-    public StormTransactionScope(StormDbConnection connectionToUse) : this(StormTransactionScopeOption.CreateNew, connectionToUse, null, StormManager.Logger)
+    public StormTransactionScope(StormDbConnection connectionToUse) : this(StormTransactionScopeOption.JoinExisting, connectionToUse, null, StormManager.Logger)
     {
     }
 
