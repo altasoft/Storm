@@ -7,6 +7,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+	  <DefaultTargetFrameworks>net8.0;net9.0;net10.0</DefaultTargetFrameworks>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<ProjectUrl>https://github.com/altasoft/Storm</ProjectUrl>
@@ -17,8 +18,7 @@
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-
-
+		
 	  <EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<PackageTags>orm;sql;database;dotnet;storm;mssql;altasoft</PackageTags>
 	</PropertyGroup>
