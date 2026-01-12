@@ -12,6 +12,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<ProjectUrl>https://github.com/altasoft/Storm</ProjectUrl>
 		<PackageProjectUrl>https://github.com/altasoft/Storm</PackageProjectUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<RepositoryUrl>https://github.com/altasoft/Storm</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>AltaSoft.Storm - Fastest ORM</Description>
@@ -21,6 +22,11 @@
 		
 	  <EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<PackageTags>orm;sql;database;dotnet;storm;mssql;altasoft</PackageTags>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<EmbedAllSources>false</EmbedAllSources>
 	</PropertyGroup>
 
 	<ItemGroup>
