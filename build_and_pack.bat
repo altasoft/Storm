@@ -47,7 +47,7 @@ dotnet build -c Release src/AltaSoft.Storm.Weaver/ --no-restore
 dotnet build -c Release src/AltaSoft.Storm/ --no-restore
 dotnet build -c Release src/AltaSoft.Storm.MsSql/ --no-restore
 dotnet build -c Release src/AltaSoft.Storm.Analyzers/ --no-restore
-dotnet build -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/ --no-restore
+dotnet build -c Release src/AltaSoft.Storm.Generator/ --no-restore
 
 dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/ --no-build
 dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.MsSql/ --no-build

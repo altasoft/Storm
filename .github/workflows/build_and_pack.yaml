@@ -66,4 +66,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nupkgs
-          path: ./nupkgs/*.nupkg
+          path: |
+            ./nupkgs/*.nupkg
+            ./nupkgs/*.snupkg
