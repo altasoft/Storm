@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.Exceptions;
+using AltaSoft.Storm.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace AltaSoft.Storm;
@@ -106,7 +107,7 @@ internal sealed class AmbientState : IDisposable
             return _connection;
         }
 
-        if (_connection.ConnectionString != connectionString)
+        if (!_connection.ConnectionString.IsSameConnectionString(connectionString))
             throw new StormException("Ambient connection string does not match the requested connection string.");
         return _connection;
     }
