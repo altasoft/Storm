@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	<TargetFrameworks>$(DefaultTargetFrameworks)</TargetFrameworks>
@@ -7,6 +7,7 @@
 	<RootNamespace>AltaSoft.Storm</RootNamespace>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <Import Project="../SharedAssemblyInfo.props" />
@@ -27,6 +28,13 @@
 	<!-- ensure content files are included when packing -->
 	<IncludeContentInPack>true</IncludeContentInPack>
   </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="AltaSoft.DomainPrimitives" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+	<PackageReference Include="Microsoft.Extensions.ObjectPool" />
+	<PackageReference Include="Microsoft.OData.Core" />
+  </ItemGroup>
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Data.SqlClient" />
@@ -63,18 +71,13 @@
     </None>-->
 
 	<!-- README is already included from Directory.Build.props, removed duplicate -->
-	
+
 	<!-- Include content file -->
 	<None Include="..\StormGlobalTypeAliases.cs">
 	  <Pack>true</Pack>
 	  <PackagePath>contentFiles\cs\any\</PackagePath>
-	  <PackageCopyToOutput>false</PackageCopyToOutput>
+	  <BuildAction>Compile</BuildAction>
 	</None>
   </ItemGroup>
-
-  <!-- Remove explicit nuspec usage so dotnet pack will use project metadata -->
-  <PropertyGroup>
-	<NuspecFile></NuspecFile>
-  </PropertyGroup>
 
 </Project>
