@@ -31,11 +31,6 @@ jobs:
           (Get-Content 'src/SharedAssemblyInfo.props') -replace '<Version>.*</Version>', "<Version>${{ inputs.version }}</Version>" | Set-Content 'src/SharedAssemblyInfo.props'
         shell: pwsh
 
-      - name: Update AltaSoft.Storm.MsSql.nuspec versions
-        run: |
-          pwsh -File "Update-NuspecDependencyVersions.ps1" -PackageVersion "${{ inputs.version }}"
-        shell: pwsh
-
       - name: Update build targets version
         run: |
           pwsh -File "Update-TaskAssemblyVersion.ps1" -NewVersion "${{ inputs.version }}" -FilePath "src/AltaSoft.Storm.Weaver/build/AltaSoft.Storm.Generator.MsSql.targets"
@@ -54,16 +49,17 @@ jobs:
 
       - name: Build projects
         run: |
-          dotnet build -c Release src/AltaSoft.Storm.Weaver/
-          dotnet build -c Release src/AltaSoft.Storm/
-          dotnet build -c Release src/AltaSoft.Storm.Analyzers/
-          dotnet build -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
+          dotnet build -c Release src/AltaSoft.Storm.Weaver/ --no-restore
+          dotnet build -c Release src/AltaSoft.Storm/ --no-restore
+          dotnet build -c Release src/AltaSoft.Storm.MsSql/ --no-restore
+          dotnet build -c Release src/AltaSoft.Storm.Analyzers/ --no-restore
+          dotnet build -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/ --no-restore
         shell: pwsh
 
       - name: Pack projects
         run: |
-          dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
-          dotnet pack -o ./nupkgs src/AltaSoft.Storm.MsSql/
+          dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/ --no-build
+          dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.MsSql/ --no-build
         shell: pwsh
 
       - name: Upload NuGet packages as artifact

@@ -15,6 +15,7 @@
   <PropertyGroup>
 	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 	<IsRoslynComponent>true</IsRoslynComponent>
+
 	<!-- NuGet-specific metadata -->
 	<!-- This ensures the output of this project is treated as an analyzer by projects that reference it -->
 	<IncludeBuildOutput>false</IncludeBuildOutput>

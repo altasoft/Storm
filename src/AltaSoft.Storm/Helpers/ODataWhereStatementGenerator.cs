@@ -185,8 +185,10 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         {
             value = value switch
             {
-                //Date { Year: var year, Month: var month, Day: var day } => new DateOnly(year, month, day),
-                //TimeOfDay { Ticks: var ticks } => new TimeOnly(ticks),
+                //Microsoft.OData.Edm.Date
+                Date { Year: var year, Month: var month, Day: var day } => new DateOnly(year, month, day),
+                //Microsoft.OData.Edm.TimeOfDay
+                TimeOfDay { Ticks: var ticks } => new TimeOnly(ticks),
                 DateTimeOffset { DateTime: var dt } when dbType is UnifiedDbType.DateTime or UnifiedDbType.DateTime2 or UnifiedDbType.SmallDateTime => dt,
                 _ => value
             };

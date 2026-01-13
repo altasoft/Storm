@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	<TargetFrameworks>$(DefaultTargetFrameworks)</TargetFrameworks>
@@ -15,8 +15,17 @@
 	<Compile Include="..\StormGlobalTypeAliases.cs" Link="StormGlobalTypeAliases.cs" />
   </ItemGroup>
 
+  <!-- NuGet-specific metadata (only properties not in Directory.Build.props) -->
   <PropertyGroup>
-	<NuspecFile>AltaSoft.Storm.MsSql.nuspec</NuspecFile>
+	<PackageId>AltaSoft.Storm.MsSql</PackageId>
+	<Title>AltaSoft.Storm</Title>
+	<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<!-- produce portable PDBs by default for better symbol portability -->
+	<DebugType>portable</DebugType>
+	<!-- ensure content files are included when packing -->
+	<IncludeContentInPack>true</IncludeContentInPack>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,4 +36,45 @@
 	  <IncludeAssets>none</IncludeAssets>
 	</ProjectReference>
   </ItemGroup>
+
+  <!-- Include other produced assemblies and content in the nupkg similar to the previous nuspec -->
+  <ItemGroup>
+	<!-- Include the main library outputs are handled by SDK pack automatically for each TF. -->
+
+	<!-- Include the companion AltaSoft.Storm assemblies (built separately) into the package under lib per TF -->
+	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net8.0\AltaSoft.Storm.dll">
+	  <Pack>true</Pack>
+	  <PackagePath>lib\net8.0\</PackagePath>
+	</None>
+	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net9.0\AltaSoft.Storm.dll">
+	  <Pack>true</Pack>
+	  <PackagePath>lib\net9.0\</PackagePath>
+	</None>
+	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net10.0\AltaSoft.Storm.dll">
+	  <Pack>true</Pack>
+	  <PackagePath>lib\net10.0\</PackagePath>
+	</None>
+
+	<!-- Include analyzers assembly -->
+	<!--
+    <None Include="..\..\AltaSoft.Storm.Analyzers\bin\$(Configuration)\netstandard2.0\AltaSoft.Storm.Analyzers.dll">
+      <Pack>true</Pack>
+      <PackagePath>analyzers\dotnet\cs\</PackagePath>
+    </None>-->
+
+	<!-- README is already included from Directory.Build.props, removed duplicate -->
+	
+	<!-- Include content file -->
+	<None Include="..\StormGlobalTypeAliases.cs">
+	  <Pack>true</Pack>
+	  <PackagePath>contentFiles\cs\any\</PackagePath>
+	  <PackageCopyToOutput>false</PackageCopyToOutput>
+	</None>
+  </ItemGroup>
+
+  <!-- Remove explicit nuspec usage so dotnet pack will use project metadata -->
+  <PropertyGroup>
+	<NuspecFile></NuspecFile>
+  </PropertyGroup>
+
 </Project>

@@ -19,14 +19,6 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 
-echo Updating AltaSoft.Storm.MsSql.nuspec versions
-REM Use PowerShell to update the versions
-powershell -NoProfile -ExecutionPolicy Bypass -File "Update-NuspecDependencyVersions.ps1" -PackageVersion "%VERSION%"
-if %errorlevel% neq 0 (
-    echo Failed to update version in SharedAssemblyInfo.props.
-    exit /b %errorlevel%
-)
-
 echo Updating build\AltaSoft.Storm.MsSql.targets version to %VERSION%...
 REM Use PowerShell to update the version in build\AltaSoft.Storm.MsSql.targets
 PowerShell -NoProfile -ExecutionPolicy Bypass -File "Update-TaskAssemblyVersion.ps1" -NewVersion "%VERSION%" -FilePath "src\AltaSoft.Storm.Weaver\build\AltaSoft.Storm.Generator.MsSql.targets"
@@ -44,10 +36,18 @@ if %errorlevel% neq 0 (
 )
 
 
-dotnet build -c Release src/AltaSoft.Storm.Weaver/
-dotnet build -c Release src/AltaSoft.Storm/
-dotnet build -c Release src/AltaSoft.Storm.Analyzers/
-dotnet build -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
+dotnet restore src/AltaSoft.Storm.Generator.Common/
+dotnet restore src/AltaSoft.Storm.Weaver/
+dotnet restore src/AltaSoft.Storm.Generator/
+dotnet restore src/AltaSoft.Storm/
+dotnet restore src/AltaSoft.Storm.MsSql/
+dotnet restore src/AltaSoft.Storm.Analyzers/
 
-dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/
-dotnet pack -o ./nupkgs src/AltaSoft.Storm.MsSql/
+dotnet build -c Release src/AltaSoft.Storm.Weaver/ --no-restore
+dotnet build -c Release src/AltaSoft.Storm/ --no-restore
+dotnet build -c Release src/AltaSoft.Storm.MsSql/ --no-restore
+dotnet build -c Release src/AltaSoft.Storm.Analyzers/ --no-restore
+dotnet build -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/ --no-restore
+
+dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.Generator/ --no-build
+dotnet pack -c Release -o ./nupkgs src/AltaSoft.Storm.MsSql/ --no-build
