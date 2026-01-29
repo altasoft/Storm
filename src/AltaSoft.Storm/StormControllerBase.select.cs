@@ -94,9 +94,9 @@ public abstract partial class StormControllerBase
     /// Checks if a record exists in the database asynchronously.
     /// </summary>
     internal async Task<bool> ExistsAsync<T>(
-          SelectQueryParameters<T> queryParameters,
-          QueryHints? queryHints,
-          CancellationToken cancellationToken) where T : IDataBindable
+        SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
+        CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
@@ -952,8 +952,9 @@ public abstract partial class StormControllerBase
         if (hints is null || hints.Count == 0)
             return;
 
+        sb.AppendLine();
         sb.Append("OPTION (");
-        sb.AppendJoinFast(',', hints);
+        sb.AppendJoinFast(", ", hints);
         sb.AppendLine(")");
     }
 

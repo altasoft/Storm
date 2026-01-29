@@ -68,7 +68,7 @@ public sealed record QueryHints
             });
         }
 
-        if (MaxDop is > 0)
+        if (MaxDop is >= 0)
             Add($"MAXDOP {MaxDop}");
 
         if (Fast is > 0)

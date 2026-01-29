@@ -322,7 +322,7 @@ internal class SelectFrom<T, TOrderBy, TPartialLoadFlags> : SelectQueryParameter
         Expression<Func<T, TColumn3>> columnSelector3,
         QueryHints queryHints,
         CancellationToken cancellationToken = default)
-        => GetController().ListColumnValuesAsync(columnSelector1, columnSelector2, columnSelector3, this, null, cancellationToken);
+        => GetController().ListColumnValuesAsync(columnSelector1, columnSelector2, columnSelector3, this, queryHints, cancellationToken);
 
     #endregion List
 
