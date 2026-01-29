@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace AltaSoft.Storm.Crud;
 
@@ -69,10 +70,10 @@ public sealed record QueryHints
         }
 
         if (MaxDop is >= 0)
-            Add($"MAXDOP {MaxDop}");
+            Add($"MAXDOP {MaxDop.Value.ToString(CultureInfo.InvariantCulture)}");
 
         if (Fast is > 0)
-            Add($"FAST {Fast}");
+            Add($"FAST {Fast.Value.ToString(CultureInfo.InvariantCulture)}");
 
         if (ForceOrder == true)
             Add("FORCE ORDER");
@@ -89,7 +90,7 @@ public sealed record QueryHints
         }
 
         if (QueryTraceOn is > 0)
-            Add($"QUERYTRACEON {QueryTraceOn}");
+            Add($"QUERYTRACEON {QueryTraceOn.Value.ToString(CultureInfo.InvariantCulture)}");
 
         if (KeepPlan)
             Add("KEEP PLAN");
