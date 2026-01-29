@@ -28,12 +28,9 @@ public abstract partial class StormControllerBase
     /// <summary>
     /// Streams data asynchronously from a database connection.
     /// </summary>
-    /// <typeparam name="T">The type of data to stream.</typeparam>
-    /// <param name="queryParameters">The Query parameters.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of the streamed data.</returns>
     internal async IAsyncEnumerable<T> StreamAsync<T>(
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         [EnumeratorCancellation] CancellationToken cancellationToken) where T : IDataBindable
     {
         var partialLoadFlags = queryParameters.PartialLoadFlags;
@@ -41,7 +38,7 @@ public abstract partial class StormControllerBase
 
         if (shouldLoadDetails) // We cannot stream details
         {
-            foreach (var row in await ListAsync(partialLoadFlags, shouldLoadDetails, queryParameters, cancellationToken).ConfigureAwait(false))
+            foreach (var row in await ListAsync(partialLoadFlags, shouldLoadDetails, queryParameters, queryHints, cancellationToken).ConfigureAwait(false))
             {
                 yield return row;
             }
@@ -51,7 +48,7 @@ public abstract partial class StormControllerBase
             var command = StormManager.CreateCommand(false);
             await using (command.ConfigureAwait(false))
             {
-                var reader = await GenerateSqlAndExecuteReaderAsync(command, queryParameters, partialLoadFlags, shouldLoadDetails, false, cancellationToken).ConfigureAwait(false);
+                var reader = await GenerateSqlAndExecuteReaderAsync(command, queryParameters, partialLoadFlags, shouldLoadDetails, false, queryHints, cancellationToken).ConfigureAwait(false);
                 await using (reader.ConfigureAwait(false))
                 {
                     while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -72,15 +69,9 @@ public abstract partial class StormControllerBase
     /// <summary>
     /// Counts the number of records in the database table asynchronously.
     /// </summary>
-    /// <typeparam name="T">The type of the data bindable object.</typeparam>
-    /// <param name="queryParameters">The Query parameters.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The number of records in the database table.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the connection is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the command cannot be created.</exception>
-    /// <exception cref="StormDbException">Thrown when an error occurs during the execution of the SQL query.</exception>
     internal async Task<int> CountAsync<T>(
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
@@ -92,6 +83,8 @@ public abstract partial class StormControllerBase
 
             var vCommand = new StormVirtualDbCommand(command);
             GenerateCountSql(vCommand, queryParameters, callParamsStr, sb);
+            if (queryHints is not null)
+                GenerateQueryHints(queryHints, sb);
 
             return await InternalExecuteScalarQueryAsync<int>(command, sb.ToStringAndReturnToPool(), queryParameters, cancellationToken).ConfigureAwait(false);
         }
@@ -100,13 +93,10 @@ public abstract partial class StormControllerBase
     /// <summary>
     /// Checks if a record exists in the database asynchronously.
     /// </summary>
-    /// <typeparam name="T">The type of the record.</typeparam>
-    /// <param name="queryParameters">The Query parameters.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>True if a record exists, false otherwise.</returns>
     internal async Task<bool> ExistsAsync<T>(
-        SelectQueryParameters<T> queryParameters,
-        CancellationToken cancellationToken) where T : IDataBindable
+          SelectQueryParameters<T> queryParameters,
+          QueryHints? queryHints,
+          CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
@@ -117,6 +107,8 @@ public abstract partial class StormControllerBase
 
             var vCommand = new StormVirtualDbCommand(command);
             GenerateExistsSql(vCommand, queryParameters, callParamsStr, sb);
+            if (queryHints is not null)
+                GenerateQueryHints(queryHints, sb);
 
             return await InternalExecuteScalarQueryAsync<int>(command, sb.ToStringAndReturnToPool(), queryParameters, cancellationToken).ConfigureAwait(false) != 0;
         }
@@ -127,19 +119,16 @@ public abstract partial class StormControllerBase
     /// <summary>
     /// Retrieves a record from the database based on the specified key values, or returns the default value if no record is found.
     /// </summary>
-    /// <typeparam name="T">The type of the record to retrieve.</typeparam>
-    /// <param name="queryParameters">The Query parameters.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The retrieved record, or the default value if no record is found.</returns>
     internal async Task<T?> FirstOrDefaultAsync<T>(
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, partialLoadFlags, shouldLoadDetails) = await PrepareGenerateSelectSql(vCommand, queryParameters, true, cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, partialLoadFlags, shouldLoadDetails) = await PrepareGenerateSelectSql(vCommand, queryParameters, true, queryHints, cancellationToken).ConfigureAwait(false);
 
             var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
@@ -188,15 +177,9 @@ public abstract partial class StormControllerBase
     /// <summary>
     /// Asynchronously retrieves a single scalar value from a database using the provided connection, column selector, optional where expression, order by criteria, query parameters, default value, and cancellation token.
     /// </summary>
-    /// <typeparam name="T">The type of data entity being queried.</typeparam>
-    /// <typeparam name="TColumn">The type of the scalar result being retrieved.</typeparam>
-    /// <param name="columnSelector">Expression specifying the column to retrieve the scalar value from.</param>
-    /// <param name="queryParameters">The Query parameters.</param>
-    /// <param name="cancellationToken">Cancellation token to cancel the asynchronous operation.</param>
-    /// <returns>An asynchronous task that represents the operation and returns the retrieved scalar value.</returns>
-    internal async Task<DbScalar<TColumn>> GetColumnValueAsync<T, TColumn>(
-        Expression<Func<T, TColumn>> columnSelector,
+    internal async Task<DbScalar<TColumn>> GetColumnValueAsync<T, TColumn>(Expression<Func<T, TColumn>> columnSelector,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken = default)
         where T : IDataBindable
     {
@@ -204,7 +187,7 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName) = await PrepareColumnValueAsync(vCommand, columnSelector, queryParameters, cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, propertyName) = await PrepareColumnValueAsync(vCommand, columnSelector, queryParameters, queryHints, cancellationToken).ConfigureAwait(false);
 
             var reader = await command.ExecuteCommandReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
@@ -223,13 +206,14 @@ public abstract partial class StormControllerBase
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, propertyName1, propertyName2) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, queryHints, cancellationToken).ConfigureAwait(false);
 
             var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
@@ -254,6 +238,7 @@ public abstract partial class StormControllerBase
         Expression<Func<T, TResult2>> columnSelector2,
         Expression<Func<T, TResult3>> columnSelector3,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
@@ -261,7 +246,7 @@ public abstract partial class StormControllerBase
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, queryHints, cancellationToken).ConfigureAwait(false);
 
             var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
@@ -293,12 +278,14 @@ public abstract partial class StormControllerBase
     /// <param name="partialLoadFlags">Flags indicating which columns to partially load.</param>
     /// <param name="shouldLoadDetails">A flag indicating whether to load details for the retrieved data.</param>
     /// <param name="queryParameters">The Query parameters.</param>
+    /// <param name="queryHints">The query hints to apply to the query.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A list of objects retrieved from the database.</returns>
     internal async Task<List<T>> ListAsync<T>(
         uint partialLoadFlags,
         bool shouldLoadDetails,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var lookup = shouldLoadDetails ? new Dictionary<object, T>(16) : null;
@@ -306,7 +293,7 @@ public abstract partial class StormControllerBase
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
-            var reader = await GenerateSqlAndExecuteReaderAsync(command, queryParameters, partialLoadFlags, shouldLoadDetails, false, cancellationToken).ConfigureAwait(false);
+            var reader = await GenerateSqlAndExecuteReaderAsync(command, queryParameters, partialLoadFlags, shouldLoadDetails, false, queryHints, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
             {
                 var result = new List<T>(16);
@@ -360,13 +347,14 @@ public abstract partial class StormControllerBase
     internal async Task<List<TColumn>> ListColumnValuesAsync<T, TColumn>(
         Expression<Func<T, TColumn>> columnSelector,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName) = await PrepareListColumnValuesAsync(vCommand, columnSelector, queryParameters, cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, propertyName) = await PrepareListColumnValuesAsync(vCommand, columnSelector, queryParameters, queryHints, cancellationToken).ConfigureAwait(false);
 
             var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
@@ -389,13 +377,14 @@ public abstract partial class StormControllerBase
        Expression<Func<T, TColumn1>> columnSelector1,
        Expression<Func<T, TColumn2>> columnSelector2,
        SelectQueryParameters<T> queryParameters,
+       QueryHints? queryHints,
        CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, propertyName1, propertyName2) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, queryParameters, queryHints, cancellationToken).ConfigureAwait(false);
 
             var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
@@ -422,13 +411,14 @@ public abstract partial class StormControllerBase
        Expression<Func<T, TColumn2>> columnSelector2,
        Expression<Func<T, TColumn3>> columnSelector3,
        SelectQueryParameters<T> queryParameters,
+       QueryHints? queryHints,
        CancellationToken cancellationToken) where T : IDataBindable
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
             var vCommand = new StormVirtualDbCommand(command);
-            var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, cancellationToken).ConfigureAwait(false);
+            var (commandBehavior, propertyName1, propertyName2, propertyName3) = await PrepareListColumnValuesAsync(vCommand, columnSelector1, columnSelector2, columnSelector3, queryParameters, queryHints, cancellationToken).ConfigureAwait(false);
 
             var (connection, transaction) = await queryParameters.Context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction);
@@ -459,6 +449,7 @@ public abstract partial class StormControllerBase
         StormVirtualDbCommand command,
         Expression<Func<T, TColumn>> columnSelector,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName = columnSelector.GetPropertyNameFromExpression();
@@ -487,6 +478,8 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, true, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
         if (queryParameters.CloseConnection)
@@ -503,6 +496,7 @@ public abstract partial class StormControllerBase
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
@@ -535,6 +529,8 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, true, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
         if (queryParameters.CloseConnection)
@@ -552,6 +548,7 @@ public abstract partial class StormControllerBase
         Expression<Func<T, TResult2>> columnSelector2,
         Expression<Func<T, TResult3>> columnSelector3,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
@@ -587,6 +584,8 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, true, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
         if (queryParameters.CloseConnection)
@@ -602,6 +601,7 @@ public abstract partial class StormControllerBase
         StormVirtualDbCommand command,
         Expression<Func<T, TColumn>> columnSelector,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName = columnSelector.GetPropertyNameFromExpression();
@@ -629,6 +629,8 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, false, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
         if (queryParameters.CloseConnection)
@@ -645,6 +647,7 @@ public abstract partial class StormControllerBase
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
@@ -675,6 +678,8 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, false, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
         if (queryParameters.CloseConnection)
@@ -692,6 +697,7 @@ public abstract partial class StormControllerBase
         Expression<Func<T, TColumn2>> columnSelector2,
         Expression<Func<T, TColumn3>> columnSelector3,
         SelectQueryParameters<T> queryParameters,
+        QueryHints? queryHints,
         CancellationToken cancellationToken) where T : IDataBindable
     {
         var propertyName1 = columnSelector1.GetPropertyNameFromExpression();
@@ -725,6 +731,8 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, true, false, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
         if (queryParameters.CloseConnection)
@@ -938,6 +946,17 @@ public abstract partial class StormControllerBase
         sb.AppendLine();
     }
 
+    private static void GenerateQueryHints(QueryHints queryHints, StringBuilder sb)
+    {
+        var hints = queryHints.ToHintsList();
+        if (hints is null || hints.Count == 0)
+            return;
+
+        sb.Append("OPTION (");
+        sb.AppendJoinFast(',', hints);
+        sb.AppendLine(")");
+    }
+
     private (int startIndex, int len) GenerateSqlWhere<T>(IVirtualStormDbCommand command, IKeyAndWhereExpression<T> queryParameters, string? tableAlias, ref int paramIndex, StringBuilder sb)
         where T : IDataBindable
     {
@@ -1006,6 +1025,7 @@ public abstract partial class StormControllerBase
          StormVirtualDbCommand command,
          SelectQueryParameters<T> queryParameters,
          bool getOnlyFirstRow,
+         QueryHints? queryHints,
          CancellationToken cancellationToken)
          where T : IDataBindable
     {
@@ -1021,6 +1041,8 @@ public abstract partial class StormControllerBase
 
         var whereLocation = GenerateSqlWhere(command, queryParameters, "A", ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, false, getOnlyFirstRow, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         if (shouldLoadDetails)
         {
@@ -1047,20 +1069,13 @@ public abstract partial class StormControllerBase
     /// <summary>
     /// Generates and executes an asynchronous SQL query to retrieve data from a database.
     /// </summary>
-    /// <typeparam name="T">The type of data to retrieve.</typeparam>
-    /// <param name="command">The database command.</param>
-    /// <param name="queryParameters">The Query parameters.</param>
-    /// <param name="partialLoadFlags">The flags indicating which columns to partially load.</param>
-    /// <param name="shouldLoadDetails">A flag indicating whether to load details for the retrieved data.</param>
-    /// <param name="getOnlyFirstRow">Get only first row</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A data reader containing the retrieved data.</returns>
     private async Task<StormDbDataReader> GenerateSqlAndExecuteReaderAsync<T>(
         StormDbCommand command,
         SelectQueryParameters<T> queryParameters,
         uint partialLoadFlags,
         bool shouldLoadDetails,
         bool getOnlyFirstRow,
+        QueryHints? queryHints,
         CancellationToken cancellationToken)
         where T : IDataBindable
     {
@@ -1074,6 +1089,8 @@ public abstract partial class StormControllerBase
         var vCommand = new StormVirtualDbCommand(command);
         var whereLocation = GenerateSqlWhere(vCommand, queryParameters, "A", ref paramIndex, sb);
         GenerateTopSkipAndOrderBy(queryParameters, false, getOnlyFirstRow, true, sb);
+        if (queryHints is not null)
+            GenerateQueryHints(queryHints, sb);
 
         if (shouldLoadDetails)
         {
