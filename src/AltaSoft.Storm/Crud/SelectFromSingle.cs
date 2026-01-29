@@ -82,12 +82,32 @@ internal class SelectFromSingle<T, TOrderBy, TPartialLoadFlags> : SelectQueryPar
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Task<int> CountAsync(CancellationToken cancellationToken = default)
-        => GetController().CountAsync(this, cancellationToken);
+        => GetController().CountAsync(this, null, cancellationToken);
+
+    /// <summary>
+    /// Counts the number of records in the data source that match the specified conditions using the provided query hints.
+    /// </summary>
+    /// <param name="queryHints">The query hints to apply to the query.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The count of records matching the conditions.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Task<int> CountAsync(QueryHints queryHints, CancellationToken cancellationToken = default)
+        => GetController().CountAsync(this, queryHints, cancellationToken);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Task<bool> ExistsAsync(CancellationToken cancellationToken = default)
-        => GetController().ExistsAsync(this, cancellationToken);
+        => GetController().ExistsAsync(this, null, cancellationToken);
+
+    /// <summary>
+    /// Checks if any row exists in the data source that meets the specified conditions, applying the provided query hints.
+    /// </summary>
+    /// <param name="queryHints">The query hints to apply to the query.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>True if any such row exists; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Task<bool> ExistsAsync(QueryHints queryHints, CancellationToken cancellationToken = default)
+        => GetController().ExistsAsync(this, queryHints, cancellationToken);
 
     #endregion Misc
 
@@ -95,7 +115,54 @@ internal class SelectFromSingle<T, TOrderBy, TPartialLoadFlags> : SelectQueryPar
 
     /// <inheritdoc />
     public Task<T?> GetAsync(CancellationToken cancellationToken = default)
-        => GetController().FirstOrDefaultAsync(this, cancellationToken);
+        => GetController().FirstOrDefaultAsync(this, null, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<T?> GetAsync(QueryHints queryHints, CancellationToken cancellationToken = default)
+        => GetController().FirstOrDefaultAsync(this, queryHints, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<TColumn> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
+        TColumn defaultWhenNotFound, QueryHints queryHints, CancellationToken cancellationToken = default)
+    {
+        var r = await GetAsync(columnSelector, queryHints, cancellationToken).ConfigureAwait(false);
+        return r is { RowFound: true, HasValue: true } ? r.Value! : defaultWhenNotFound;
+    }
+
+    /// <inheritdoc />
+    public async Task<TColumn?> GetOrDefaultAsync<TColumn>(
+        Expression<Func<T, TColumn>> columnSelector,
+        QueryHints queryHints,
+        CancellationToken cancellationToken = default)
+    {
+        var r = await GetAsync(columnSelector, queryHints, cancellationToken).ConfigureAwait(false);
+        return r is { RowFound: true, HasValue: true } ? r.Value : default;
+    }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Task<DbScalar<TColumn>> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
+        QueryHints queryHints, CancellationToken cancellationToken = default)
+        => GetController().GetColumnValueAsync(columnSelector, this, queryHints, cancellationToken);
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Task<(TColumn1, TColumn2)?> GetAsync<TColumn1, TColumn2>(
+        Expression<Func<T, TColumn1>> columnSelector1,
+        Expression<Func<T, TColumn2>> columnSelector2,
+        QueryHints queryHints,
+        CancellationToken cancellationToken = default)
+        => GetController().GetColumnValuesAsync(columnSelector1, columnSelector2, this, queryHints, cancellationToken);
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Task<(TColumn1, TColumn2, TColumn3)?> GetAsync<TColumn1, TColumn2, TColumn3>(
+        Expression<Func<T, TColumn1>> columnSelector1,
+        Expression<Func<T, TColumn2>> columnSelector2,
+        Expression<Func<T, TColumn3>> columnSelector3,
+        QueryHints queryHints,
+        CancellationToken cancellationToken = default)
+        => GetController().GetColumnValuesAsync(columnSelector1, columnSelector2, columnSelector3, this, queryHints, cancellationToken);
 
     /// <inheritdoc />
     public async Task<TColumn> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
@@ -118,7 +185,7 @@ internal class SelectFromSingle<T, TOrderBy, TPartialLoadFlags> : SelectQueryPar
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Task<DbScalar<TColumn>> GetAsync<TColumn>(Expression<Func<T, TColumn>> columnSelector,
         CancellationToken cancellationToken = default)
-        => GetController().GetColumnValueAsync(columnSelector, this, cancellationToken);
+        => GetController().GetColumnValueAsync(columnSelector, this, null, cancellationToken);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -126,7 +193,7 @@ internal class SelectFromSingle<T, TOrderBy, TPartialLoadFlags> : SelectQueryPar
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
         CancellationToken cancellationToken = default)
-        => GetController().GetColumnValuesAsync(columnSelector1, columnSelector2, this, cancellationToken);
+        => GetController().GetColumnValuesAsync(columnSelector1, columnSelector2, this, null, cancellationToken);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -135,7 +202,7 @@ internal class SelectFromSingle<T, TOrderBy, TPartialLoadFlags> : SelectQueryPar
         Expression<Func<T, TColumn2>> columnSelector2,
         Expression<Func<T, TColumn3>> columnSelector3,
         CancellationToken cancellationToken = default)
-        => GetController().GetColumnValuesAsync(columnSelector1, columnSelector2, columnSelector3, this, cancellationToken);
+        => GetController().GetColumnValuesAsync(columnSelector1, columnSelector2, columnSelector3, this, null, cancellationToken);
 
     #endregion Get
 }

@@ -68,11 +68,27 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
     Task<int> CountAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Counts the number of records in the data source that match the specified conditions using the provided query hints.
+    /// </summary>
+    /// <param name="queryHints">The query hints to apply to the query.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The count of records matching the conditions.</returns>
+    Task<int> CountAsync(QueryHints queryHints, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if any row exists in the data source that meets the specified conditions.
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>True if any such row exists; otherwise, false.</returns>
     Task<bool> ExistsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if any row exists in the data source that meets the specified conditions, applying the provided query hints.
+    /// </summary>
+    /// <param name="queryHints">The query hints to apply to the query.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>True if any such row exists; otherwise, false.</returns>
+    Task<bool> ExistsAsync(QueryHints queryHints, CancellationToken cancellationToken = default);
 
     #endregion Misc
 
@@ -85,6 +101,15 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The first or default entity of type <typeparamref name="T"/>.</returns>
     Task<T?> GetAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the first or default entity of type <typeparamref name="T"/> that matches the specified conditions.
+    /// Applies the provided <paramref name="queryHints"/> when generating the query.
+    /// </summary>
+    /// <param name="queryHints">The query hints to apply to the query.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The first or default entity of type <typeparamref name="T"/>.</returns>
+    Task<T?> GetAsync(QueryHints queryHints, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a single column value from the data source based on the provided column selector.
@@ -101,6 +126,16 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a single column value from the data source based on the provided column selector
+    /// and applies the specified <paramref name="queryHints"/>. If no match is found, returns the specified default value.
+    /// </summary>
+    Task<TColumn> GetAsync<TColumn>(
+        Expression<Func<T, TColumn>> columnSelector,
+        TColumn defaultWhenNotFound,
+        QueryHints queryHints,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a single column value from the data source based on the provided column selector.
     /// Returns the value if found; otherwise, returns the default value for the column type.
     /// </summary>
@@ -113,6 +148,15 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a single column value from the data source based on the provided column selector
+    /// and applies the specified <paramref name="queryHints"/>. Returns the value if found; otherwise, returns the default value for the column type.
+    /// </summary>
+    Task<TColumn?> GetOrDefaultAsync<TColumn>(
+        Expression<Func<T, TColumn>> columnSelector,
+        QueryHints queryHints,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a single column value from the data source based on the provided column selector.
     /// Returns a <see cref="DbScalar{TColumn}"/> containing the value and information about row existence and value presence.
     /// </summary>
@@ -122,6 +166,15 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
     /// <returns>A <see cref="DbScalar{TColumn}"/> with the column value and status flags.</returns>
     Task<DbScalar<TColumn>> GetAsync<TColumn>(
         Expression<Func<T, TColumn>> columnSelector,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a single column value from the data source based on the provided column selector
+    /// and applies the specified <paramref name="queryHints"/>. Returns a <see cref="DbScalar{TColumn}"/> containing the value and information about row existence and value presence.
+    /// </summary>
+    Task<DbScalar<TColumn>> GetAsync<TColumn>(
+        Expression<Func<T, TColumn>> columnSelector,
+        QueryHints queryHints,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -139,6 +192,16 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a tuple of two column values from the data source based on the provided column selectors
+    /// and applies the specified <paramref name="queryHints"/>.
+    /// </summary>
+    Task<(TColumn1, TColumn2)?> GetAsync<TColumn1, TColumn2>(
+        Expression<Func<T, TColumn1>> columnSelector1,
+        Expression<Func<T, TColumn2>> columnSelector2,
+        QueryHints queryHints,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a tuple of three column values from the data source based on the provided column selectors.
     /// </summary>
     /// <typeparam name="TColumn1">The type of the first column to retrieve.</typeparam>
@@ -153,6 +216,17 @@ public interface ISelectFromSingle<T, in TOrderBy, in TPartialLoadFlags>
         Expression<Func<T, TColumn1>> columnSelector1,
         Expression<Func<T, TColumn2>> columnSelector2,
         Expression<Func<T, TColumn3>> columnSelector3,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a tuple of three column values from the data source based on the provided column selectors
+    /// and applies the specified <paramref name="queryHints"/>.
+    /// </summary>
+    Task<(TColumn1, TColumn2, TColumn3)?> GetAsync<TColumn1, TColumn2, TColumn3>(
+        Expression<Func<T, TColumn1>> columnSelector1,
+        Expression<Func<T, TColumn2>> columnSelector2,
+        Expression<Func<T, TColumn3>> columnSelector3,
+        QueryHints queryHints,
         CancellationToken cancellationToken = default);
 
     #endregion Get
