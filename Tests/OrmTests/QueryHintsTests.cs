@@ -32,7 +32,7 @@ public class QueryHintsTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
     public async Task GetAsync_WithQueryHints_DoesNotThrow()
     {
         var hints = new QueryHints { Plan = QueryPlanHint.Recompile };
-        var row = await _context.SelectFromCustomerProperties()
+        await _context.SelectFromCustomerProperties()
             .Where(x => x.Id == 1)
             .GetAsync(hints, CancellationToken.None);
         // Should not throw, row may be null
@@ -73,5 +73,17 @@ public class QueryHintsTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
             .Where(x => x.Id == 1)
             .GetAsync(x => x.Value, "default", hints, CancellationToken.None);
         Assert.NotNull(value);
+    }
+
+    [Fact]
+    public async Task StreamAsync_WithQueryHints_DoesNotThrow()
+    {
+        var hints = new QueryHints { MaxDop = 1 };
+        await foreach (var row in _context.SelectFromCustomerProperties()
+                           .StreamAsync(hints, CancellationToken.None))
+        {
+            Assert.NotNull(row);
+            break; // Just verify it doesn't throw and can retrieve at least one row
+        }
     }
 }
