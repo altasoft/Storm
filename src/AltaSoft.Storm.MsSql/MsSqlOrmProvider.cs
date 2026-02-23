@@ -32,6 +32,15 @@ public class MsSqlOrmProvider : IOrmProvider
         return result;
     }
 
+
+    /// <inheritdoc/>
+    public SqlBatch CreateBatch()
+    {
+        var result = new SqlBatch();
+        result.Commands.Add(new SqlBatchCommand("SET XACT_ABORT ON;"));
+        return result;
+    }
+
     /// <inheritdoc/>
     public SqlBatchCommand CreateBatchCommand(bool haveInputOutputParams)
     {

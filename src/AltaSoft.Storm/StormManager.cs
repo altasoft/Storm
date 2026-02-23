@@ -62,13 +62,19 @@ public static class StormManager
     public static bool IsTraceEnabled { get; private set; }
 
     /// <summary>
-    /// Gets the delegate used to create a command.
+    /// Delegate used to create a command.
     /// </summary>
     /// <value>The create command delegate.</value>
     public static CreateCommandDelegate CreateCommand { get; private set; } = (_) => throw new StormException("Not initialized");
 
     /// <summary>
-    /// Gets the delegate used to create a batch command.
+    /// Delegate used to create a batch.
+    /// </summary>
+    /// <value>The create batch delegate.</value>
+    public static CreateBatchDelegate CreateBatch { get; private set; } = () => throw new StormException("Not initialized");
+
+    /// <summary>
+    /// Delegate used to create a batch command.
     /// </summary>
     /// <value>The create batch command delegate.</value>
     public static CreateBatchCommandDelegate CreateBatchCommand { get; private set; } = (_) => throw new StormException("Not initialized");
@@ -97,31 +103,31 @@ public static class StormManager
     internal static AddDbBatchParameterDelegate AddDbBatchParameter { get; private set; } = (_, _, _, _, _, _) => throw new StormException("Not initialized");
 
     /// <summary>
-    /// Gets the delegate used to convert an object to its Json text representation.
+    /// Delegate used to convert an object to its Json text representation.
     /// </summary>
     /// <exception cref="StormException">Thrown if the function is not initialized.</exception>
     public static ToTextDelegate ToJson { get; private set; } = (_, _) => throw new StormException("Not initialized");
 
     /// <summary>
-    /// Gets the delegate used to convert a Json string to an object of the specified type.
+    /// Delegate used to convert a Json string to an object of the specified type.
     /// </summary>
     /// <exception cref="StormException">Thrown if the function is not initialized.</exception>
     public static FromTextDelegate FromJson { get; private set; } = (_, _) => throw new StormException("Not initialized");
 
     /// <summary>
-    /// Gets the delegate used to convert an object to its Xml text representation.
+    /// Delegate used to convert an object to its Xml text representation.
     /// </summary>
     /// <exception cref="StormException">Thrown if the function is not initialized.</exception>
     public static ToTextDelegate ToXml { get; private set; } = (_, _) => throw new StormException("Not initialized");
 
     /// <summary>
-    /// Gets the delegate used to convert a Xml string to an object of the specified type.
+    /// Delegate used to convert a Xml string to an object of the specified type.
     /// </summary>
     /// <exception cref="StormException">Thrown if the function is not initialized.</exception>
     public static FromTextDelegate FromXml { get; private set; } = (_, _) => throw new StormException("Not initialized");
 
     /// <summary>
-    /// Gets the delegate used to handle exceptions that occur during database operations
+    /// Delegate used to handle exceptions that occur during database operations
     /// </summary>
     /// <exception cref="StormException">Thrown if the function is not initialized.</exception>
     public static HandleDbExceptionDelegate HandleDbException { get; private set; } = (_) => throw new StormException("Not initialized");
@@ -174,6 +180,7 @@ public static class StormManager
         MaxSysNameLength = ormProvider.MaxSysNameLength;
 
         CreateCommand = ormProvider.CreateCommand;
+        CreateBatch = ormProvider.CreateBatch;
         CreateBatchCommand = ormProvider.CreateBatchCommand;
 
         ToSqlDbType = ormProvider.ToSqlDbType;
@@ -262,6 +269,12 @@ public static class StormManager
 /// <param name="haveInputOutputParams">A boolean value indicating whether the command will have input/output parameters.</param>
 /// <returns>The created database command.</returns>
 public delegate StormDbCommand CreateCommandDelegate(bool haveInputOutputParams);
+
+/// <summary>
+/// Delegate for creating a database batch.
+/// </summary>
+/// <returns>The created batch.</returns>
+public delegate StormDbBatch CreateBatchDelegate();
 
 /// <summary>
 /// Delegate for creating a database batch command.

@@ -25,32 +25,42 @@ public interface IOrmProvider
     int MaxSysNameLength { get; }
 
     /// <summary>
-    /// Creates a delegate for creating a DbCommand.
+    /// Creates a new <see cref="StormDbCommand"/> instance for this provider.
     /// </summary>
-    /// <param name="haveInputOutputParams">A boolean value indicating whether the command will have input/output parameters.</param>
-    /// <returns>A delegate that can be used to create a DbCommand object.</returns>
+    /// <param name="haveInputOutputParams">Indicates whether the command will have input/output parameters.</param>
+    /// <returns>A new <see cref="StormDbCommand"/>.</returns>
     StormDbCommand CreateCommand(bool haveInputOutputParams);
 
     /// <summary>
-    /// Creates a delegate for creating a batch DbCommand.
+    /// Creates a <see cref="StormDbBatch"/> object for grouping multiple commands.
     /// </summary>
-    /// <param name="haveInputOutputParams">A boolean value indicating whether the command will have input/output parameters.</param>
-    /// <returns>A delegate that can be used to create a DbBatchCommand object.</returns>
+    /// <returns>A <see cref="StormDbBatch"/> instance.</returns>
+    StormDbBatch CreateBatch();
+
+    /// <summary>
+    /// Creates a new <see cref="StormDbBatchCommand"/> for this provider.
+    /// </summary>
+    /// <param name="haveInputOutputParams">Indicates whether the batch command will have input/output parameters.</param>
+    /// <returns>A new <see cref="StormDbBatchCommand"/> instance.</returns>
     StormDbBatchCommand CreateBatchCommand(bool haveInputOutputParams);
 
     /// <summary>
-    /// Converts a <see cref="UnifiedDbType"/> to its corresponding SQL Server-specific data type representation, along with optional size, precision, and scale parameters.
+    /// Converts a <see cref="UnifiedDbType"/> to a provider-specific SQL type representation,
+    /// taking into account size, precision and scale where applicable.
     /// </summary>
-    /// <param name="dbType">The UnifiedDbType to convert.</param>
-    /// <param name="size">The size parameter for the SqlDbType.</param>
-    /// <param name="precision">The precision parameter for the SqlDbType.</param>
-    /// <param name="scale">The scale parameter for the SqlDbType.</param>
-    /// <returns>A string representing the SQL Server data type.</returns>
+    /// <param name="dbType">The <see cref="UnifiedDbType"/> to convert.</param>
+    /// <param name="size">The size parameter for the resulting SQL type.</param>
+    /// <param name="precision">The precision parameter for the resulting SQL type.</param>
+    /// <param name="scale">The scale parameter for the resulting SQL type.</param>
+    /// <returns>A string representing the provider-specific SQL data type.</returns>
     string ToSqlDbType(UnifiedDbType dbType, int size, int precision, int scale);
 
     /// <summary>
-    /// Handles the specified DbException by analyzing the exception and returning a more specific exception type.
+    /// Analyzes a <see cref="StormDbException"/> and returns a more specific exception instance when possible.
+    /// Implementations may map database error codes to richer CLR exceptions.
     /// </summary>
+    /// <param name="dbException">The low-level database exception to analyze.</param>
+    /// <returns>A mapped <see cref="Exception"/> or <c>null</c> if no mapping is available.</returns>
     Exception? HandleDbException(StormDbException dbException);
 
     /// <summary>

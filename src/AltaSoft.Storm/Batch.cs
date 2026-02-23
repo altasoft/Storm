@@ -22,7 +22,7 @@ public sealed class Batch : IAsyncDisposable, IDisposable
     internal Batch(StormContext context)
     {
         _context = context;
-        _batch = new StormDbBatch();
+        _batch = StormManager.CreateBatch();
     }
 
     /// <summary>

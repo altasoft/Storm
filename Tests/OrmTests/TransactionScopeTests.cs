@@ -197,7 +197,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
         // Arrange
         var cancellationToken = CancellationToken.None;
         const int batchSize = 3;
-        var lastUserId = 0; // Use 0 to get all users
+        const int lastUserId = 0; // Use 0 to get all users
 
         await using var usersContext = new TestStormContext(_fixture.ConnectionString);
 
