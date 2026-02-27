@@ -7,14 +7,9 @@
 
 #nullable enable
 
-#if NET10_0_OR_GREATER
-using Microsoft.OpenApi;
-#else
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Any;
-#endif
 using AltaSoft.Storm.TestModels.VeryBadNamespace;
 using AltaSoft.Storm.TestModels.DomainTypes;
+using Microsoft.OpenApi;
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
@@ -44,8 +39,6 @@ public static class OpenApiHelper
     /// <see cref="UserId" />
     /// </para>
     /// </remarks>
-
-#if NET10_0_OR_GREATER
     public static FrozenDictionary<Type, OpenApiSchema> Schemas = new Dictionary<Type, OpenApiSchema>()
     {
         {
@@ -75,58 +68,4 @@ public static class OpenApiHelper
             }
         }
     }.ToFrozenDictionary();
-
-#else
-    public static FrozenDictionary<Type, OpenApiSchema> Schemas = new Dictionary<Type, OpenApiSchema>()
-    {
-        {
-            typeof(CurrencyId),
-            new OpenApiSchema
-            {
-                Type = "string",
-                Title = "CurrencyId"
-            }
-        },
-        {
-            typeof(CustomerId),
-            new OpenApiSchema
-            {
-                Type = "integer",
-                Format = "int64",
-                Title = "CustomerId"
-            }
-        },
-
-        {
-            typeof(CustomerId?),
-            new OpenApiSchema
-            {
-                Type = "integer",
-                Format = "int64",
-                Nullable = true,
-                Title = "Nullable<CustomerId>"
-            }
-        },
-        {
-            typeof(UserId),
-            new OpenApiSchema
-            {
-                Type = "integer",
-                Format = "int32",
-                Title = "UserId"
-            }
-        },
-
-        {
-            typeof(UserId?),
-            new OpenApiSchema
-            {
-                Type = "integer",
-                Format = "int32",
-                Nullable = true,
-                Title = "Nullable<UserId>"
-            }
-        }
-    }.ToFrozenDictionary();
-#endif
 }
