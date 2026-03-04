@@ -246,22 +246,22 @@ public partial record Employee
     [StormColumn(DbType = UnifiedDbType.AnsiString, Size = 100)]
     public string? Email { get; set; }
 
-    [StormColumn(ColumnType = ColumnType.Required, DbType = UnifiedDbType.DateTime)]
+    [StormColumn(ColumnType = ColumnType.Required)]
     public DateTime HireDate { get; set; }
 
-    [StormColumn(DbType = UnifiedDbType.Decimal, Size = 10, Scale = 2)]
+    [StormColumn(Size = 10, Scale = 2)]
     public decimal? Salary { get; set; }
 
-    [StormColumn(ColumnType = ColumnType.Required, DbType = UnifiedDbType.Int32)]
+    [StormColumn(ColumnType = ColumnType.Required)]
     public int DepartmentId { get; set; }
 
-    [StormColumn(ColumnType = ColumnType.Required, DbType = UnifiedDbType.Bit)]
+    [StormColumn(ColumnType = ColumnType.Required)]
     public bool IsActive { get; set; }
 
-    [StormColumn(ColumnType = ColumnType.Required | ColumnType.AutoUpdate, DbType = UnifiedDbType.DateTime)]
+    [StormColumn(ColumnType = ColumnType.Required | ColumnType.AutoUpdate)]
     public DateTime CreatedAt { get; set; }
 
-    [StormColumn(ColumnType = ColumnType.Required | ColumnType.AutoUpdate, DbType = UnifiedDbType.DateTime)]
+    [StormColumn(ColumnType = ColumnType.Required | ColumnType.AutoUpdate)]
     public DateTime ModifiedAt { get; set; }
 
     [StormColumn(ColumnType = ColumnType.RowVersion | ColumnType.ConcurrencyCheck)]
