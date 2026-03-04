@@ -110,7 +110,7 @@ public sealed partial class User
 
     public string? Notes { get; set; }
     
-    public int Version{get;set;}
+    public int Version { get; set; }
 }
 ```
 
