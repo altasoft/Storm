@@ -40,18 +40,18 @@ using var scope = new StormTransactionScope();
 await using var context = new MyAppContext();
 
 await context
-	.UpdateUsersTable()
-	.WithoutConcurrencyCheck()
-	.Set(user1)
-	.GoAsync(cancellationToken)
-	.ConfigureAwait(false);
+    .UpdateUsersTable()
+    .WithoutConcurrencyCheck()
+    .Set(user1)
+    .GoAsync(cancellationToken)
+    .ConfigureAwait(false);
 
 await context
-	.UpdateUsersTable()
-	.WithoutConcurrencyCheck()
-	.Set(user2)
-	.GoAsync(cancellationToken)
-	.ConfigureAwait(false);
+    .UpdateUsersTable()
+    .WithoutConcurrencyCheck()
+    .Set(user2)
+    .GoAsync(cancellationToken)
+    .ConfigureAwait(false);
 
 await scope.CompleteAsync(cancellationToken);
 ```
