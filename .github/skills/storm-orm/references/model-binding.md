@@ -18,7 +18,7 @@ Typical method generation (names vary by DisplayName):
 - View or virtual view: SelectFromX (read-only).
 - Table-valued function: SelectFromX (function parameters become method parameters).
 - Stored procedure: ExecuteX (input and output parameters map to method parameters).
-- Scalar function: ExecuteScalarX.
+- Scalar function: ExecuteX (for example, ExecuteScalarFunc).
 - Custom SQL: SelectFromXCustomSql(customSql).
 
 If method names are unclear, ask the user to provide the generated signatures or their naming conventions.
