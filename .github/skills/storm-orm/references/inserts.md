@@ -21,7 +21,7 @@
 
 ### Auto-increment ID retrieval
 
-- ColumnType.AutoIncrement and ColumnType.PrimaryKeyAutoIncrement vlaues are assigned after insert.
+- ColumnType.AutoIncrement and ColumnType.PrimaryKeyAutoIncrement values are assigned after insert.
 - The auto-increment property must have a setter for assignment.
 
 ### Bulk insert sources
