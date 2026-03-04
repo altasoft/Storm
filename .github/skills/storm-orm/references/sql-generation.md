@@ -51,7 +51,7 @@ public partial record Customer
     [StormColumn(DbType = UnifiedDbType.AnsiString, Size = 20)]
     public string? Phone { get; set; }
 
-    [StormColumn(ColumnType = ColumnType.Required, DbType = UnifiedDbType.DateTime)]
+    [StormColumn(ColumnType = ColumnType.Required)]
     public DateTime CreatedAt { get; set; }
 
     [StormColumn(ColumnType = ColumnType.RowVersion | ColumnType.ConcurrencyCheck)]
