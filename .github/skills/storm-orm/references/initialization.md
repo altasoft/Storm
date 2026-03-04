@@ -55,7 +55,7 @@ public sealed partial class MyAppContext : StormContext
 {
     public MyAppContext(string connectionString) : base(connectionString)
     {
-    }s
+    }
 }
 ```
 
