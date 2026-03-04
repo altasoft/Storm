@@ -23,7 +23,7 @@ References are organized by operation type. Load the relevant reference as neede
 4. Identify the operation: select, insert, update, delete, merge, bulk insert, transaction, or partial load.
 5. Use a transaction scope when multiple writes must be consistent (multiple updates, inserts, deletes, or batch operations).
 6. Ask for missing details: schema name, primary key, identity, nullability, and required column sizes.
-7. Determine the generated method name from the StormDbObject attributes (see references/model-binding.md for naming rules: SelectFromX, InsertIntoX, UpdateX, DeleteFromX, MergeIntoX, BulkInsertIntoX, ExecuteX, ExecuteScalarX).
+7. Determine the generated method name from the StormDbObject attributes (see references/model-binding.md for naming rules: SelectFromX, InsertIntoX, UpdateX, DeleteFromX, MergeIntoX, BulkInsertIntoX, ExecuteX, ExecuteScalarFuncX).
 8. **Context creation**: Use the identified/created StormContext with the **parameterless constructor** (assuming it's registered in program.cs). Preferred: `await using var context = new YourContext();` NOT `new YourContext(_connectionString)`. The connection string is automatically retrieved from the app startup registration.
 9. Output C# code only, unless the user explicitly asks for explanation.
 
