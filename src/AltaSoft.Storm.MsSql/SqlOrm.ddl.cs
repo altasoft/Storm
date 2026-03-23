@@ -187,17 +187,24 @@ public static partial class SqlOrm
             .AppendJoinFast(columns, s_commaNewLineAndSpace,
                 x => x.SaveAs != SaveAs.DetailTable && x.Flags != StormColumnFlags.None,
                 static (builder, x) => builder.Append(GetSqlColumnInfo(x)));
-        sb.Append(',').AppendLine();
 
         var pkColumns = columns.FilterAndSelectList(
             static x => x.SaveAs != SaveAs.DetailTable && (x.Flags & StormColumnFlags.Key) != 0,
             static x => x.ColumnName);
 
-        sb.Append("  CONSTRAINT [PK_").Append(unquotedSchemaName).Append('_').Append(unquotedTableName).Append("] PRIMARY KEY CLUSTERED (");
-        sb.AppendJoinFast(',', pkColumns).Append(')').AppendLine();
-        sb.AppendLine(");");
+        var hasPk = pkColumns.Count > 0;
+        if (hasPk)
+        {
+            sb.Append(',').AppendLine();
+            sb.Append("  CONSTRAINT [PK_").Append(unquotedSchemaName).Append('_').Append(unquotedTableName).Append("] PRIMARY KEY CLUSTERED (");
+            sb.AppendJoinFast(',', pkColumns).Append(')');
+        }
+        sb.AppendLine().AppendLine(");");
 
-        if (createDetailTables)
+        // Detail tables represent child collections that are keyed back to this table.
+        // We only create them when a primary key exists, since the PK is required to
+        // provide a stable parent identity / foreign-key target for the detail rows.
+        if (createDetailTables && hasPk)
         {
             foreach (var columnDef in columns.GetDetailColumns())
             {
