@@ -268,6 +268,19 @@ public static partial class DbDataReaderExt
 
     #endregion DateTime2
 
+    #region DateTimeOffset
+
+    /// <summary>
+    /// Gets the <see cref="DateTimeOffset"/> value from the specified column index, or <c>null</c> if the value is <see cref="DBNull"/>.
+    /// </summary>
+    /// <param name="self">The <see cref="StormDbDataReader"/> instance.</param>
+    /// <param name="idx">The zero-based column index.</param>
+    /// <returns>The <see cref="DateTimeOffset"/> value at the specified column index, or <c>null</c> if <see cref="DBNull"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static DateTimeOffset? GetDateTimeOffsetOrNull(this StormDbDataReader self, int idx) => self.IsDBNull(idx) ? null : self.GetDateTimeOffset(idx);
+
+    #endregion DateTimeOffset
+
     #region SmallDateTime
 
     /// <summary>

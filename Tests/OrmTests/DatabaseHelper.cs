@@ -57,6 +57,8 @@ public sealed class DatabaseHelper
 
         await connection.CreateTableAsync<Account>(true).ConfigureAwait(false);
 
+        await connection.CreateTableAsync<DateTimeOffsetTestClass>(true).ConfigureAwait(false);
+
         await using var context = new TestStormContext(ConnectionString);
 
         // Create list of users
