@@ -24,7 +24,7 @@ namespace AltaSoft.Storm.Tests
         public async Task DisposeAsync() => await _context.DisposeAsync().ConfigureAwait(false);
 
         [Fact]
-        public async Task CheckDateTimeOffset()
+        public async Task Should_Persist_And_Retrieve_DateTimeOffset_Correctly()
         {
             var o = new DateTimeOffsetTestClass
             {
