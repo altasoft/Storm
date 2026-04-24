@@ -30,7 +30,6 @@
 	  <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
 	<PackageReference Include="AltaSoft.DomainPrimitives.SwaggerExtensions" Version="8.0.2" />
-	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
   </ItemGroup>
 
   <PropertyGroup>
