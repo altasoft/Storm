@@ -25,11 +25,12 @@
   <Import Project="build\AltaSoft.Storm.MsSql.targets" />
 
   <ItemGroup>
-	<PackageReference Include="AltaSoft.DomainPrimitives" Version="8.0.0" />
-	<PackageReference Include="AltaSoft.DomainPrimitives.Generator" Version="8.0.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" ExcludeAssets="runtime">
+	<PackageReference Include="AltaSoft.DomainPrimitives" Version="8.0.2" />
+	<PackageReference Include="AltaSoft.DomainPrimitives.Generator" Version="8.0.2" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" ExcludeAssets="runtime">
 	  <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="AltaSoft.DomainPrimitives.SwaggerExtensions" Version="8.0.0" />
+	<PackageReference Include="AltaSoft.DomainPrimitives.SwaggerExtensions" Version="8.0.2" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
   </ItemGroup>
 
   <PropertyGroup>

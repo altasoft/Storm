@@ -32,7 +32,6 @@ public class MsSqlOrmProvider : IOrmProvider
         return result;
     }
 
-
     /// <inheritdoc/>
     public SqlBatch CreateBatch()
     {
