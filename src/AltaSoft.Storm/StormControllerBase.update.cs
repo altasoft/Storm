@@ -209,8 +209,8 @@ public abstract partial class StormControllerBase
             bool useRowCount,
             ref int paramIndex,
             string? indent,
-            StringBuilder sb,
-            StormTableHints tableHints = StormTableHints.None)
+            StormTableHints tableHints,
+            StringBuilder sb)
     {
         var pkInformation = GetPkInformation(command, value, ref paramIndex);
         if (columnValues.Count == 0) // no changes, return
@@ -291,7 +291,7 @@ public abstract partial class StormControllerBase
 
         var (masterColumns, detailColumns) = columnValues.GetMaterDetailColumnsForUpdate();
 
-        var (masterPkWhereStatements, masterPkColumnNames, masterPkParamNames) = GenerateUpdateRowSql(command, value, masterColumns, checkConcurrency, false, ref paramIndex, null, sb, tableHints);
+        var (masterPkWhereStatements, masterPkColumnNames, masterPkParamNames) = GenerateUpdateRowSql(command, value, masterColumns, checkConcurrency, false, ref paramIndex, null, tableHints, sb);
 
         var pid = paramIndex;
 

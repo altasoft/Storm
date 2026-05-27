@@ -182,20 +182,20 @@ public abstract partial class StormControllerBase
 
         if (updateThenInsert)
         {
-            GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, true, ref paramIndex, null, sb);
+            GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, true, ref paramIndex, null, StormTableHints.None, sb);
             sb.AppendLine("IF @__storm_rows_affected__ = 0");
             sb.AppendLine("BEGIN");
-            GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, "  ", index, sb);
+            GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, "  ", index, StormTableHints.None, sb);
             sb.AppendLine("END");
         }
         else
         {
             sb.AppendLine("BEGIN TRY");
-            GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, "  ", index, sb);
+            GenerateInsertOneRowSql(command, columnsToInsertValues, false, ref paramIndex, "  ", index, StormTableHints.None, sb);
             sb.AppendLine("END TRY");
             sb.AppendLine("BEGIN CATCH");
             sb.AppendLine("  IF ERROR_NUMBER() NOT IN (2627, 2601) THROW;");
-            GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, false, ref paramIndex, "  ", sb);
+            GenerateUpdateRowSql(command, value, columnsToUpdateValues, checkConcurrency, false, ref paramIndex, "  ", StormTableHints.None, sb);
             sb.AppendLine("END CATCH;");
         }
     }

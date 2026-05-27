@@ -77,7 +77,7 @@ public abstract partial class StormControllerBase
     {
         var sb = StormManager.GetStringBuilderFromPool();
 
-        GenerateDeleteSql(command, queryParameters, sb, queryParameters.TableHints);
+        GenerateDeleteSql(command, queryParameters, queryParameters.TableHints, sb);
 
         command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
@@ -90,7 +90,7 @@ public abstract partial class StormControllerBase
         var sb = StormManager.GetStringBuilderFromPool();
 
         var paramIndex = 1;
-        GenerateDeleteSql(command, value, ref paramIndex, sb, queryParameters.TableHints);
+        GenerateDeleteSql(command, value, ref paramIndex, queryParameters.TableHints, sb);
 
         command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
@@ -106,7 +106,7 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         foreach (var value in valueList)
         {
-            GenerateDeleteSql(command, value, ref paramIndex, sb, queryParameters.TableHints);
+            GenerateDeleteSql(command, value, ref paramIndex, queryParameters.TableHints, sb);
         }
 
         if (sb.Length == 0)
@@ -123,7 +123,7 @@ public abstract partial class StormControllerBase
         command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    private void GenerateDeleteSql<T>(IVirtualStormDbCommand command, IKeyAndWhereExpression<T> queryParameters, StringBuilder sb, StormTableHints tableHints = StormTableHints.None) where T : IDataBindable
+    private void GenerateDeleteSql<T>(IVirtualStormDbCommand command, IKeyAndWhereExpression<T> queryParameters, StormTableHints tableHints, StringBuilder sb) where T : IDataBindable
     {
         var paramIndex = 1;
         var (startIndex, len) = (-1, 0);
@@ -149,10 +149,10 @@ public abstract partial class StormControllerBase
             GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
         }
         else
-        if (len > 0)
-        {
-            sb.Append(sb, startIndex, len);
-        }
+            if (len > 0)
+            {
+                sb.Append(sb, startIndex, len);
+            }
         sb.AppendLine();
     }
 
@@ -162,10 +162,10 @@ public abstract partial class StormControllerBase
     /// <param name="command">The database command object to which parameters will be added.</param>
     /// <param name="value">The value implementing IDataBindable from which to derive the conditions for deletion.</param>
     /// <param name="paramIndex">The starting index for parameterization in the SQL command.</param>
-    /// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
     /// <param name="tableHints">Table hints to apply to the DELETE statement.</param>
+    /// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
     /// <returns>The StringBuilder with the appended SQL DELETE command.</returns>
-    private void GenerateDeleteSql(IVirtualStormDbCommand command, IDataBindable value, ref int paramIndex, StringBuilder sb, StormTableHints tableHints = StormTableHints.None)
+    private void GenerateDeleteSql(IVirtualStormDbCommand command, IDataBindable value, ref int paramIndex, StormTableHints tableHints, StringBuilder sb)
     {
         value.BeforeSave(SaveAction.Delete);
 
