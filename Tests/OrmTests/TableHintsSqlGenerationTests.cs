@@ -87,9 +87,10 @@ public class TableHintsSqlGenerationTests : IClassFixture<DatabaseFixture>
             .Values(DatabaseHelper.NewUser(1)));
 
         // Expected shape: INSERT INTO [dbo].[Users] WITH (TABLOCK) (col1, col2, ...)
+        const string hintText = "WITH (TABLOCK)";
         var insertPos = sql.IndexOf("INSERT INTO", System.StringComparison.OrdinalIgnoreCase);
-        var hintPos   = sql.IndexOf("WITH (TABLOCK)", System.StringComparison.OrdinalIgnoreCase);
-        var colPos    = sql.IndexOf("(", hintPos + 1, System.StringComparison.OrdinalIgnoreCase);
+        var hintPos   = sql.IndexOf(hintText, System.StringComparison.OrdinalIgnoreCase);
+        var colPos    = sql.IndexOf("(", hintPos + hintText.Length, System.StringComparison.OrdinalIgnoreCase);
 
         insertPos.Should().BeGreaterThanOrEqualTo(0);
         hintPos.Should().BeGreaterThan(insertPos, "hint must come after INSERT INTO");
