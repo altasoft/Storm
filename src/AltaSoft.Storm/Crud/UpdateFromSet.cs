@@ -19,6 +19,7 @@ internal sealed class UpdateFromSet<T> : ModifyQueryParameters<T>, IUpdateFromSe
     {
         CloseConnection = source.CloseConnection;
         CommandTimeout = source.CommandTimeout;
+        TableHints = source.TableHints;
 
         _setInstructions = new List<(StormColumnDef column, object? value)>(4)
         {
@@ -41,6 +42,14 @@ internal sealed class UpdateFromSet<T> : ModifyQueryParameters<T>, IUpdateFromSe
     public IUpdateFromSet<T> WithCommandTimeOut(int commandTimeout)
     {
         CommandTimeout = commandTimeout;
+        return this;
+    }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IUpdateFromSet<T> WithTableHints(StormTableHints tableHints)
+    {
+        TableHints = tableHints;
         return this;
     }
 

@@ -49,4 +49,10 @@ public interface IUpdateFromSingle<T> : ISqlGo where T : IDataBindable
     /// <param name="valueSelector">The expression used to determine the value to set for the column.</param>
     /// <returns>An <see cref="IUpdateFromSetSingle{T}"/> interface for further configuration or execution.</returns>
     IUpdateFromSetSingle<T> Set<TValue>(Expression<Func<T, TValue?>> columnSelector, Expression<Func<T, TValue?>> valueSelector);
+
+    /// <summary>
+    /// Specifies table hints to be used in the UPDATE query.
+    /// </summary>
+    /// <param name="tableHints">The table hints to apply.</param>
+    IUpdateFromSingle<T> WithTableHints(StormTableHints tableHints);
 }

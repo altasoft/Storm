@@ -19,6 +19,7 @@ internal sealed class UpdateFromSetSingle<T> : ModifyQueryParameters<T>, IUpdate
     {
         CloseConnection = source.CloseConnection;
         CommandTimeout = source.CommandTimeout;
+        TableHints = source.TableHints;
 
         KeyValues = keyValues;
         KeyId = keyId;
@@ -44,6 +45,14 @@ internal sealed class UpdateFromSetSingle<T> : ModifyQueryParameters<T>, IUpdate
     public IUpdateFromSetSingle<T> WithCommandTimeOut(int commandTimeout)
     {
         CommandTimeout = commandTimeout;
+        return this;
+    }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IUpdateFromSetSingle<T> WithTableHints(StormTableHints tableHints)
+    {
+        TableHints = tableHints;
         return this;
     }
 

@@ -69,4 +69,10 @@ public interface IUpdateFrom<T> : ISqlGo where T : IDataBindable
     /// </summary>
     /// <returns>The interface with concurrency check disabled.</returns>
     IUpdateFrom<T> WithoutConcurrencyCheck();
+
+    /// <summary>
+    /// Specifies table hints to be used in the UPDATE query.
+    /// </summary>
+    /// <param name="tableHints">The table hints to apply.</param>
+    IUpdateFrom<T> WithTableHints(StormTableHints tableHints);
 }

@@ -59,6 +59,11 @@ internal abstract class ModifyQueryParameters<T> : QueryParameters, IKeyAndWhere
     protected internal List<StormCallParameter>? CallParameters;
 
     /// <summary>
+    /// Table hints for a Storm query.
+    /// </summary>
+    protected internal StormTableHints TableHints;
+
+    /// <summary>
     /// Row to insert/update/delete
     /// </summary>
     protected T? RowValue;

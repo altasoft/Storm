@@ -98,7 +98,7 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         var sb = StormManager.GetStringBuilderFromPool();
 
-        GenerateInsertSql(command, value, ref paramIndex, -1, sb);
+        GenerateInsertSql(command, value, ref paramIndex, -1, sb, queryParameters.TableHints);
 
         command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
@@ -120,7 +120,7 @@ public abstract partial class StormControllerBase
 
         foreach (var value in valueList)
         {
-            GenerateInsertSql(command, value, ref paramIndex, -2, sb);
+            GenerateInsertSql(command, value, ref paramIndex, -2, sb, queryParameters.TableHints);
         }
 
         if (sb.Length == 0)
@@ -151,14 +151,15 @@ public abstract partial class StormControllerBase
     /// <param name="paramIndex">The starting index for parameterization in the SQL command.</param>
     /// <param name="index">Index of row in multirow merge or insert, -1 means no temp table</param>
     /// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
+    /// <param name="tableHints">Table hints to apply to the INSERT statement.</param>
     /// <returns>The StringBuilder with the appended SQL INSERT command.</returns>
-    private void GenerateInsertSql(IVirtualStormDbCommand command, IDataBindable value, ref int paramIndex, int index, StringBuilder sb)
+    private void GenerateInsertSql(IVirtualStormDbCommand command, IDataBindable value, ref int paramIndex, int index, StringBuilder sb, StormTableHints tableHints = StormTableHints.None)
     {
         value.BeforeSave(SaveAction.Insert);
 
         var (masterValues, detailValues) = value.__GetColumnValues().GetMaterAndDetailColumnsForInsert();
 
-        var (masterPkColumnNames, masterPkParamNames) = GenerateInsertOneRowSql(command, masterValues, true, ref paramIndex, null, index, sb);
+        var (masterPkColumnNames, masterPkParamNames) = GenerateInsertOneRowSql(command, masterValues, true, ref paramIndex, null, index, sb, tableHints);
 
         var pid = paramIndex;
 
@@ -214,7 +215,7 @@ public abstract partial class StormControllerBase
 
     private (List<string>? masterPkColumnNames, List<string>? masterPkParamNames)
         GenerateInsertOneRowSql(IVirtualStormDbCommand command, IReadOnlyList<(StormColumnDef column, object? value)> columnValues,
-            bool returnPkInfo, ref int paramIndex, string? indent, int index, StringBuilder sb)
+            bool returnPkInfo, ref int paramIndex, string? indent, int index, StringBuilder sb, StormTableHints tableHints = StormTableHints.None)
     {
         var pid = paramIndex;
         var autoIncColumn = __GetAutoIncColumn();
@@ -223,7 +224,9 @@ public abstract partial class StormControllerBase
         List<string>? masterPkParamNames = null;
 
         sb.Append(indent).AppendLine("SET NOCOUNT OFF;");
-        sb.Append(indent).Append("INSERT INTO ").Append(QuotedObjectFullName).Append(" (");
+        sb.Append(indent).Append("INSERT INTO ").Append(QuotedObjectFullName);
+        AppendTableHints(tableHints, sb);
+        sb.Append(" (");
         sb.AppendJoin(',', columnValues.Select(x =>
         {
             var column = x.column;
