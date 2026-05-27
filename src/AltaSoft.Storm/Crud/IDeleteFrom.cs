@@ -39,5 +39,11 @@ public interface IDeleteFrom<T> : ISqlGo where T : IDataBindable
     /// </summary>
     IDeleteFrom<T> Where(string oDataFilter);
 
+    /// <summary>
+    /// Specifies table hints to be used in the DELETE query.
+    /// </summary>
+    /// <param name="tableHints">The table hints to apply.</param>
+    IDeleteFrom<T> WithTableHints(StormTableHints tableHints);
+
     #endregion Builder
 }

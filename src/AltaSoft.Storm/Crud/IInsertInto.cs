@@ -23,6 +23,12 @@ public interface IInsertInto<in T> : ISqlGo where T : IDataBindable
     /// <returns>The interface with the specified command timeout.</returns>
     IInsertInto<T> WithCommandTimeOut(int commandTimeout);
 
+    /// <summary>
+    /// Specifies table hints to be used in the INSERT query.
+    /// </summary>
+    /// <param name="tableHints">The table hints to apply.</param>
+    IInsertInto<T> WithTableHints(StormTableHints tableHints);
+
     #endregion Builder
 
     /// <summary>

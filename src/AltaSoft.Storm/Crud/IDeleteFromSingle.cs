@@ -21,5 +21,11 @@ public interface IDeleteFromSingle<T> : ISqlGo where T : IDataBindable
     /// <returns>The interface with the specified command timeout.</returns>
     IDeleteFromSingle<T> WithCommandTimeOut(int commandTimeout);
 
+    /// <summary>
+    /// Specifies table hints to be used in the DELETE query.
+    /// </summary>
+    /// <param name="tableHints">The table hints to apply.</param>
+    IDeleteFromSingle<T> WithTableHints(StormTableHints tableHints);
+
     #endregion Builder
 }

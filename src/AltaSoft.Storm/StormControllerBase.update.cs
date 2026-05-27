@@ -102,7 +102,9 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         var sb = StormManager.GetStringBuilderFromPool();
 
-        sb.Append("UPDATE ").AppendLine(QuotedObjectFullName);
+        sb.Append("UPDATE ").Append(QuotedObjectFullName);
+        AppendTableHints(queryParameters.TableHints, sb);
+        sb.AppendLine();
         sb.Append("SET ");
 
         sb.AppendJoinFast(setInstructions, ',', (builder, x) =>
@@ -154,7 +156,7 @@ public abstract partial class StormControllerBase
         var savedPosition = sb.Length;
 
         var paramIndex = 1;
-        GenerateUpdateSql(command, value, checkConcurrency, ref paramIndex, sb);
+        GenerateUpdateSql(command, value, checkConcurrency, queryParameters.TableHints, ref paramIndex, sb);
 
         if (sb.Length == savedPosition) // no changes, return
         {
@@ -184,7 +186,7 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         foreach (var value in valueList)
         {
-            GenerateUpdateSql(command, value, checkConcurrency, ref paramIndex, sb);
+            GenerateUpdateSql(command, value, checkConcurrency, queryParameters.TableHints, ref paramIndex, sb);
         }
 
         if (sb.Length == savedPosition) // no changes, return
@@ -207,6 +209,7 @@ public abstract partial class StormControllerBase
             bool useRowCount,
             ref int paramIndex,
             string? indent,
+            StormTableHints tableHints,
             StringBuilder sb)
     {
         var pkInformation = GetPkInformation(command, value, ref paramIndex);
@@ -216,7 +219,9 @@ public abstract partial class StormControllerBase
         var pid = paramIndex;
 
         sb.Append(indent).AppendLine("SET NOCOUNT OFF;");
-        sb.Append(indent).Append("UPDATE ").AppendLine(QuotedObjectFullName);
+        sb.Append(indent).Append("UPDATE ").Append(QuotedObjectFullName);
+        AppendTableHints(tableHints, sb);
+        sb.AppendLine();
         sb.Append(indent).Append("SET ");
 
         // ReSharper disable once SuspiciousTypeConversion.Global
@@ -271,10 +276,11 @@ public abstract partial class StormControllerBase
     /// <param name="command">The database command object to which parameters will be added.</param>
     /// <param name="value">The value implementing ITrackingObject from which to derive the values for updating.</param>
     /// <param name="checkConcurrency">Whether to check concurrency columns.</param>
+    /// <param name="tableHints">Table hints to apply to the UPDATE statement.</param>
     /// <param name="paramIndex">The starting index for parameterization in the SQL command.</param>
     /// <param name="sb">The StringBuilder to which the generated SQL will be appended.</param>
     /// <returns>The StringBuilder with the appended SQL UPDATE command.</returns>
-    private void GenerateUpdateSql(IVirtualStormDbCommand command, IDataBindable value, bool checkConcurrency, ref int paramIndex, StringBuilder sb)
+    private void GenerateUpdateSql(IVirtualStormDbCommand command, IDataBindable value, bool checkConcurrency, StormTableHints tableHints, ref int paramIndex, StringBuilder sb)
     {
         value.BeforeSave(SaveAction.Update);
 
@@ -285,7 +291,7 @@ public abstract partial class StormControllerBase
 
         var (masterColumns, detailColumns) = columnValues.GetMaterDetailColumnsForUpdate();
 
-        var (masterPkWhereStatements, masterPkColumnNames, masterPkParamNames) = GenerateUpdateRowSql(command, value, masterColumns, checkConcurrency, false, ref paramIndex, null, sb);
+        var (masterPkWhereStatements, masterPkColumnNames, masterPkParamNames) = GenerateUpdateRowSql(command, value, masterColumns, checkConcurrency, false, ref paramIndex, null, tableHints, sb);
 
         var pid = paramIndex;
 

@@ -53,6 +53,14 @@ internal sealed class UpdateFrom<T> : ModifyQueryParameters<T>, IUpdateFrom<T> w
         return this;
     }
 
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IUpdateFrom<T> WithTableHints(StormTableHints tableHints)
+    {
+        TableHints = tableHints;
+        return this;
+    }
+
     #endregion Builder
 
     /// <inheritdoc />

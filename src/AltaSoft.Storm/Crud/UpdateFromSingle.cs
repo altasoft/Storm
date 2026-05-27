@@ -36,6 +36,14 @@ internal sealed class UpdateFromSingle<T> : ModifyQueryParameters<T>, IUpdateFro
         return this;
     }
 
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IUpdateFromSingle<T> WithTableHints(StormTableHints tableHints)
+    {
+        TableHints = tableHints;
+        return this;
+    }
+
     #endregion Builder
 
     /// <inheritdoc />

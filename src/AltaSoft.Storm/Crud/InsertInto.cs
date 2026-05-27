@@ -37,6 +37,14 @@ internal class InsertInto<T> : ModifyQueryParameters<T>, IInsertInto<T> where T 
         return this;
     }
 
+    /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IInsertInto<T> WithTableHints(StormTableHints tableHints)
+    {
+        TableHints = tableHints;
+        return this;
+    }
+
     #endregion Builder
 
     /// <inheritdoc/>

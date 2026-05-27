@@ -61,6 +61,14 @@ internal sealed class DeleteFrom<T> : ModifyQueryParameters<T>, IDeleteFrom<T>, 
         return this;
     }
 
+    /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IDeleteFrom<T> WithTableHints(StormTableHints tableHints)
+    {
+        TableHints = tableHints;
+        return this;
+    }
+
     #endregion Builder
 
     /// <inheritdoc/>
