@@ -10,6 +10,10 @@ public sealed partial class TestStormContext : StormContext
     {
     }
 
+    public TestStormContext(string connectionString, bool standalone) : base(connectionString, standalone)
+    {
+    }
+
     public TestStormContext() : base()
     {
     }

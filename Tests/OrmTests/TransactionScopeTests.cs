@@ -488,4 +488,125 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
 
         await outer.CompleteAsync(CancellationToken.None);
     }
+
+    [Fact]
+    public async Task OuterScope_WithProcedureAndStandaloneContexts_PersistsStandaloneChangesOnly()
+    {
+        const int transactionalUserId = 310_001;
+        const int standaloneUser1Id = 310_002;
+        const int standaloneUser2Id = 310_003;
+        const int standaloneUser3Id = 310_004;
+        const short branchId = 7;
+
+        var transactionalUser = DatabaseHelper.NewUser(transactionalUserId);
+        var standaloneUser1 = DatabaseHelper.NewUser(standaloneUser1Id);
+        var standaloneUser2 = DatabaseHelper.NewUser(standaloneUser2Id);
+        var standaloneUser3 = DatabaseHelper.NewUser(standaloneUser3Id);
+
+        using (var outer = new StormTransactionScope())
+        {
+            Assert.True(outer.IsRoot);
+            Assert.Equal(1, outer.Ambient.TransactionCount);
+            Assert.Same(outer, StormTransactionScope.Current);
+
+            await using var context1 = new TestStormContext(_fixture.ConnectionString, standalone: false);
+
+            Assert.False(context1.IsStandalone);
+            Assert.True(context1.IsInTransactionScope);
+
+            var (outerConnection, outerTransaction) = await context1.EnsureConnectionAsync(CancellationToken.None);
+            Assert.Same(outer.Ambient.Connection, outerConnection);
+            Assert.Same(outer.Ambient.Transaction, outerTransaction);
+            Assert.NotNull(outerTransaction);
+
+            var procResult = await context1.ExecuteInputOutputProc(1, 0).ExecuteAsync();
+            Assert.NotNull(procResult);
+            Assert.Equal(1, procResult.ReturnValue);
+            Assert.Equal(1, procResult.ResultValue);
+            Assert.Equal(77, procResult.Io);
+
+            await context1.InsertIntoUsersTable().Values(transactionalUser).GoAsync();
+
+            var transactionalVisibleInsideOuter = await context1.SelectFromUsersTable(transactionalUserId, branchId).GetAsync();
+            Assert.NotNull(transactionalVisibleInsideOuter);
+
+            await using (var standaloneContext1 = new TestStormContext(_fixture.ConnectionString, standalone: true))
+            {
+                Assert.True(standaloneContext1.IsStandalone);
+                Assert.False(standaloneContext1.IsInTransactionScope);
+
+                var (standaloneConnection1, standaloneTransaction1) = await standaloneContext1.EnsureConnectionAsync(CancellationToken.None);
+                Assert.NotNull(standaloneConnection1);
+                Assert.Null(standaloneTransaction1);
+                Assert.NotSame(outerConnection, standaloneConnection1);
+
+                await standaloneContext1.InsertIntoUsersTable().Values(standaloneUser1).GoAsync();
+
+                await standaloneContext1.UpdateUsersTable(standaloneUser1.UserId, standaloneUser1.BranchId)
+                    .Set(x => x.FullName, "Standalone1_Updated")
+                    .GoAsync();
+            }
+
+            await using (var outsideReadContext = new TestStormContext(_fixture.ConnectionString, standalone: true))
+            {
+                var standaloneVisibleOutside = await outsideReadContext.SelectFromUsersTable(standaloneUser1Id, branchId).GetAsync();
+
+                Assert.NotNull(standaloneVisibleOutside);
+                Assert.Equal("Standalone1_Updated", standaloneVisibleOutside!.FullName);
+            }
+
+            using (var inner = new StormTransactionScope(StormTransactionScopeOption.CreateNew))
+            {
+                Assert.Same(inner, StormTransactionScope.Current);
+                Assert.NotSame(outer.Ambient, inner.Ambient);
+                Assert.Same(outer.Ambient, inner.Ambient.Previous);
+                Assert.Equal(1, outer.Ambient.TransactionCount);
+                Assert.Equal(1, inner.Ambient.TransactionCount);
+
+                await using var context2 = new TestStormContext(_fixture.ConnectionString, standalone: true);
+
+                Assert.True(context2.IsStandalone);
+                Assert.False(context2.IsInTransactionScope);
+
+                var (standaloneConnection2, standaloneTransaction2) = await context2.EnsureConnectionAsync(CancellationToken.None);
+                Assert.NotNull(standaloneConnection2);
+                Assert.Null(standaloneTransaction2);
+                Assert.NotSame(outerConnection, standaloneConnection2);
+
+                await context2.InsertIntoUsersTable().Values(standaloneUser2).GoAsync();
+                await context2.InsertIntoUsersTable().Values(standaloneUser3).GoAsync();
+                await context2.UpdateUsersTable(standaloneUser2.UserId, standaloneUser2.BranchId)
+                    .Set(x => x.FullName, "Standalone2_Updated")
+                    .GoAsync();
+
+                await inner.CompleteAsync(CancellationToken.None);
+
+                Assert.True(inner.IsCompleted);
+                Assert.Equal(0, inner.Ambient.TransactionCount);
+            }
+
+            Assert.Same(outer, StormTransactionScope.Current);
+            Assert.False(outer.IsCompleted);
+            Assert.Equal(1, outer.Ambient.TransactionCount);
+
+            // Intentionally do not complete outer scope so ambient transactional changes are rolled back.
+        }
+
+        await using var verifyContext = new TestStormContext(_fixture.ConnectionString);
+
+        var transactionalInserted = await verifyContext.SelectFromUsersTable(transactionalUserId, branchId).GetAsync();
+        var standaloneInserted1 = await verifyContext.SelectFromUsersTable(standaloneUser1Id, branchId).GetAsync();
+        var standaloneInserted2 = await verifyContext.SelectFromUsersTable(standaloneUser2Id, branchId).GetAsync();
+        var standaloneInserted3 = await verifyContext.SelectFromUsersTable(standaloneUser3Id, branchId).GetAsync();
+
+        Assert.Null(transactionalInserted);
+
+        Assert.NotNull(standaloneInserted1);
+        Assert.Equal("Standalone1_Updated", standaloneInserted1!.FullName);
+
+        Assert.NotNull(standaloneInserted2);
+        Assert.Equal("Standalone2_Updated", standaloneInserted2!.FullName);
+
+        Assert.NotNull(standaloneInserted3);
+    }
 }

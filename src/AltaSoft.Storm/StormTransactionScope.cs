@@ -11,7 +11,7 @@ namespace AltaSoft.Storm;
 /// <summary>
 /// Lightweight transaction scope for Storm. Controls the ambient transaction state used by <see cref="StormContext"/>.
 /// Typical usage:
-/// <code>await using (var scope = new StormTransactionScope(StormTransactionScopeOption.JoinExisting)) { ... await scope.CompleteAsync(CancellationToken.None); }</code>
+/// <code>using (var scope = new StormTransactionScope()) { ... await scope.CompleteAsync(CancellationToken.None); }</code>
 /// The scope either joins an existing ambient transaction or creates a new one depending on the option.
 /// When disposed the scope will commit the ambient transaction if <see cref="CompleteAsync"/> was called on the
 /// outermost scope; otherwise it will rollback.
@@ -70,6 +70,12 @@ public sealed class StormTransactionScope : IDisposable
         // capture previous scope and its ambient (if any) so we can restore previous scope on dispose
         _previousScope = s_current.Value;
         var previousAmbient = _previousScope?.Ambient;
+
+        if (scopeOption == StormTransactionScopeOption.CreateNew && (transactionToUse is not null || connectionToUse is not null))
+            throw new StormException("CreateNew option does not allow a connection or transaction instance.");
+
+        if (transactionToUse is not null && connectionToUse is not null && transactionToUse.Connection != connectionToUse)
+            throw new StormException("Provided transaction's connection does not match the provided connection instance.");
 
         switch (scopeOption)
         {
@@ -140,7 +146,7 @@ public sealed class StormTransactionScope : IDisposable
         if (_logger is not null && _logger.IsEnabled(LogLevel.Trace))
             _logger.LogTrace("[StormTransactionScope] Scope created, TransactionCount={TransactionCount}", Ambient.TransactionCount);
     }
-
+    
     /// <summary>
     /// Initializes a new scope that will join an existing ambient transaction if one exists; otherwise a new ambient is created.
     /// </summary>
@@ -175,8 +181,12 @@ public sealed class StormTransactionScope : IDisposable
     }
 
     /// <summary>
-    /// Determines whether there is an active transaction in the unit of work.
+    /// Determines whether there is an active transaction in the current unit of work.
     /// </summary>
+    /// <returns>
+    /// <c>true</c> when the scope is not completed, the ambient state is not rolled back,
+    /// and there is at least one active nested transaction count; otherwise, <c>false</c>.
+    /// </returns>
     public bool HasActiveTransaction() => !IsCompleted && Ambient is { IsRollBacked: false, TransactionCount: > 0 };
 
     /// <summary>
@@ -235,6 +245,9 @@ public sealed class StormTransactionScope : IDisposable
     /// the ambient transaction will be committed; otherwise a rollback is executed. The previous scope in the
     /// async context is restored when the scope is disposed.
     /// </summary>
+    /// <remarks>
+    /// Disposing a non-completed joined scope will roll back the shared ambient transaction.
+    /// </remarks>
     public void Dispose()
     {
         if (_disposed)
