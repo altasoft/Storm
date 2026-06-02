@@ -272,7 +272,6 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
         using (var inner = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
         {
             Assert.NotSame(outer.Ambient, inner.Ambient);
-            Assert.Same(outer.Ambient, inner.Ambient.Previous);
 
             // Current inside nested scope should be inner
             Assert.Same(inner, StormTransactionScope.Current);
@@ -331,7 +330,6 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
         using (var newNested = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
         {
             Assert.True(newNested.IsRoot);
-            Assert.Same(joinNested.Ambient, newNested.Ambient.Previous);
 
             // transaction counts
             Assert.Equal(2, outer.Ambient.TransactionCount); // outer + joinNested
@@ -379,12 +377,8 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
 
         using (var first = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
         {
-            Assert.Same(outer.Ambient, first.Ambient.Previous);
-
             using (var second = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
             {
-                Assert.Same(first.Ambient, second.Ambient.Previous);
-
                 // inside second
                 Assert.Same(second, StormTransactionScope.Current);
 
@@ -445,8 +439,6 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
             using var s = new StormTransactionScope(StormTransactionScopeOption.RequiresNew);
             // ReSharper disable once AccessToDisposedClosure
             Assert.NotSame(outer.Ambient, s.Ambient);
-            // ReSharper disable once AccessToDisposedClosure
-            Assert.Same(outer.Ambient, s.Ambient.Previous);
 
             await Task.Yield();
 
@@ -559,7 +551,6 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
             {
                 Assert.Same(inner, StormTransactionScope.Current);
                 Assert.NotSame(outer.Ambient, inner.Ambient);
-                Assert.Same(outer.Ambient, inner.Ambient.Previous);
                 Assert.Equal(1, outer.Ambient.TransactionCount);
                 Assert.Equal(1, inner.Ambient.TransactionCount);
 
@@ -602,10 +593,10 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
         Assert.Null(transactionalInserted);
 
         Assert.NotNull(standaloneInserted1);
-        Assert.Equal("Standalone1_Updated", standaloneInserted1!.FullName);
+        Assert.Equal("Standalone1_Updated", standaloneInserted1.FullName);
 
         Assert.NotNull(standaloneInserted2);
-        Assert.Equal("Standalone2_Updated", standaloneInserted2!.FullName);
+        Assert.Equal("Standalone2_Updated", standaloneInserted2.FullName);
 
         Assert.NotNull(standaloneInserted3);
     }

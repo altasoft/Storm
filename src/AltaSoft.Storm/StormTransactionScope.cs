@@ -104,7 +104,7 @@ public sealed class StormTransactionScope : IDisposable
                 }
                 else
                 {
-                    Ambient = new AmbientState(null, _logger);
+                    Ambient = new AmbientState(_logger);
                     IsRoot = true;
 
                     connectionToUse ??= transactionToUse?.Connection;
@@ -124,14 +124,14 @@ public sealed class StormTransactionScope : IDisposable
                 break;
 
             case StormTransactionScopeOption.RequiresNew:
-                Ambient = new AmbientState(previousAmbient, _logger);
+                Ambient = new AmbientState(_logger);
                 IsRoot = true;
 
                 _logger?.LogTrace("[StormTransactionScope] Created new ambient transaction state (RequiresNew).");
                 break;
 
             case StormTransactionScopeOption.Suppress:
-                Ambient = new AmbientState(previousAmbient, _logger);
+                Ambient = new AmbientState(_logger);
                 IsRoot = true;
                 IsSuppressed = true;
                 _logger?.LogTrace("[StormTransactionScope] Ambient transaction suppressed for current scope.");
@@ -281,7 +281,7 @@ public sealed class StormTransactionScope : IDisposable
         finally
         {
             // if we created ambient for this scope, dispose it
-            if (IsRoot && !IsSuppressed)
+            if (IsRoot)
             {
                 try
                 {

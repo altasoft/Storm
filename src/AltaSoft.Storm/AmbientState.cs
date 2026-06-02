@@ -13,8 +13,6 @@ namespace AltaSoft.Storm;
 /// </summary>
 internal sealed class AmbientState : IDisposable
 {
-    internal AmbientState? Previous { get; }
-
     internal StormDbConnection? _connection;
     internal StormDbTransaction? _transaction;
 
@@ -22,13 +20,13 @@ internal sealed class AmbientState : IDisposable
     internal bool _ownsTransaction;
 
     internal bool IsRollBacked { get; private set; }
+
     internal int TransactionCount { get; set; }
 
     private readonly ILogger? _logger;
 
-    internal AmbientState(AmbientState? previous, ILogger? logger)
+    internal AmbientState(ILogger? logger)
     {
-        Previous = previous;
         _logger = logger;
         TransactionCount = 0;
         IsRollBacked = false;
