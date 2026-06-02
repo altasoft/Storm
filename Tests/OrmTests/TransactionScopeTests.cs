@@ -263,13 +263,13 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
     }
 
     [Fact]
-    public async Task CreateNewScope_RestoresPreviousScopeOnDispose()
+    public async Task RequiresNewScope_RestoresPreviousScopeOnDispose()
     {
         using var outer = new StormTransactionScope();
         Assert.True(outer.IsRoot);
 
-        // create a new nested ambient (CreateNew) which should have previous pointer to outer.Ambient
-        using (var inner = new StormTransactionScope(StormTransactionScopeOption.CreateNew))
+        // create a new nested ambient (RequiresNew) which should have previous pointer to outer.Ambient
+        using (var inner = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
         {
             Assert.NotSame(outer.Ambient, inner.Ambient);
             Assert.Same(outer.Ambient, inner.Ambient.Previous);
@@ -300,7 +300,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
             // the task should start with the same ambient
             Assert.Same(mainCurrent, StormTransactionScope.Current);
 
-            using var inner = new StormTransactionScope(StormTransactionScopeOption.CreateNew);
+            using var inner = new StormTransactionScope(StormTransactionScopeOption.RequiresNew);
             Assert.NotNull(StormTransactionScope.Current);
 
             // Await inside the task to ensure async continuation inside task keeps ambient
@@ -318,7 +318,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
     }
 
     [Fact]
-    public async Task MixedNesting_JoinAndCreateNew_MaintainsCorrectBehavior()
+    public async Task MixedNesting_JoinAndRequiresNew_MaintainsCorrectBehavior()
     {
         using var outer = new StormTransactionScope();
 
@@ -328,7 +328,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
         Assert.Same(outer.Ambient, joinNested.Ambient);
 
         // create new nested scope - should have its own ambient chained to previous
-        using (var newNested = new StormTransactionScope(StormTransactionScopeOption.CreateNew))
+        using (var newNested = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
         {
             Assert.True(newNested.IsRoot);
             Assert.Same(joinNested.Ambient, newNested.Ambient.Previous);
@@ -373,15 +373,15 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
     }
 
     [Fact]
-    public async Task MultipleCreateNewChain_RestoresAmbientOrderOnDispose()
+    public async Task MultipleRequiresNewChain_RestoresAmbientOrderOnDispose()
     {
         using var outer = new StormTransactionScope();
 
-        using (var first = new StormTransactionScope(StormTransactionScopeOption.CreateNew))
+        using (var first = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
         {
             Assert.Same(outer.Ambient, first.Ambient.Previous);
 
-            using (var second = new StormTransactionScope(StormTransactionScopeOption.CreateNew))
+            using (var second = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
             {
                 Assert.Same(first.Ambient, second.Ambient.Previous);
 
@@ -432,17 +432,17 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
     }
 
     [Fact]
-    public async Task Parallel_CreateNewScopes_IsolatedAndRestoreMainContext()
+    public async Task Parallel_RequiresNewScopes_IsolatedAndRestoreMainContext()
     {
         using var outer = new StormTransactionScope();
 
         var tasks = Enumerable.Range(0, 8).Select(_ => Task.Run(async () =>
         {
-            // each parallel task should inherit ambient (outer) and then create its own ambient (CreateNew)
+            // each parallel task should inherit ambient (outer) and then create its own ambient (RequiresNew)
             // ReSharper disable once AccessToDisposedClosure
             Assert.Same(outer, StormTransactionScope.Current);
 
-            using var s = new StormTransactionScope(StormTransactionScopeOption.CreateNew);
+            using var s = new StormTransactionScope(StormTransactionScopeOption.RequiresNew);
             // ReSharper disable once AccessToDisposedClosure
             Assert.NotSame(outer.Ambient, s.Ambient);
             // ReSharper disable once AccessToDisposedClosure
@@ -472,7 +472,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
             // ReSharper disable once AccessToDisposedClosure
             Assert.Same(outer, StormTransactionScope.Current);
 
-            using var s = new StormTransactionScope(); // JoinExisting
+            using var s = new StormTransactionScope(); // Default is RequiresNew
             // ReSharper disable once AccessToDisposedClosure
             Assert.Same(outer.Ambient, s.Ambient);
 
@@ -555,7 +555,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
                 Assert.Equal("Standalone1_Updated", standaloneVisibleOutside!.FullName);
             }
 
-            using (var inner = new StormTransactionScope(StormTransactionScopeOption.CreateNew))
+            using (var inner = new StormTransactionScope(StormTransactionScopeOption.RequiresNew))
             {
                 Assert.Same(inner, StormTransactionScope.Current);
                 Assert.NotSame(outer.Ambient, inner.Ambient);
@@ -608,5 +608,66 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
         Assert.Equal("Standalone2_Updated", standaloneInserted2!.FullName);
 
         Assert.NotNull(standaloneInserted3);
+    }
+
+    [Fact]
+    public async Task SuppressScope_HidesAmbientForInnerOperations_AndRestoresOuterAfterDispose()
+    {
+        using var outer = new StormTransactionScope();
+
+        Assert.Same(outer, StormTransactionScope.Current);
+        Assert.Equal(1, outer.Ambient.TransactionCount);
+
+        using (var suppressed = new StormTransactionScope(StormTransactionScopeOption.Suppress))
+        {
+            Assert.True(suppressed.IsSuppressed);
+            Assert.Same(suppressed, StormTransactionScope.Current);
+
+            await using var contextInSuppress = new TestStormContext(_fixture.ConnectionString, standalone: false);
+            Assert.True(contextInSuppress.IsStandalone);
+            Assert.False(contextInSuppress.IsInTransactionScope);
+
+            var (_, tx) = await contextInSuppress.EnsureConnectionAsync(CancellationToken.None);
+            Assert.Null(tx);
+
+            await suppressed.CompleteAsync(CancellationToken.None);
+            Assert.True(suppressed.IsCompleted);
+        }
+
+        Assert.Same(outer, StormTransactionScope.Current);
+        Assert.Equal(1, outer.Ambient.TransactionCount);
+        Assert.False(outer.IsCompleted);
+
+        await outer.CompleteAsync(CancellationToken.None);
+        Assert.Equal(0, outer.Ambient.TransactionCount);
+    }
+
+    [Fact]
+    public async Task SuppressScope_DisposeWithoutComplete_DoesNotRollbackOuterAmbient()
+    {
+        const int userId = 310_050;
+        const short branchId = 7;
+
+        var user = DatabaseHelper.NewUser(userId);
+
+        using (var outer = new StormTransactionScope())
+        {
+            await using var outerContext = new TestStormContext(_fixture.ConnectionString, standalone: false);
+            await outerContext.InsertIntoUsersTable().Values(user).GoAsync();
+
+            using (var _ = new StormTransactionScope(StormTransactionScopeOption.Suppress))
+            {
+                // Intentionally not completed.
+            }
+
+            var stillVisibleInOuter = await outerContext.SelectFromUsersTable(userId, branchId).GetAsync();
+            Assert.NotNull(stillVisibleInOuter);
+
+            await outer.CompleteAsync(CancellationToken.None);
+        }
+
+        await using var verifyContext = new TestStormContext(_fixture.ConnectionString);
+        var persisted = await verifyContext.SelectFromUsersTable(userId, branchId).GetAsync();
+        Assert.NotNull(persisted);
     }
 }

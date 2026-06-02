@@ -12,7 +12,7 @@ namespace AltaSoft.Storm;
 /// Lightweight transaction scope for Storm. Controls the ambient transaction state used by <see cref="StormContext"/>.
 /// Typical usage:
 /// <code>using (var scope = new StormTransactionScope()) { ... await scope.CompleteAsync(CancellationToken.None); }</code>
-/// The scope either joins an existing ambient transaction or creates a new one depending on the option.
+/// The scope either joins an existing ambient transaction, creates a new one, or suppresses ambient transaction flow depending on the option.
 /// When disposed the scope will commit the ambient transaction if <see cref="CompleteAsync"/> was called on the
 /// outermost scope; otherwise it will rollback.
 /// </summary>
@@ -49,19 +49,19 @@ public sealed class StormTransactionScope : IDisposable
     /// </summary>
     public bool IsRoot { get; }
 
-    ///// <summary>
-    ///// Indicates whether ambient transactions are suppressed for this scope.
-    ///// </summary>
-    //public bool IsSuppressed => _suppressed;
+    /// <summary>
+    /// Gets a value indicating whether ambient transactions are suppressed for this scope.
+    /// </summary>
+    public bool IsSuppressed { get; }
 
     /// <summary>
     /// Creates a new instance of <see cref="StormTransactionScope"/> with the specified internal options.
     /// This private constructor is used by public overloads and accepts optional connection/transaction instances
     /// for scenarios where an existing connection or transaction should be used by the new scope.
     /// </summary>
-    /// <param name="scopeOption">Controls whether to join existing ambient or create a new one.</param>
-    /// <param name="connectionToUse">Optional existing connection to attach to the created ambient (for CreateNew).</param>
-    /// <param name="transactionToUse">Optional existing transaction to attach to the created ambient (for CreateNew).</param>
+    /// <param name="scopeOption">Controls whether to join existing ambient, create a new one, or suppress ambient.</param>
+    /// <param name="connectionToUse">Optional existing connection to attach to the created ambient (for Required).</param>
+    /// <param name="transactionToUse">Optional existing transaction to attach to the created ambient (for Required).</param>
     /// <param name="logger">Optional logger used for tracing and error messages.</param>
     private StormTransactionScope(StormTransactionScopeOption scopeOption, StormDbConnection? connectionToUse, StormDbTransaction? transactionToUse, ILogger? logger)
     {
@@ -71,16 +71,19 @@ public sealed class StormTransactionScope : IDisposable
         _previousScope = s_current.Value;
         var previousAmbient = _previousScope?.Ambient;
 
-        if (scopeOption == StormTransactionScopeOption.CreateNew && (transactionToUse is not null || connectionToUse is not null))
-            throw new StormException("CreateNew option does not allow a connection or transaction instance.");
+        if (scopeOption is StormTransactionScopeOption.RequiresNew or StormTransactionScopeOption.Suppress &&
+            (transactionToUse is not null || connectionToUse is not null))
+        {
+            throw new StormException($"{scopeOption} option does not allow 'connectionToUse' and 'transactionToUse' parameters.");
+        }
 
         if (transactionToUse is not null && connectionToUse is not null && transactionToUse.Connection != connectionToUse)
             throw new StormException("Provided transaction's connection does not match the provided connection instance.");
 
         switch (scopeOption)
         {
-            case StormTransactionScopeOption.JoinExisting:
-                if (previousAmbient is not null)
+            case StormTransactionScopeOption.Required:
+                if (previousAmbient is not null && _previousScope is not { IsSuppressed: true })
                 {
                     Ambient = previousAmbient; // join existing ambient from previous scope
                     IsRoot = false;
@@ -116,24 +119,22 @@ public sealed class StormTransactionScope : IDisposable
                             Ambient._ownsTransaction = false;
                         }
                     }
-                    _logger?.LogTrace("[StormTransactionScope] Created new ambient transaction state (JoinExisting - no existing).");
+                    _logger?.LogTrace("[StormTransactionScope] Created new ambient transaction state (Required - no existing).");
                 }
                 break;
 
-            case StormTransactionScopeOption.CreateNew:
-                var ambient = new AmbientState(previousAmbient, _logger);
-                Ambient = ambient;
+            case StormTransactionScopeOption.RequiresNew:
+                Ambient = new AmbientState(previousAmbient, _logger);
                 IsRoot = true;
 
-                if (logger is not null)
-                {
-                    // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-                    if (transactionToUse is not null)
-                        logger.LogTrace("[StormTransactionScope] Created new ambient transaction state (CreateNew) using provided transaction.");
-                    else
-                        logger.LogTrace("[StormTransactionScope] Created new ambient transaction state (CreateNew).");
-                }
+                _logger?.LogTrace("[StormTransactionScope] Created new ambient transaction state (RequiresNew).");
+                break;
 
+            case StormTransactionScopeOption.Suppress:
+                Ambient = new AmbientState(previousAmbient, _logger);
+                IsRoot = true;
+                IsSuppressed = true;
+                _logger?.LogTrace("[StormTransactionScope] Ambient transaction suppressed for current scope.");
                 break;
 
             default:
@@ -142,22 +143,25 @@ public sealed class StormTransactionScope : IDisposable
 
         s_current.Value = this;
 
-        Ambient.TransactionCount++;
-        if (_logger is not null && _logger.IsEnabled(LogLevel.Trace))
-            _logger.LogTrace("[StormTransactionScope] Scope created, TransactionCount={TransactionCount}", Ambient.TransactionCount);
+        if (!IsSuppressed)
+        {
+            Ambient.TransactionCount++;
+            if (_logger is not null && _logger.IsEnabled(LogLevel.Trace))
+                _logger.LogTrace("[StormTransactionScope] Scope created, TransactionCount={TransactionCount}", Ambient.TransactionCount);
+        }
     }
-    
+
     /// <summary>
     /// Initializes a new scope that will join an existing ambient transaction if one exists; otherwise a new ambient is created.
     /// </summary>
-    public StormTransactionScope() : this(StormTransactionScopeOption.JoinExisting)
+    public StormTransactionScope() : this(StormTransactionScopeOption.Required)
     {
     }
 
     /// <summary>
     /// Initializes a new scope using the provided <paramref name="scopeOption"/>.
     /// </summary>
-    /// <param name="scopeOption">Determines whether to join an existing ambient transaction or create a new one.</param>
+    /// <param name="scopeOption">Determines whether to join an existing ambient transaction, create a new one, or suppress ambient.</param>
     public StormTransactionScope(StormTransactionScopeOption scopeOption) : this(scopeOption, null, null, StormManager.Logger)
     {
     }
@@ -167,7 +171,7 @@ public sealed class StormTransactionScope : IDisposable
     /// state that references the provided transaction and (optionally) its connection.
     /// </summary>
     /// <param name="transactionToUse">Existing transaction which will be used by the scope.</param>
-    public StormTransactionScope(StormDbTransaction transactionToUse) : this(StormTransactionScopeOption.JoinExisting, transactionToUse.Connection, transactionToUse, StormManager.Logger)
+    public StormTransactionScope(StormDbTransaction transactionToUse) : this(StormTransactionScopeOption.Required, transactionToUse.Connection, transactionToUse, StormManager.Logger)
     {
     }
 
@@ -176,7 +180,7 @@ public sealed class StormTransactionScope : IDisposable
     /// The scope will own the created transaction but will not own the provided connection instance.
     /// </summary>
     /// <param name="connectionToUse">Existing connection to use for the new scope.</param>
-    public StormTransactionScope(StormDbConnection connectionToUse) : this(StormTransactionScopeOption.JoinExisting, connectionToUse, null, StormManager.Logger)
+    public StormTransactionScope(StormDbConnection connectionToUse) : this(StormTransactionScopeOption.Required, connectionToUse, null, StormManager.Logger)
     {
     }
 
@@ -184,10 +188,10 @@ public sealed class StormTransactionScope : IDisposable
     /// Determines whether there is an active transaction in the current unit of work.
     /// </summary>
     /// <returns>
-    /// <c>true</c> when the scope is not completed, the ambient state is not rolled back,
+    /// <c>true</c> when the scope is not completed, ambient is not suppressed, the ambient state is not rolled back,
     /// and there is at least one active nested transaction count; otherwise, <c>false</c>.
     /// </returns>
-    public bool HasActiveTransaction() => !IsCompleted && Ambient is { IsRollBacked: false, TransactionCount: > 0 };
+    public bool HasActiveTransaction() => !IsSuppressed && !IsCompleted && Ambient is { IsRollBacked: false, TransactionCount: > 0 };
 
     /// <summary>
     /// Marks the scope as completed (successful) and attempts to commit the ambient transaction when this is the outermost scope.
@@ -207,6 +211,9 @@ public sealed class StormTransactionScope : IDisposable
             return;
 
         IsCompleted = true;
+
+        if (IsSuppressed)
+            return;
 
         if (--Ambient.TransactionCount < 0)
             throw new StormException("TransactionCount < 0.");
@@ -234,11 +241,12 @@ public sealed class StormTransactionScope : IDisposable
     }
 
     /// <summary>
-    /// Returns the ambient state associated with the current scope or <c>null</c> when there is no current scope.
+    /// Returns the ambient state associated with the current scope or <c>null</c> when there is no current scope
+    /// or the current scope suppresses ambient transaction flow.
     /// </summary>
     /// <returns>The current <see cref="AmbientState"/> or <c>null</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static AmbientState? GetCurrentAmbient() => Current?.Ambient;
+    internal static AmbientState? GetCurrentAmbient() => Current is { IsSuppressed: false } current ? current.Ambient : null;
 
     /// <summary>
     /// Synchronously disposes the scope. If <see cref="CompleteAsync"/> was called and this is the outermost scope
@@ -258,7 +266,7 @@ public sealed class StormTransactionScope : IDisposable
 
         try
         {
-            if (!IsCompleted)
+            if (!IsCompleted && !IsSuppressed)
             {
                 try
                 {
@@ -273,7 +281,7 @@ public sealed class StormTransactionScope : IDisposable
         finally
         {
             // if we created ambient for this scope, dispose it
-            if (IsRoot)
+            if (IsRoot && !IsSuppressed)
             {
                 try
                 {
