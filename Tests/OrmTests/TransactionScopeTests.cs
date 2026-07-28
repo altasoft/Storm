@@ -233,7 +233,7 @@ public sealed class TransactionScopeTests : IClassFixture<DatabaseFixture>
 
         if (count > 0)
         {
-            var result = await batch.ExecuteAsync(cancellationToken);
+            var result = await batch.ExecuteAsync(null, cancellationToken);
             Assert.Equal(count, result); // All updates should succeed
         }
         else

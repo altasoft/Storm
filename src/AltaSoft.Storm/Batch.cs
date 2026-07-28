@@ -60,11 +60,12 @@ public sealed class Batch : IAsyncDisposable, IDisposable
     /// <summary>
     /// Executes the batch of SQL commands asynchronously.
     /// </summary>
+    /// <param name="timeout">The command timeout in seconds.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the asynchronous operation.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected by the batch execution.
     /// </returns>
-    public async Task<int> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<int> ExecuteAsync(int? timeout, CancellationToken cancellationToken = default)
     {
         if (_batch.Commands.Count == 0)
             return 0;
@@ -73,7 +74,8 @@ public sealed class Batch : IAsyncDisposable, IDisposable
 
         _batch.Connection = connection;
         _batch.Transaction = transaction;
-
+        if (timeout.HasValue)
+            _batch.Timeout = timeout.Value;
         return await _batch.ExecuteCommandAsync(cancellationToken).ConfigureAwait(false);
     }
 }

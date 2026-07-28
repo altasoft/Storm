@@ -34,7 +34,7 @@ public class BatchTransactionRollbackTests : IClassFixture<DatabaseFixture>
             batch.Add(context.InsertIntoAccount().Values(account2));
             batch.Add(context.InsertIntoAccount().Values(account3));
 
-            var act = async () => await batch.ExecuteAsync(CancellationToken.None);
+            var act = async () => await batch.ExecuteAsync(null, CancellationToken.None);
             await act.Should().ThrowAsync<StormPrimaryKeyViolationException>();
         }
 
@@ -66,7 +66,7 @@ public class BatchTransactionRollbackTests : IClassFixture<DatabaseFixture>
             batch.Add(context.InsertIntoUsersTable().Values(user2));
             batch.Add(context.InsertIntoUsersTable().Values(user3));
 
-            var act = async () => await batch.ExecuteAsync(CancellationToken.None);
+            var act = async () => await batch.ExecuteAsync(null, CancellationToken.None);
             await act.Should().ThrowAsync<StormPrimaryKeyViolationException>();
         }
 
@@ -100,7 +100,7 @@ public class BatchTransactionRollbackTests : IClassFixture<DatabaseFixture>
             batch.Add(context.InsertIntoUsersTable().Values(user2));
             batch.Add(context.InsertIntoUsersTable().Values(user3));
 
-            var act = async () => await batch.ExecuteAsync(CancellationToken.None);
+            var act = async () => await batch.ExecuteAsync(null, CancellationToken.None);
             thrown = (await act.Should().ThrowAsync<SqlException>()).Which;
         }
 
@@ -155,7 +155,7 @@ public class BatchTransactionRollbackTests : IClassFixture<DatabaseFixture>
             batch.Add(insertCmd);
             batch.Add(blockedUpdateCmd);
 
-            var act = async () => await batch.ExecuteAsync(CancellationToken.None);
+            var act = async () => await batch.ExecuteAsync(null, CancellationToken.None);
             thrown = (await act.Should().ThrowAsync<SqlException>()).Which;
         }
 

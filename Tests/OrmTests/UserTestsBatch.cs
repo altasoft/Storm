@@ -52,9 +52,9 @@ public class UserTestsBatch : IClassFixture<DatabaseFixture>//, IAsyncLifetime
             var c1 = context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate);
             var c2 = context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate);
 
-            batch.AddRange(new[] { c1, c2 });
+            batch.AddRange([c1, c2]);
 
-            await batch.ExecuteAsync(CancellationToken.None);
+            await batch.ExecuteAsync(null, CancellationToken.None);
 
             //var updateResult1 = await _context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user1ToUpdate).GoAsync();
             //var updateResult2 = await _context.UpdateUsersTable().WithoutConcurrencyCheck().Set(user2ToUpdate).GoAsync();
