@@ -252,6 +252,19 @@ public abstract partial class StormControllerBase
     }
 
     /// <summary>
+    /// Appends a TOP (n) clause to a StringBuilder, if <paramref name="topRows"/> is set.
+    /// </summary>
+    /// <param name="topRows">The number of rows to limit the statement to, or null for no limit.</param>
+    /// <param name="sb">The StringBuilder to which the clause will be appended.</param>
+    private static void AppendTopClause(int? topRows, StringBuilder sb)
+    {
+        if (topRows is not { } rows)
+            return;
+
+        sb.Append("TOP (").Append(rows).Append(") ");
+    }
+
+    /// <summary>
     /// Returns the corresponding SQL hint string for the given StormTableHints enum value.
     /// </summary>
     /// <param name="hint">The StormTableHints enum value for which to get the SQL hint string.</param>

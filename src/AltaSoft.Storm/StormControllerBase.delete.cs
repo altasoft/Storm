@@ -77,7 +77,7 @@ public abstract partial class StormControllerBase
     {
         var sb = StormManager.GetStringBuilderFromPool();
 
-        GenerateDeleteSql(command, queryParameters, queryParameters.TableHints, sb);
+        GenerateDeleteSql(command, queryParameters, queryParameters.TableHints, queryParameters.TopRows, sb);
 
         command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
@@ -123,7 +123,7 @@ public abstract partial class StormControllerBase
         command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
-    private void GenerateDeleteSql<T>(IVirtualStormDbCommand command, IKeyAndWhereExpression<T> queryParameters, StormTableHints tableHints, StringBuilder sb) where T : IDataBindable
+    private void GenerateDeleteSql<T>(IVirtualStormDbCommand command, IKeyAndWhereExpression<T> queryParameters, StormTableHints tableHints, int? topRows, StringBuilder sb) where T : IDataBindable
     {
         var paramIndex = 1;
         var (startIndex, len) = (-1, 0);
@@ -141,7 +141,9 @@ public abstract partial class StormControllerBase
         }
 
         sb.AppendLine("SET NOCOUNT OFF;");
-        sb.Append("DELETE FROM ").Append(QuotedObjectFullName);
+        sb.Append("DELETE ");
+        AppendTopClause(topRows, sb);
+        sb.Append("FROM ").Append(QuotedObjectFullName);
         AppendTableHints(tableHints, sb);
 
         if (startIndex < 0)
