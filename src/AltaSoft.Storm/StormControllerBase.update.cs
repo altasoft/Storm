@@ -102,7 +102,9 @@ public abstract partial class StormControllerBase
         var paramIndex = 1;
         var sb = StormManager.GetStringBuilderFromPool();
 
-        sb.Append("UPDATE ").Append(QuotedObjectFullName);
+        sb.Append("UPDATE ");
+        AppendTopClause(queryParameters.TopRows, sb);
+        sb.Append(QuotedObjectFullName);
         AppendTableHints(queryParameters.TableHints, sb);
         sb.AppendLine();
         sb.Append("SET ");

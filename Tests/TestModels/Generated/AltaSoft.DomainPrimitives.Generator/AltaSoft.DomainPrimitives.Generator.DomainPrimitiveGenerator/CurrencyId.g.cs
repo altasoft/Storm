@@ -7,6 +7,14 @@
 
 #nullable enable
 
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
+#pragma warning disable CS0628 // New protected member declared in sealed type
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable IDE0290 // Use primary constructor
+
 using System;
 using System.Numerics;
 using System.Diagnostics;
@@ -67,7 +75,7 @@ public partial class CurrencyId : IEquatable<CurrencyId>
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     /// <summary>
-    /// Tries to create an instance of AsciiString from the specified value.
+    /// Tries to create an instance of CurrencyId from the specified value.
     /// </summary>
     /// <param name="value">The value to create CurrencyId from</param>
     /// <param name="result">When this method returns, contains the created CurrencyId if the conversion succeeded, or null if the conversion failed.</param>
@@ -78,13 +86,13 @@ public partial class CurrencyId : IEquatable<CurrencyId>
     }
 
     /// <summary>
-    /// Tries to create an instance of AsciiString from the specified value.
+    /// Tries to create an instance of CurrencyId from the specified value.
     /// </summary>
     /// <param name="value">The value to create CurrencyId from</param>
     /// <param name="result">When this method returns, contains the created CurrencyId if the conversion succeeded, or null if the conversion failed.</param>
     /// <param name="errorMessage">When this method returns, contains the error message if the conversion failed; otherwise, null.</param>
     /// <returns>true if the conversion succeeded; otherwise, false.</returns>
-    public static bool TryCreate(string value, [NotNullWhen(true)]  out CurrencyId? result, [NotNullWhen(false)]  out string? errorMessage)
+    public static bool TryCreate(string value, [NotNullWhen(true)] out CurrencyId? result, [NotNullWhen(false)] out string? errorMessage)
     {
         var validationResult = Validate(value);
         if (!validationResult.IsValid)

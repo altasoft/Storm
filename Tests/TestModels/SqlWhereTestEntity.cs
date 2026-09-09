@@ -1,4 +1,5 @@
-﻿using AltaSoft.Storm.Attributes;
+﻿using System;
+using AltaSoft.Storm.Attributes;
 using AltaSoft.Storm.TestModels.VeryBadNamespace;
 
 namespace AltaSoft.Storm.TestModels;
@@ -32,5 +33,13 @@ public partial record SqlWhereTestEntity
     public bool BoolValue { get; set; }
 
     public bool? BoolValueN { get; set; }
+
+    public DateOnly DateValue { get; set; }
+
+    public DateOnly? DateValueN { get; set; }
+
+    public TimeOnly TimeValue { get; set; }
+
+    public TimeOnly? TimeValueN { get; set; }
 }
 
