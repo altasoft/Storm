@@ -38,6 +38,7 @@
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Data.SqlClient" />
+	<PackageReference Include="System.Security.Cryptography.Pkcs" />
 
 	<ProjectReference Include="..\AltaSoft.Storm\AltaSoft.Storm.csproj">
 	  <PrivateAssets>all</PrivateAssets>
