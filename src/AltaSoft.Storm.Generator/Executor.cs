@@ -1486,7 +1486,11 @@ internal static class Executor
         var className = typeSpec.TypeSymbol.Name;
 
         //var keyColumnIds = new List<int>(4);
-        var keyColumns = new List<(List<int> columnsIds, string? name)>(4) { (new List<int>(4), "PK") };
+        // Slot 0 is the primary key; slot i + 1 is typeSpec.IndexObjects[i] (unique or not).
+        // This must match the keyId (i + 1) that the generated SelectFrom<Entity>(indexColumns) overloads pass.
+        var keyColumns = new List<(List<int> columnsIds, string? name)>(typeSpec.IndexObjects.Count + 1) { (new List<int>(4), "PK") };
+        foreach (var indexObject in typeSpec.IndexObjects)
+            keyColumns.Add((new List<int>(4), indexObject.IndexName));
         var hasConcurrencyCheck = false;
 
         builder.AppendSummary("Array of StormColumnDef objects representing the column definitions.");
@@ -1538,15 +1542,10 @@ internal static class Executor
 
                 if (p.IsKey)
                     keyColumns[0].columnsIds.Add(id);
-                var indexId = 0;
-                foreach (var indexObject in typeSpec.IndexObjects)
+                for (var i = 0; i < typeSpec.IndexObjects.Count; i++)
                 {
-                    if (!indexObject.IsUnique || !indexObject.IndexColumns.Contains(p.PropertyName))
-                        continue;
-                    indexId++;
-                    if (keyColumns.Count <= indexId)
-                        keyColumns.Add((new List<int>(4), indexObject.IndexName));
-                    keyColumns[indexId].columnsIds.Add(id);
+                    if (typeSpec.IndexObjects[i].IndexColumns.Contains(p.PropertyName))
+                        keyColumns[i + 1].columnsIds.Add(id);
                 }
 
                 if (p.IsConcurrencyCheck)
@@ -1584,16 +1583,10 @@ internal static class Executor
 
                     if (subP.IsKey)
                         keyColumns[0].columnsIds.Add(id);
-                    var indexId = 0;
                     for (var i = 0; i < typeSpec.IndexObjects.Count; i++)
                     {
-                        var indexObject = typeSpec.IndexObjects[i];
-                        if (!indexObject.IsUnique || !indexObject.IndexColumns.Contains(subP.PropertyName))
-                            continue;
-                        indexId++;
-                        if (keyColumns.Count <= indexId)
-                            keyColumns.Add((new List<int>(4), indexObject.IndexName));
-                        keyColumns[indexId].columnsIds.Add(id);
+                        if (typeSpec.IndexObjects[i].IndexColumns.Contains(subP.PropertyName))
+                            keyColumns[i + 1].columnsIds.Add(id);
                     }
 
                     if (subP.IsConcurrencyCheck)

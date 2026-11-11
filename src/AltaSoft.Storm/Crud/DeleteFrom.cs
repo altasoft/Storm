@@ -72,51 +72,23 @@ internal sealed class DeleteFrom<T> : ModifyQueryParameters<T>, IDeleteFrom<T>, 
     #endregion Builder
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// Always executes a filtered DELETE. The filter is built from the key values, LINQ Where expressions
+    /// and/or OData filter; when none of them are specified, all rows of the table are deleted.
+    /// </remarks>
     public Task<int> GoAsync(CancellationToken cancellationToken = default)
     {
-        if (KeyValues is not null || WhereExpressions is not null)
-            return GetController().DeleteAsync(this, cancellationToken);
-
-        if (RowValue is not null)
-            return GetController().DeleteAsync(RowValue, this, cancellationToken);
-
-        if (RowValues is not null)
-            return GetController().DeleteAsync(RowValues, this, cancellationToken);
-
-        return Task.FromResult(0);
+        return GetController().DeleteAsync(this, cancellationToken);
     }
 
     /// <param name="batchCommands"></param>
     /// <inheritdoc />
     public void GenerateBatchCommands(List<StormDbBatchCommand> batchCommands)
     {
-        if (KeyValues is not null || WhereExpressions is not null)
-        {
-            var command = StormManager.CreateBatchCommand(false);
-            var vCommand = new StormVirtualDbBatchCommand(command);
+        var command = StormManager.CreateBatchCommand(false);
+        var vCommand = new StormVirtualDbBatchCommand(command);
 
-            GetController().PrepareDelete(vCommand, this);
-            batchCommands.Add(command);
-            return;
-        }
-
-        if (RowValue is not null)
-        {
-            var command = StormManager.CreateBatchCommand(false);
-            var vCommand = new StormVirtualDbBatchCommand(command);
-
-            GetController().PrepareDelete(vCommand, RowValue, this);
-            batchCommands.Add(command);
-            return;
-        }
-
-        if (RowValues is not null)
-        {
-            var command = StormManager.CreateBatchCommand(false);
-            var vCommand = new StormVirtualDbBatchCommand(command);
-
-            GetController().PrepareDelete(vCommand, RowValues, this);
-            batchCommands.Add(command);
-        }
+        GetController().PrepareDelete(vCommand, this);
+        batchCommands.Add(command);
     }
 }

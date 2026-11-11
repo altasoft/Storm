@@ -1,6 +1,15 @@
 <Project>
+  <!--
+    Directory.Build.props is imported before the SDK defaults Configuration and before the project sets
+    TargetFramework, so both can be empty here (e.g. `dotnet build/test <project>` from the CLI). Default
+    Configuration explicitly and do not use TargetFramework, so the binaries always land in Lib\<Configuration>\,
+    which is where AltaSoft.Storm.Weaver's HintPaths expect them.
+  -->
   <PropertyGroup>
-    <OutDir>$(MSBuildThisFileDirectory)Lib\$(Configuration)\$(TargetFramework)</OutDir>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(MSBuildThisFileDirectory)Lib\$(Configuration)\</OutDir>
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPackable>false</IsPackable>

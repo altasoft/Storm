@@ -16,7 +16,7 @@ public interface IKeyAndWhereExpression<T> where T : IDataBindable
     internal object[]? KeyValues { get; }
 
     /// <summary>
-    /// ID of the unique index/primary key in KeyColumnDefs array.
+    /// ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.
     /// </summary>
     int? KeyId { get; }
 

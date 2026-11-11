@@ -29,7 +29,7 @@ internal class SelectFrom<T, TOrderBy, TPartialLoadFlags> : SelectQueryParameter
     /// <param name="context">Database connection</param>
     /// <param name="variant">The variant value to be set</param>
     /// <param name="keyValues">An array of objects containing key values.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     internal SelectFrom(StormContext context, int variant, object[] keyValues, int keyId) : base(context, variant)
     {
         KeyValues = keyValues;

@@ -425,6 +425,8 @@ public sealed class UserStormController : StormControllerBase
     /// </summary>
     internal static readonly StormColumnDef[][] __keyColumnDefs = [
         [ __columnDefs[0], __columnDefs[1] ], // PK
+        [ __columnDefs[0] ], // IX_USER_USER_ID
+        [ __columnDefs[1] ], // IX_USER_BRANCH_ID
         [ __columnDefs[2] ] // IX_USER_AUTOINC
     ];
 

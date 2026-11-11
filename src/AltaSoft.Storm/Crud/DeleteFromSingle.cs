@@ -53,10 +53,16 @@ internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFro
 
     #endregion Builder
 
+    /// <summary>
+    /// True when the delete is driven by a filter (key values, LINQ Where expressions or OData filter)
+    /// rather than by row value(s).
+    /// </summary>
+    private bool HasFilter => KeyValues is not null || WhereExpressions is not null || ODataFilter is not null;
+
     /// <inheritdoc/>
     public Task<int> GoAsync(CancellationToken cancellationToken = default)
     {
-        if (KeyValues is not null || WhereExpressions is not null)
+        if (HasFilter)
             return GetController().DeleteAsync(this, cancellationToken);
 
         if (RowValue is not null)
@@ -71,7 +77,7 @@ internal sealed class DeleteFromSingle<T> : ModifyQueryParameters<T>, IDeleteFro
     /// <inheritdoc />
     public void GenerateBatchCommands(List<StormDbBatchCommand> batchCommands)
     {
-        if (KeyValues is not null || WhereExpressions is not null)
+        if (HasFilter)
         {
             var command = StormManager.CreateBatchCommand(false);
             var vCommand = new StormVirtualDbBatchCommand(command);

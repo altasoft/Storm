@@ -1003,6 +1003,7 @@ public abstract partial class StormControllerBase
         {
             sb.Append(" AND ");
         }
+        else
         {
             sb.AppendLine().Append("WHERE ");
         }
