@@ -281,7 +281,8 @@ public sealed class PostStormController : StormControllerBase
     /// Array of StormColumnDef objects representing the key column definitions.
     /// </summary>
     internal static readonly StormColumnDef[][] __keyColumnDefs = [
-        [ __columnDefs[0] ] // PK
+        [ __columnDefs[0] ], // PK
+        [ __columnDefs[1] ]
     ];
 
     /// <inheritdoc />

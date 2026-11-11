@@ -32,7 +32,7 @@ internal abstract class ModifyQueryParameters<T> : QueryParameters, IKeyAndWhere
     public object[]? KeyValues { get; set; }
 
     /// <summary>
-    /// ID of the unique index/primary key in KeyColumnDefs array.
+    /// ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.
     /// </summary>
     public int? KeyId { get; protected set; }
 

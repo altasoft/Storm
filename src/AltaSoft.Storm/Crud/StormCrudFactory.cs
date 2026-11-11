@@ -59,7 +59,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the select operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <returns>An instance of <see cref="ISelectFrom{T, TOrderBy, TPartialLoadFlags}"/>.</returns>
     public static ISelectFrom<T, TOrderBy, TPartialLoadFlags> SelectFrom<T, TOrderBy, TPartialLoadFlags>(StormContext context, int variant, object[] keyValues, int keyId)
         where T : IDataBindable
@@ -78,7 +78,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the select operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <param name="customSqlStatement">The custom SQL select statement.</param>
     /// <param name="callParameters">The list of call parameters for the select operation.</param>
     /// <returns>An instance of <see cref="ISelectFrom{T, TOrderBy, TPartialLoadFlags}"/>.</returns>
@@ -153,7 +153,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the select operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <param name="virtualViewSql">The SQL statement for virtual view</param>
     /// <param name="callParameters">The list of call parameters for the select operation.</param>
     /// <returns>An instance of <see cref="ISelectFromSingle{T, TOrderBy, TPartialLoadFlags}"/>.</returns>
@@ -174,7 +174,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the select operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <returns>An instance of <see cref="ISelectFromSingle{T, TOrderBy, TPartialLoadFlags}"/>.</returns>
     public static ISelectFromSingle<T, TOrderBy, TPartialLoadFlags> SelectFromSingle<T, TOrderBy, TPartialLoadFlags>(StormContext context, int variant, object[] keyValues, int keyId)
         where T : IDataBindable
@@ -240,7 +240,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the delete operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <returns>An instance of <see cref="IDeleteFromSingle{T}"/>.</returns>
     public static IDeleteFromSingle<T> DeleteFromSingle<T>(StormContext context, int variant, object[] keyValues, int keyId) where T : IDataBindable
     {
@@ -254,7 +254,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the delete operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <param name="customQuotedObjectFullName">
     /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
@@ -364,7 +364,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the update operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <returns>An instance of <see cref="IUpdateFromSingle{T}"/>.</returns>
     public static IUpdateFromSingle<T> UpdateFromSingle<T>(StormContext context, int variant, object[] keyValues, int keyId) where T : IDataBindable
     {
@@ -378,7 +378,7 @@ public static class StormCrudFactory
     /// <param name="context">The Storm context.</param>
     /// <param name="variant">The variant of the update operation.</param>
     /// <param name="keyValues">The key values to identify the record.</param>
-    /// <param name="keyId">ID of the unique index/primary key in KeyColumnDefs array.</param>
+    /// <param name="keyId">ID of the primary key (0) or index (1 + its StormIndex declaration order) in KeyColumnDefs array.</param>
     /// <param name="customQuotedObjectFullName">
     /// Fully-qualified and properly quoted table name.
     /// Use this when targeting a specific schema or custom-mapped table.
