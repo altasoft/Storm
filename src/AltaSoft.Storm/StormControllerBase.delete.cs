@@ -137,6 +137,11 @@ public abstract partial class StormControllerBase
             {
                 (startIndex, len) = GenerateSqlWhere(command, queryParameters, null, ref paramIndex, sb);
             }
+            else if (len > 0)
+            {
+                // Reuse the WHERE clause (and its parameters) generated for the first detail table
+                sb.Append(sb, startIndex, len);
+            }
             sb.AppendLine();
         }
 

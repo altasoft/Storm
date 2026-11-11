@@ -51,22 +51,6 @@
 	<!-- Include the main library outputs are handled by SDK pack automatically for each TF. -->
 
 	<!-- Include the companion AltaSoft.Storm assemblies (built separately) into the package under lib per TF -->
-	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net8.0\AltaSoft.Storm.dll">
-	  <Pack>true</Pack>
-	  <PackagePath>lib\net8.0\</PackagePath>
-	</None>
-	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net8.0\AltaSoft.Storm.xml">
-	  <Pack>true</Pack>
-	  <PackagePath>lib\net8.0\</PackagePath>
-	</None>
-	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net9.0\AltaSoft.Storm.dll">
-	  <Pack>true</Pack>
-	  <PackagePath>lib\net9.0\</PackagePath>
-	</None>
-	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net9.0\AltaSoft.Storm.xml">
-	  <Pack>true</Pack>
-	  <PackagePath>lib\net9.0\</PackagePath>
-	</None>
 	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net10.0\AltaSoft.Storm.dll">
 	  <Pack>true</Pack>
 	  <PackagePath>lib\net10.0\</PackagePath>
@@ -74,6 +58,14 @@
 	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net10.0\AltaSoft.Storm.xml">
 	  <Pack>true</Pack>
 	  <PackagePath>lib\net10.0\</PackagePath>
+	</None>
+	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net11.0\AltaSoft.Storm.dll">
+	  <Pack>true</Pack>
+	  <PackagePath>lib\net11.0\</PackagePath>
+	</None>
+	<None Include="..\AltaSoft.Storm\bin\$(Configuration)\net11.0\AltaSoft.Storm.xml">
+	  <Pack>true</Pack>
+	  <PackagePath>lib\net11.0\</PackagePath>
 	</None>
 
 	<!-- Include analyzers assembly -->

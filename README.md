@@ -1,7 +1,7 @@
 # AltaSoft.Storm — Modern, High-Performance ORM for .NET
 
 [![NuGet](https://img.shields.io/nuget/v/AltaSoft.Storm.MsSql?style=for-the-badge)](https://www.nuget.org/packages/AltaSoft.Storm.MsSql)
-[![Dot NET 8+](https://img.shields.io/static/v1?label=DOTNET&message=8%2B&color=0c3c60&style=for-the-badge)](https://dotnet.microsoft.com)
+[![Dot NET 10+](https://img.shields.io/static/v1?label=DOTNET&message=10%2B&color=0c3c60&style=for-the-badge)](https://dotnet.microsoft.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -80,7 +80,7 @@
 
 ### Prerequisites
 
-- .NET 8 or higher
+- .NET 10 or higher
 
 ### NuGet Installation
 
