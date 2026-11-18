@@ -927,10 +927,14 @@ public abstract partial class StormControllerBase
             }
         }
         else
-        if (shouldBeOrdered)
         {
-            // Order by Keys
-            sb.Append("ORDER BY ").AppendJoinFast(KeyColumnDefs[0], ',', static (builder, x) => builder.Append(x.ColumnName));
+            // OFFSET/FETCH requires an ORDER BY clause in SQL Server.
+            // Order by primary key when available; otherwise (e.g. tables/views without a PK) use a no-op ordering.
+            var keyColumns = KeyColumnDefs.Length > 0 ? KeyColumnDefs[0] : [];
+            if (shouldBeOrdered && keyColumns.Length > 0)
+                sb.Append("ORDER BY ").AppendJoinFast(keyColumns, ',', static (builder, x) => builder.Append(x.ColumnName));
+            else
+                sb.Append("ORDER BY (SELECT NULL)");
         }
 
         if (skip.HasValue)
