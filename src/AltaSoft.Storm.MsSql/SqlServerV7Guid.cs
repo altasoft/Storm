@@ -1,6 +1,4 @@
-﻿#if NET9_0_OR_GREATER
-
-using System;
+﻿using System;
 
 namespace AltaSoft.Storm
 {
@@ -52,4 +50,3 @@ namespace AltaSoft.Storm
     }
 }
 
-#endif

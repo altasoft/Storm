@@ -12,13 +12,8 @@ namespace AltaSoft.Storm;
 /// </summary>
 public static class StormControllerCache
 {
-#if NET8_0_OR_GREATER
     private static FrozenDictionary<(Type type, int variant), StormControllerBase>? s_dict;
     private static FrozenDictionary<(Type type, int variant), Func<StormControllerBase>>? s_dict2;
-#else
-    private static Dictionary<(Type type, int variant), StormControllerBase>? s_dict;
-    private static Dictionary<(Type type, int variant), Func<StormControllerBase>>? s_dict2;
-#endif
     private static readonly Dictionary<(Type type, int variant), StormControllerBase> s_dictTemporary = new();
     private static readonly Dictionary<(Type type, int variant), Func<StormControllerBase>> s_dictTemporary2 = new();
 

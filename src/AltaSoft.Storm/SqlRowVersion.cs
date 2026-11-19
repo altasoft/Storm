@@ -14,13 +14,9 @@ public readonly struct SqlRowVersion :
     IEquatable<SqlRowVersion>,
     IComparable,
     IComparable<SqlRowVersion>
-#if NET7_0_OR_GREATER
     , IParsable<SqlRowVersion>
-#endif
     , IConvertible
-#if NET8_0_OR_GREATER
     , IUtf8SpanFormattable
-#endif
 {
     private const int ByteLength = 8;
 
@@ -221,7 +217,6 @@ public readonly struct SqlRowVersion :
     /// <returns>A byte array representing the <see cref="SqlRowVersion"/>.</returns>
     public static implicit operator byte[](SqlRowVersion value) => value.ToArray();
 
-#if NET7_0_OR_GREATER
     /// <summary>
     /// Parses a string representation of a SQL rowversion (timestamp).
     /// </summary>
@@ -280,7 +275,6 @@ public readonly struct SqlRowVersion :
             return false;
         }
     }
-#endif
 
     /// <summary>
     /// Returns a string representation of the rowversion (timestamp) as a 16-character uppercase hexadecimal value.
@@ -288,7 +282,6 @@ public readonly struct SqlRowVersion :
     /// <returns>A string representation of the rowversion (timestamp).</returns>
     public override string ToString() => _value.ToString("X16", CultureInfo.InvariantCulture);
 
-#if NET8_0_OR_GREATER
     /// <summary>
     /// Tries to format the value of the current instance into the provided UTF-8 byte span.
     /// </summary>
@@ -305,7 +298,6 @@ public readonly struct SqlRowVersion :
             ? _value.TryFormat(utf8Destination, out bytesWritten, "X16", CultureInfo.InvariantCulture)
             : _value.TryFormat(utf8Destination, out bytesWritten, format, provider);
     }
-#endif
 
     // IConvertible implementation (unchanged)
     /// <inheritdoc/>

@@ -1,10 +1,6 @@
 ﻿using System;
 
-#if NET8_0_OR_GREATER
-
 using AltaSoft.DomainPrimitives;
-
-#endif
 
 namespace AltaSoft.Storm.Extensions;
 
@@ -16,12 +12,7 @@ internal static class TypeExt
     private const string SqlRowVersionTypeFullName = "AltaSoft.Storm.SqlRowVersion";
     private const string SqlLogSequenceNumberTypeFullName = "AltaSoft.Storm.SqlLogSequenceNumber";
 
-#if NET8_0_OR_GREATER
     private static readonly Type? s_interfaceDomainValue = typeof(IDomainValue);
-#else
-    private const string DomainValueInterfaceFullName = "AltaSoft.DomainPrimitives.IDomainValue";
-    private static readonly Type? s_interfaceDomainValue = Type.GetType(DomainValueInterfaceFullName);
-#endif
     private static readonly Type? s_sqlTimestampType = Type.GetType(SqlRowVersionTypeFullName);
     private static readonly Type? s_sqlLogSequenceNumberType = Type.GetType(SqlLogSequenceNumberTypeFullName);
 
