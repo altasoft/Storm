@@ -10,11 +10,7 @@ using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
 using AltaSoft.Storm.Interfaces;
 
-#if NET8_0_OR_GREATER
-
 using AltaSoft.DomainPrimitives;
-
-#endif
 
 namespace AltaSoft.Storm.Helpers;
 
@@ -223,25 +219,45 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
         Append(GetColumnName(memberName));
         Append(" LIKE ");
 
+        // Escape LIKE wildcards in the value so it is matched literally. The parameter size is derived
+        // from the escaped value length in AddConstantParam, so escaping never causes truncation.
+        var escaped = EscapeLikeValue(arg.ToString());
+
         switch (node.Method.Name)
         {
             case nameof(string.Contains):
                 Append("'%'+");
-                AddConstantParam(arg.ToString(), typeof(string));
+                AddConstantParam(escaped, typeof(string));
                 Append("+'%'");
                 break;
 
             case nameof(string.StartsWith):
-                AddConstantParam(arg.ToString(), typeof(string));
+                AddConstantParam(escaped, typeof(string));
                 Append("+'%'");
                 break;
 
             case nameof(string.EndsWith):
                 Append("'%'+");
-                AddConstantParam(arg.ToString(), typeof(string));
+                AddConstantParam(escaped, typeof(string));
                 break;
         }
         return true;
+    }
+
+    /// <summary>
+    /// Escapes SQL Server LIKE wildcard characters (<c>[</c>, <c>%</c>, <c>_</c>) so that the value is matched literally.
+    /// </summary>
+    /// <param name="value">The raw value.</param>
+    /// <returns>The escaped value, or <c>null</c> when <paramref name="value"/> is <c>null</c>.</returns>
+    internal static string? EscapeLikeValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value.IndexOfAny(['[', '%', '_']) < 0)
+            return value;
+
+        // '[' must be escaped first, otherwise the brackets introduced for '%' and '_' would be escaped again.
+        return value.Replace("[", "[[]", StringComparison.Ordinal)
+            .Replace("%", "[%]", StringComparison.Ordinal)
+            .Replace("_", "[_]", StringComparison.Ordinal);
     }
 
     private bool HandleHasFlagMethod(MethodCallExpression node, MemberExpression m)
@@ -425,6 +441,11 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
 
         if (column is not null)
         {
+            // Columns saved as string are stored in invariant-culture text (see StormColumnDef.GetValueForDbParameter),
+            // so the comparison value must be converted the same way to match.
+            if (column.SaveAs == Attributes.SaveAs.String && value is not string)
+                value = StormColumnDef.ToInvariantString(value)!;
+
             var dbType = ToVariableLengthDbType(column.DbType);
 
             var size = GetParamSize(dbType, column.Size, value);
@@ -439,13 +460,11 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
                 type = enumType;
             }
 
-#if NET8_0_OR_GREATER
             if (value is IDomainValue d)
             {
                 type = d.GetUnderlyingPrimitiveType();
                 value = d.GetUnderlyingPrimitiveValue();
             }
-#endif
 
             var dbType = type.ToUnifiedDbType();
             dbType = ToVariableLengthDbType(dbType);
@@ -454,30 +473,42 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
             _command.AddDbParameter(paramName, dbType, size, value);
         }
         Append(paramName);
-        return;
-
-        static int GetParamSize(UnifiedDbType dbType, int? columnSize, object? value)
-        {
-            if (!dbType.HasMaxSize())
-                return 0;
-
-            var valueSize = value switch
-            {
-                string str => str.Length,
-                byte[] arr => arr.Length,
-                SqlRowVersion _ => 8,
-                SqlLogSequenceNumber _ => 10,
-                _ => 0
-            };
-
-            if (!columnSize.HasValue)
-                return valueSize;
-
-            return valueSize > columnSize.Value ? valueSize : columnSize.Value;
-        }
     }
 
-    private static UnifiedDbType ToVariableLengthDbType(UnifiedDbType dbType)
+    /// <summary>
+    /// Computes the parameter size for a value: the larger of the column size and the value length,
+    /// so that values longer than the column are never truncated by the provider.
+    /// </summary>
+    /// <param name="dbType">The parameter database type.</param>
+    /// <param name="columnSize">The column size, if known.</param>
+    /// <param name="value">The parameter value.</param>
+    /// <returns>The parameter size (0 for types without a size).</returns>
+    internal static int GetParamSize(UnifiedDbType dbType, int? columnSize, object? value)
+    {
+        if (!dbType.HasMaxSize())
+            return 0;
+
+        var valueSize = value switch
+        {
+            string str => str.Length,
+            byte[] arr => arr.Length,
+            SqlRowVersion _ => 8,
+            SqlLogSequenceNumber _ => 10,
+            _ => 0
+        };
+
+        if (!columnSize.HasValue)
+            return valueSize;
+
+        return valueSize > columnSize.Value ? valueSize : columnSize.Value;
+    }
+
+    /// <summary>
+    /// Maps fixed-length database types to their variable-length counterparts, so that parameter values are not space/zero padded.
+    /// </summary>
+    /// <param name="dbType">The column database type.</param>
+    /// <returns>The variable-length database type.</returns>
+    internal static UnifiedDbType ToVariableLengthDbType(UnifiedDbType dbType)
     {
         return dbType switch
         {

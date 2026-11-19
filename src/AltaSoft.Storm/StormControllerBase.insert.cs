@@ -103,6 +103,20 @@ public abstract partial class StormControllerBase
         command.SetStormCommandBaseParameters(sb.ToStringAndReturnToPool(), queryParameters);
     }
 
+    /// <summary>
+    /// Returns the SQL type of the table variable column that collects generated identity values (list insert and merge).
+    /// A <c>decimal</c> identity always has scale 0, so the buffer uses the column's precision (or the maximum, 38, when it is not
+    /// specified) with scale 0, instead of the default <c>decimal</c> type, whose scale would limit the number of integer digits.
+    /// </summary>
+    /// <param name="autoIncColumn">The auto-increment column.</param>
+    /// <returns>The SQL type text.</returns>
+    private static string GetIdentityBufferSqlType(StormColumnDef autoIncColumn)
+    {
+        return autoIncColumn.DbType == UnifiedDbType.Decimal
+            ? StormManager.ToSqlDbType(UnifiedDbType.Decimal, 0, autoIncColumn.Precision > 0 ? autoIncColumn.Precision : 38, 0)
+            : StormManager.ToSqlDbType(autoIncColumn.DbType, 0, 0, 0);
+    }
+
     internal (StormColumnDef? autoIncColumn, IList<T> valueList) PrepareInsert<T>(
         IVirtualStormDbCommand command,
         IEnumerable<T> values,
@@ -116,7 +130,7 @@ public abstract partial class StormControllerBase
         var sb = StormManager.GetStringBuilderFromPool();
 
         if (autoIncColumn is not null)
-            sb.Append("DECLARE @__storm_id_values TABLE ([Id] ").Append(StormManager.ToSqlDbType(autoIncColumn.DbType, 0, 0, 0)).AppendLine(" NOT NULL);");
+            sb.Append("DECLARE @__storm_id_values TABLE ([Id] ").Append(GetIdentityBufferSqlType(autoIncColumn)).AppendLine(" NOT NULL);");
 
         foreach (var value in valueList)
         {

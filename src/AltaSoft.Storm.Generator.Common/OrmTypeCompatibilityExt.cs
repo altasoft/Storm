@@ -179,8 +179,8 @@ public static class OrmTypeCompatibilityExt
         {
             "System.Guid" => [],
             "System.DateOnly" => [UnifiedDbType.DateTime2, UnifiedDbType.DateTime, UnifiedDbType.SmallDateTime, UnifiedDbType.DateTimeOffset],
-            "System.TimeOnly" => [UnifiedDbType.DateTime2, UnifiedDbType.DateTime, UnifiedDbType.SmallDateTime, UnifiedDbType.DateTimeOffset],
-            "System.TimeSpan" => [UnifiedDbType.DateTime2, UnifiedDbType.DateTime, UnifiedDbType.SmallDateTime, UnifiedDbType.DateTimeOffset],
+            // A time of day cannot be meaningfully stored in a datetimeoffset column; TimeSpan can only be stored in a time column.
+            "System.TimeOnly" => [UnifiedDbType.DateTime2, UnifiedDbType.DateTime, UnifiedDbType.SmallDateTime],
             "System.DateTimeOffset" => [UnifiedDbType.Date, UnifiedDbType.Time, UnifiedDbType.DateTime2, UnifiedDbType.DateTime, UnifiedDbType.SmallDateTime],
             Constants.SqlRowVersionTypeFullName => [UnifiedDbType.VarBinary],
             Constants.SqlLogSequenceNumberTypeFullName => [UnifiedDbType.VarBinary],

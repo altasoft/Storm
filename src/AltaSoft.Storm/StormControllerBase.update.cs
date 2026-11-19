@@ -152,9 +152,6 @@ public abstract partial class StormControllerBase
 
         var sb = StormManager.GetStringBuilderFromPool();
 
-        if (checkConcurrency)
-            sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
-
         var savedPosition = sb.Length;
 
         var paramIndex = 1;
@@ -180,9 +177,6 @@ public abstract partial class StormControllerBase
             checkConcurrency = false;
 
         var sb = StormManager.GetStringBuilderFromPool();
-
-        if (checkConcurrency)
-            sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
 
         var savedPosition = sb.Length;
         var paramIndex = 1;
@@ -215,8 +209,19 @@ public abstract partial class StormControllerBase
             StringBuilder sb)
     {
         var pkInformation = GetPkInformation(command, value, ref paramIndex);
-        if (columnValues.Count == 0) // no changes, return
+        if (columnValues.Count == 0) // no changes
+        {
+            // Nothing to update (e.g. all columns are part of the primary key).
+            // When the caller relies on the affected-row count (merge update-then-insert), report the row as "affected" if it exists,
+            // otherwise the caller would try to insert an already existing row.
+            // The variable is assigned in both cases, because it is shared by all rows of a multi-row merge.
+            if (useRowCount)
+            {
+                sb.Append(indent).Append("SET @__storm_rows_affected__ = CASE WHEN EXISTS (SELECT 1 FROM ").Append(QuotedObjectFullName)
+                    .Append(" WHERE ").AppendJoinFast(" AND ", pkInformation.whereStatements).AppendLine(") THEN 1 ELSE 0 END;");
+            }
             return pkInformation;
+        }
 
         var pid = paramIndex;
 
@@ -226,28 +231,6 @@ public abstract partial class StormControllerBase
         sb.AppendLine();
         sb.Append(indent).Append("SET ");
 
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        if (checkConcurrency && value is IConcurrencyCheck concurrencyCheckValue)
-        {
-            sb.Append("@__storm_concurrency_error__ = CASE WHEN ");
-            sb.AppendJoinFast(concurrencyCheckValue.__ConcurrencyColumnValues(), " OR ", static x => (x.column.Flags & StormColumnFlags.ConcurrencyCheck) != StormColumnFlags.None,
-                (builder, x) =>
-                {
-                    var parameterName = command.AddDbParameter(pid++, x.column, x.value);
-                    builder.Append(x.column.ColumnName).Append("<>").Append(parameterName);
-                });
-            sb.Append(" THEN 1 ELSE 0 END, ");
-
-            //var concurrencyWhereStatements = concurrencyCheckValue.__ConcurrencyColumnValues().FilterAndSelectList(
-            //    static x => (x.column.Flags & StormColumnFlags.ConcurrencyCheck) != StormColumnFlags.None,
-            //    x =>
-            //    {
-            //        var parameterName = AddDbParameter(command, pid++, x.column, x.value);
-            //        return x.column.ColumnName + "<>" + parameterName;
-            //    });
-            //sb.AppendJoinFast(" AND ", concurrencyWhereStatements).AppendLine();
-        }
-
         sb.AppendJoinFast(columnValues, ',', (builder, x) =>
         {
             var column = x.column;
@@ -256,16 +239,49 @@ public abstract partial class StormControllerBase
         });
 
         sb.AppendLine();
-        sb.Append(indent).Append("WHERE ").AppendJoinFast(" AND ", pkInformation.whereStatements).AppendLine();
+        sb.Append(indent).Append("WHERE ").AppendJoinFast(" AND ", pkInformation.whereStatements);
 
+        var hasConcurrencyPredicate = false;
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        if (checkConcurrency && value is IConcurrencyCheck concurrencyCheckValue)
+        {
+            // The concurrency check is part of the WHERE clause, so a stale row is never updated.
+            // The CASE expression keeps the original semantics (comparisons involving NULL are not treated as conflicts).
+            var concurrencyColumns = concurrencyCheckValue.__ConcurrencyColumnValues();
+            if (Array.Exists(concurrencyColumns, static x => (x.column.Flags & StormColumnFlags.ConcurrencyCheck) != StormColumnFlags.None))
+            {
+                hasConcurrencyPredicate = true;
+                sb.Append(" AND CASE WHEN ");
+                sb.AppendJoinFast(concurrencyColumns, " OR ", static x => (x.column.Flags & StormColumnFlags.ConcurrencyCheck) != StormColumnFlags.None,
+                    (builder, x) =>
+                    {
+                        var parameterName = command.AddDbParameter(pid++, x.column, x.value);
+                        builder.Append(x.column.ColumnName).Append("<>").Append(parameterName);
+                    });
+                sb.Append(" THEN 1 ELSE 0 END=0");
+            }
+        }
+        sb.AppendLine(";");
+
+        string rowCountExpression;
         if (useRowCount)
         {
-            sb.AppendLine(indent).AppendLine("SET @__storm_rows_affected__ = @@ROWCOUNT;");
+            sb.Append(indent).AppendLine("SET @__storm_rows_affected__ = @@ROWCOUNT;");
+            rowCountExpression = "@__storm_rows_affected__";
+        }
+        else
+        {
+            // Must be the statement immediately following the UPDATE (@@ROWCOUNT is reset by any other statement)
+            rowCountExpression = "@@ROWCOUNT";
         }
 
-        if (checkConcurrency)
+        if (hasConcurrencyPredicate)
         {
-            sb.Append(indent).AppendLine("IF @__storm_concurrency_error__<>0 BEGIN ROLLBACK; THROW 900001, 'Concurrency error', 4; RETURN; END;");
+            // No rows updated, but the row exists => it was modified by somebody else (concurrency conflict).
+            // If the row does not exist at all, no error is raised (same as without concurrency check).
+            // No ROLLBACK here: the error aborts the surrounding TRY block (if any) and the caller's transaction is left untouched.
+            sb.Append(indent).Append("IF ").Append(rowCountExpression).Append("=0 AND EXISTS (SELECT 1 FROM ").Append(QuotedObjectFullName)
+                .Append(" WHERE ").AppendJoinFast(" AND ", pkInformation.whereStatements).AppendLine(") THROW 900001, 'Concurrency error', 4;");
         }
 
         paramIndex = pid;

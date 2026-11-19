@@ -18,7 +18,7 @@ public static class DbDataReaderExt
     /// <param name="idx">The zero-based column ordinal.</param>
     /// <returns>The value of the specified column as a signed 8-bit integer.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static sbyte GetInt8(this SqlDataReader self, int idx) => (sbyte)self.GetInt16(idx);
+    public static sbyte GetInt8(this SqlDataReader self, int idx) => checked((sbyte)self.GetInt16(idx)); // Int8 is stored as SMALLINT
 
     /// <summary>
     /// Retrieves the value of the specified column as a nullable signed 8-bit integer.
@@ -40,7 +40,7 @@ public static class DbDataReaderExt
     /// <param name="idx">The zero-based column ordinal.</param>
     /// <returns>The value of the specified column as an unsigned 16-bit integer.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ushort GetUInt16(this SqlDataReader self, int idx) => (ushort)self.GetInt16(idx);
+    public static ushort GetUInt16(this SqlDataReader self, int idx) => checked((ushort)self.GetInt32(idx)); // UInt16 is stored as INT
 
     /// <summary>
     /// Retrieves the value of the specified column as a nullable unsigned 16-bit integer.
@@ -62,7 +62,7 @@ public static class DbDataReaderExt
     /// <param name="idx">The zero-based column ordinal.</param>
     /// <returns>The value of the specified column as an unsigned 32-bit integer.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetUInt32(this SqlDataReader self, int idx) => (uint)self.GetInt64(idx);
+    public static uint GetUInt32(this SqlDataReader self, int idx) => checked((uint)self.GetInt64(idx)); // UInt32 is stored as BIGINT
 
     /// <summary>
     /// Retrieves the value of the specified column as a nullable unsigned 32-bit integer.
@@ -84,7 +84,7 @@ public static class DbDataReaderExt
     /// <param name="idx">The zero-based column ordinal.</param>
     /// <returns>The value of the specified column as an unsigned 64-bit integer.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong GetUInt64(this SqlDataReader self, int idx) => (ulong)self.GetInt64(idx);
+    public static ulong GetUInt64(this SqlDataReader self, int idx) => unchecked((ulong)self.GetInt64(idx)); // UInt64 has no native SQL Server mapping; BIGINT bit pattern is reinterpreted
 
     /// <summary>
     /// Retrieves the value of the specified column as a nullable unsigned 64-bit integer.

@@ -14,13 +14,9 @@ public readonly struct SqlRowVersion :
     IEquatable<SqlRowVersion>,
     IComparable,
     IComparable<SqlRowVersion>
-#if NET7_0_OR_GREATER
     , IParsable<SqlRowVersion>
-#endif
     , IConvertible
-#if NET8_0_OR_GREATER
     , IUtf8SpanFormattable
-#endif
 {
     private const int ByteLength = 8;
 
@@ -221,31 +217,42 @@ public readonly struct SqlRowVersion :
     /// <returns>A byte array representing the <see cref="SqlRowVersion"/>.</returns>
     public static implicit operator byte[](SqlRowVersion value) => value.ToArray();
 
-#if NET7_0_OR_GREATER
     /// <summary>
     /// Parses a string representation of a SQL rowversion (timestamp).
     /// </summary>
-    /// <param name="s">The string to parse. Can be a 16-character hex string (optionally prefixed with "0x") or a decimal ulong string.</param>
-    /// <param name="provider">An object that supplies culture-specific formatting information.</param>
+    /// <param name="s">The string to parse.</param>
+    /// <param name="provider">An object that supplies culture-specific formatting information (used for decimal input only).</param>
     /// <returns>A <see cref="SqlRowVersion"/> parsed from the string.</returns>
+    /// <remarks>
+    /// The format is determined as follows (leading/trailing whitespace is ignored):
+    /// <list type="number">
+    /// <item>A <c>0x</c> prefix (case-insensitive) means hexadecimal with 1 to 16 hex digits, e.g. <c>0x1F</c> or <c>0x00000000000007D1</c>.</item>
+    /// <item>Otherwise a string of exactly 16 characters is hexadecimal. This is the format produced by <see cref="ToString()"/>,
+    /// so <c>Parse(x.ToString()) == x</c> holds for every value, including hex strings that consist only of digits.</item>
+    /// <item>Otherwise the string is parsed as a decimal <see cref="ulong"/>.</item>
+    /// </list>
+    /// Consequently a decimal value with exactly 16 digits (e.g. <c>1234567890123456</c>) is interpreted as hexadecimal;
+    /// to parse such a decimal value, use <c>new SqlRowVersion(ulong.Parse(s))</c>.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="s"/> is null or whitespace.</exception>
     /// <exception cref="FormatException">Thrown if the string is not a valid rowversion (timestamp).</exception>
     public static SqlRowVersion Parse(string s, IFormatProvider? provider = null)
     {
         if (string.IsNullOrWhiteSpace(s)) throw new ArgumentNullException(nameof(s));
-        s = s.Trim();
-        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = s.Substring(2);
-        if (s.Length == 16) // hex
+        var span = s.AsSpan().Trim();
+
+        if (span.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
         {
-            var bytes = new byte[ByteLength];
-            for (var i = 0; i < ByteLength; i++)
-                bytes[i] = Convert.ToByte(s.Substring(i * 2, 2), 16);
-            return new SqlRowVersion(bytes);
+            var hex = span[2..];
+            if (hex.Length is 0 or > ByteLength * 2)
+                throw new FormatException($"Invalid hexadecimal rowversion value: '{s}'.");
+            return new SqlRowVersion(ulong.Parse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture));
         }
-        else // try as ulong decimal
-        {
-            return new SqlRowVersion(ulong.Parse(s, provider));
-        }
+
+        if (span.Length == ByteLength * 2) // 16 chars => hex (ToString() format)
+            return new SqlRowVersion(ulong.Parse(span, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture));
+
+        return new SqlRowVersion(ulong.Parse(span, NumberStyles.Integer, provider));
     }
 
     /// <summary>
@@ -268,7 +275,6 @@ public readonly struct SqlRowVersion :
             return false;
         }
     }
-#endif
 
     /// <summary>
     /// Returns a string representation of the rowversion (timestamp) as a 16-character uppercase hexadecimal value.
@@ -276,7 +282,6 @@ public readonly struct SqlRowVersion :
     /// <returns>A string representation of the rowversion (timestamp).</returns>
     public override string ToString() => _value.ToString("X16", CultureInfo.InvariantCulture);
 
-#if NET8_0_OR_GREATER
     /// <summary>
     /// Tries to format the value of the current instance into the provided UTF-8 byte span.
     /// </summary>
@@ -288,10 +293,11 @@ public readonly struct SqlRowVersion :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
     {
-        // Write as hex, e.g., "0123456789ABCDEF"
-        return _value.TryFormat(utf8Destination, out bytesWritten, format, provider);
+        // Default (empty format) writes the same 16-character hex string as ToString(), e.g., "0123456789ABCDEF"
+        return format.IsEmpty
+            ? _value.TryFormat(utf8Destination, out bytesWritten, "X16", CultureInfo.InvariantCulture)
+            : _value.TryFormat(utf8Destination, out bytesWritten, format, provider);
     }
-#endif
 
     // IConvertible implementation (unchanged)
     /// <inheritdoc/>
@@ -319,7 +325,7 @@ public readonly struct SqlRowVersion :
     /// <inheritdoc/>
     float IConvertible.ToSingle(IFormatProvider? provider) => ((IConvertible)_value).ToSingle(provider);
     /// <inheritdoc/>
-    string IConvertible.ToString(IFormatProvider? provider) => _value.ToString(provider);
+    string IConvertible.ToString(IFormatProvider? provider) => ToString(); // same 16-character hex format as ToString(), so it round-trips through Parse
     /// <inheritdoc/>
     object IConvertible.ToType(Type conversionType, IFormatProvider? provider) => ((IConvertible)_value).ToType(conversionType, provider);
     /// <inheritdoc/>

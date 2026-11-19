@@ -26,14 +26,21 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
     protected readonly List<T> InternalList;
 
     /// <summary>
+    /// Compares items by reference for reference types (an item's identity, not its value, decides whether it was inserted or deleted),
+    /// and by value for value types.
+    /// </summary>
+    private static readonly IEqualityComparer<T> s_itemComparer =
+        typeof(T).IsValueType ? EqualityComparer<T>.Default : (IEqualityComparer<T>)(object)ReferenceEqualityComparer.Instance;
+
+    /// <summary>
     /// The set of items that have been inserted into the list.
     /// </summary>
-    protected readonly HashSet<T> InsertedItems = new(16);
+    protected readonly HashSet<T> InsertedItems = new(16, s_itemComparer);
 
     /// <summary>
     /// The set of items that have been deleted from the list.
     /// </summary>
-    protected readonly HashSet<T> DeletedItems = new(16);
+    protected readonly HashSet<T> DeletedItems = new(16, s_itemComparer);
 
     /// <summary>
     /// Indicates whether change tracking is active for the list.
@@ -141,7 +148,7 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
         {
             var oldValue = InternalList[index];
 
-            if (oldValue.Equals(value)) // If the new value is the same as the old value, return
+            if (EqualityComparer<T>.Default.Equals(oldValue, value)) // If the new value is the same as the old value, return (null-safe)
                 return;
 
             InternalList[index] = value; // Set the new value
@@ -237,7 +244,11 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
 
         if (IsTiTrackingObject)
         {
-            InternalList.ForEach(x => ((ITrackingObject)x).StartChangeTracking());
+            foreach (var x in InternalList)
+            {
+                if (x is ITrackingObject trackingObject)
+                    trackingObject.StartChangeTracking();
+            }
         }
 
         TrackChanges = true;
@@ -252,7 +263,11 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
 
         if (IsTiTrackingObject)
         {
-            InternalList.ForEach(x => ((ITrackingObject)x).AcceptChanges());
+            foreach (var x in InternalList)
+            {
+                if (x is ITrackingObject trackingObject)
+                    trackingObject.AcceptChanges(stopTracking);
+            }
         }
 
         TrackChanges = !stopTracking;
@@ -269,7 +284,7 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
         if (isDirty || !IsTiTrackingObject)
             return isDirty;
 
-        return InternalList.Exists(x => ((ITrackingObject)x).IsDirty());
+        return InternalList.Exists(x => x is ITrackingObject trackingObject && trackingObject.IsDirty());
     }
 
     #endregion IChangeTrackable
@@ -283,8 +298,12 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
     public IEnumerable<T> GetDeletedItems() => DeletedItems;
 
     /// <inheritdoc />
+    /// <remarks>Items that were inserted in the current tracking session are reported only by <see cref="GetInsertedItems"/>, even if they were modified after being added,
+    /// because the insert already persists their current values.</remarks>
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
-    public virtual IEnumerable<T> GetUpdatedItems() => IsTiTrackingObject ? InternalList.Where(x => ((ITrackingObject)x).IsDirty()) : Enumerable.Empty<T>();
+    public virtual IEnumerable<T> GetUpdatedItems() => IsTiTrackingObject
+        ? InternalList.Where(x => x is ITrackingObject trackingObject && trackingObject.IsDirty() && !InsertedItems.Contains(x))
+        : Enumerable.Empty<T>();
 
     #endregion ITrackingList<T>
 
@@ -304,15 +323,15 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
     #region Helper methods
 
     /// <summary>
-    /// Starts change tracking for the given object if it is a tracking object and change tracking is not already active.
+    /// Starts change tracking for the given object if it is a tracking object and change tracking is not already active on the item itself.
     /// </summary>
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     protected void StartTacking(T item)
     {
-        if (!IsTiTrackingObject || IsChangeTrackingActive())
+        if (!IsTiTrackingObject || item is not ITrackingObject trackingObject || trackingObject.IsChangeTrackingActive())
             return;
 
-        ((ITrackingObject)item).StartChangeTracking();
+        trackingObject.StartChangeTracking();
     }
 
     //protected void StopTracking(T item)

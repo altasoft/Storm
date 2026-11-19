@@ -73,15 +73,17 @@ public class MsSqlOrmProvider : IOrmProvider
     /// Converts the given value to a database value.
     /// </summary>
     /// <param name="value">The value to be converted.</param>
+    /// <param name="sqlDbType">The SQL Server type of the target parameter.</param>
     /// <returns>The converted database value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static object ConvertToDbValue(object? value)
+    private static object ConvertToDbValue(object? value, SqlDbType sqlDbType)
     {
         return value switch
         {
             null => DBNull.Value,
             DateOnly date => date.ToDateTime(TimeOnly.MinValue),
-            TimeOnly time => new DateTime(time.Ticks),
+            // SqlDbType.Time parameters require a TimeSpan; date/time parameters require a DateTime.
+            TimeOnly time => sqlDbType == SqlDbType.Time ? time.ToTimeSpan() : new DateTime(time.Ticks),
             SqlRowVersion dbts => (byte[])dbts,
             SqlLogSequenceNumber lsn => (byte[])lsn,
             _ => value
@@ -106,7 +108,7 @@ public class MsSqlOrmProvider : IOrmProvider
 
         var p = parameters.Add(parameterName, sqlDbType, size);
         p.Direction = direction;
-        p.Value = ConvertToDbValue(value);
+        p.Value = ConvertToDbValue(value, sqlDbType);
         return p;
     }
 }

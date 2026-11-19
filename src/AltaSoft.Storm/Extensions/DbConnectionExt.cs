@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.Crud;
@@ -110,8 +111,32 @@ public static class DbConnectionExt
             command.SetStormCommandBaseParameters(connection, transaction, sqlStatement, queryParameters);
 
             var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-            return (TResult)value;
+            return ConvertScalarValue<TResult>(value);
         }
+    }
+
+    /// <summary>
+    /// Converts a value returned by <c>ExecuteScalar</c> to <typeparamref name="TResult"/>.
+    /// <c>null</c>/<see cref="DBNull"/> yield <c>default</c>; values of a different (convertible) type are converted
+    /// with <see cref="Convert.ChangeType(object, Type, IFormatProvider)"/> using the invariant culture
+    /// (e.g. SQL <c>numeric(38,0)</c> returned by <c>SCOPE_IDENTITY()</c> to <see cref="int"/>).
+    /// </summary>
+    internal static TResult ConvertScalarValue<TResult>(object? value)
+    {
+        switch (value)
+        {
+            case TResult result:
+                return result;
+            case null or DBNull:
+                return default!;
+        }
+
+        var targetType = Nullable.GetUnderlyingType(typeof(TResult)) ?? typeof(TResult);
+
+        if (targetType.IsEnum)
+            return (TResult)Enum.ToObject(targetType, value);
+
+        return (TResult)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }
 
     internal static async Task<TResult> ExecuteProcedureAsync<TResult>(

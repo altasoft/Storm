@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.Attributes;
+using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
 using AltaSoft.Storm.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -273,9 +274,45 @@ public static partial class SqlOrm
 
         static string GetSqlColumnInfo(StormColumnDef column)
         {
-            var typeName = column.IsRowVersion()
-                ? "rowversion"
-                : StormManager.ToSqlDbType(column.DbType, column.Size, column.Precision, column.Scale);
+            string typeName;
+            if (column.IsRowVersion())
+            {
+                typeName = "rowversion";
+            }
+            else
+            {
+                var size = column.Size;
+                var precision = column.Precision;
+                var scale = column.Scale;
+
+                if (column.DbType == UnifiedDbType.Binary && size <= 0)
+                {
+                    // Fixed-length binary without explicit size: use the natural size of known fixed-size types.
+                    var propertyType = Nullable.GetUnderlyingType(column.PropertyType) ?? column.PropertyType;
+                    if (propertyType == typeof(SqlRowVersion))
+                        size = 8;
+                    else if (propertyType == typeof(SqlLogSequenceNumber))
+                        size = 10;
+                }
+
+                if (size <= 0 && column.DbType is UnifiedDbType.AnsiStringFixedLength or UnifiedDbType.StringFixedLength or UnifiedDbType.Binary)
+                {
+                    // SQL Server would create a column of length 1 and truncate any longer value.
+                    var propertyType = Nullable.GetUnderlyingType(column.PropertyType) ?? column.PropertyType;
+                    if (propertyType != typeof(char))
+                        throw new StormException($"Column '{column.ColumnName}' is fixed-length ({column.DbType}) and requires a size.");
+                    size = 1;
+                }
+
+                if (column.DbType == UnifiedDbType.Decimal && column.IsAutoInc())
+                {
+                    // IDENTITY columns must have scale 0
+                    precision = precision <= 0 ? UnifiedDbTypeExt.DefaultDecimalPrecision : precision;
+                    scale = 0;
+                }
+
+                typeName = StormManager.ToSqlDbType(column.DbType, size, precision, scale);
+            }
 
             return $"{column.ColumnName} {typeName} {(column.IsAutoInc() ? "IDENTITY " : "")}{(column.IsNullable ? "NULL" : "NOT NULL")}";
         }

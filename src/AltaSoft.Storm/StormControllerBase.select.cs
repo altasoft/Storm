@@ -26,6 +26,25 @@ public abstract partial class StormControllerBase
     private readonly ConcurrentDictionary<(uint partialLoadFlags, string? tableAlias), string> _queryCache = new();
 
     /// <summary>
+    /// Columns that occupy a slot in the main SELECT list, in the same order (see <see cref="StormColumnDefExt.GetSelectableColumns"/>).
+    /// The generated <c>OrderBy</c> enum ids are 1-based positions in this sequence. Lazily initialized.
+    /// </summary>
+    private StormColumnDef[]? _selectListColumns;
+
+    /// <summary>
+    /// Returns the column that corresponds to the given (1-based, sign-less) order-by id.
+    /// </summary>
+    private StormColumnDef GetOrderByColumn(int orderId)
+    {
+        var columns = _selectListColumns ??= Array.FindAll(ColumnDefs, static x => x.CanSelectColumn());
+
+        if (orderId < 1 || orderId > columns.Length)
+            throw new StormException($"Invalid order by column id '{orderId}' for '{QuotedObjectFullName}'.");
+
+        return columns[orderId - 1];
+    }
+
+    /// <summary>
     /// Streams data asynchronously from a database connection.
     /// </summary>
     internal async IAsyncEnumerable<T> StreamAsync<T>(
@@ -908,10 +927,12 @@ public abstract partial class StormControllerBase
                 sb.Append("ORDER BY ").AppendJoinFast(orderBy, ',',
                     (builder, x) =>
                     {
+                        // Order ids are positions in the main SELECT list, which are not the same as indexes in ColumnDefs
+                        // (e.g. detail table columns have no slot in the SELECT list).
                         if (x >= 0)
-                            builder.Append(ColumnDefs[x - 1].ColumnName);
+                            builder.Append(GetOrderByColumn(x).ColumnName);
                         else
-                            builder.Append(ColumnDefs[-x - 1].ColumnName).Append(" DESC");
+                            builder.Append(GetOrderByColumn(-x).ColumnName).Append(" DESC");
                     });
             }
             else
@@ -927,10 +948,14 @@ public abstract partial class StormControllerBase
             }
         }
         else
-        if (shouldBeOrdered)
         {
-            // Order by Keys
-            sb.Append("ORDER BY ").AppendJoinFast(KeyColumnDefs[0], ',', static (builder, x) => builder.Append(x.ColumnName));
+            // OFFSET/FETCH requires an ORDER BY clause in SQL Server.
+            // Order by primary key when available; otherwise (e.g. tables/views without a PK) use a no-op ordering.
+            var keyColumns = KeyColumnDefs.Length > 0 ? KeyColumnDefs[0] : [];
+            if (shouldBeOrdered && keyColumns.Length > 0)
+                sb.Append("ORDER BY ").AppendJoinFast(keyColumns, ',', static (builder, x) => builder.Append(x.ColumnName));
+            else
+                sb.Append("ORDER BY (SELECT NULL)");
         }
 
         if (skip.HasValue)

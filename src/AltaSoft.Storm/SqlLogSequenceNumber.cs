@@ -12,9 +12,7 @@ public readonly struct SqlLogSequenceNumber :
     IEquatable<SqlLogSequenceNumber>,
     IComparable,
     IComparable<SqlLogSequenceNumber>
-#if NET7_0_OR_GREATER
     , IParsable<SqlLogSequenceNumber>
-#endif
 {
     private const int LsnLength = 10;
 
@@ -143,7 +141,6 @@ public readonly struct SqlLogSequenceNumber :
         return BitConverter.ToString(a).Replace("-", string.Empty);
     }
 
-#if NET7_0_OR_GREATER
     /// <summary>
     /// Parses a string representation of an LSN.
     /// </summary>
@@ -183,7 +180,6 @@ public readonly struct SqlLogSequenceNumber :
             return false;
         }
     }
-#endif
 
     // Conversion
 
