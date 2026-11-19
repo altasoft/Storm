@@ -43,6 +43,13 @@
 	<Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs" />
   </ItemGroup>
 
+  <Target Name="RemoveDomainPrimitivesGeneratedFiles"
+          AfterTargets="CoreCompile"
+          Condition="'$(EmitCompilerGeneratedFiles)' == 'true'
+                   And '$(DesignTimeBuild)' != 'true'">
+	  <RemoveDir Directories="$(CompilerGeneratedFilesOutputPath)/AltaSoft.DomainPrimitives.Generator" />
+  </Target>
+
   <ItemGroup>
 	<Compile Include="..\..\src\StormGlobalTypeAliases.cs" Link="StormGlobalTypeAliases.cs" />
   </ItemGroup>
