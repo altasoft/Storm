@@ -59,36 +59,45 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         // Handle a unary expression with a NOT operation, visit its operand directly.
         UnaryExpression { NodeType: ExpressionType.Not, Operand: var operand } => Visit(operand),
 
-        // If the expression is a member expression that represents checking the 'HasValue' property of a nullable type,
-        // return an expression that checks if the member is not null.
-        MemberExpression { Expression: MemberExpression { Expression: ParameterExpression } ime } me when IsNullableHasValue(me) => Expression.NotEqual(ime, Expression.Constant(null)),
+        // !x.Nullable.HasValue => x.Nullable IS NULL
+        MemberExpression { Expression: MemberExpression { Expression: ParameterExpression } ime } me when IsNullableHasValue(me) => Expression.Equal(ime, Expression.Constant(null)),
 
-        // If the expression is a simple member expression (direct property of a parameter), 
-        // return an expression that checks if the member is equal to false.
-        MemberExpression { Expression: ParameterExpression } me => Expression.Equal(me, Expression.Constant(false)),
+        // !x.BoolColumn => x.BoolColumn = false
+        MemberExpression { Expression: ParameterExpression } me when me.Type == typeof(bool) => Expression.Equal(me, Expression.Constant(false)),
 
-        // If the member expression represents checking 'HasValue' of a nullable type and its parent expression is constant,
-        // return a constant false expression.
-        MemberExpression m when IsNullableHasValue(m) && Visit(m.Expression) is ConstantExpression => Expression.Constant(false),
+        // !captured.HasValue => evaluate the captured value
+        MemberExpression m when IsNullableHasValue(m) && Visit(m.Expression) is ConstantExpression { Value: var c } => Expression.Constant(c is null),
 
-        // For other cases, visit the node and then apply further processing based on its type.
-        _ => Visit(node) switch
-        {
-            // For a constant boolean expression, return the negation of its value.
-            ConstantExpression(bool c) => Expression.Constant(!c),
+        // For other cases, visit the node and negate the result.
+        _ => Visit(node) is { } visited ? Negate(visited) : null
+    };
 
-            // For binary expressions, reverse their logical operation.
-            BinaryExpression { Left: var l, NodeType: ExpressionType.Equal, Right: var r } => Expression.NotEqual(l, r),
-            BinaryExpression { Left: var l, NodeType: ExpressionType.NotEqual, Right: var r } => Expression.Equal(l, r),
-            BinaryExpression { Left: var l, NodeType: ExpressionType.LessThan, Right: var r } => Expression.GreaterThanOrEqual(l, r),
-            BinaryExpression { Left: var l, NodeType: ExpressionType.GreaterThan, Right: var r } => Expression.LessThanOrEqual(l, r),
+    /// <summary>
+    /// Returns the logical negation of an already reduced boolean predicate.
+    /// </summary>
+    /// <param name="node">The reduced predicate.</param>
+    /// <returns>The negated predicate.</returns>
+    private static Expression Negate(Expression node) => node switch
+    {
+        // For a constant boolean expression, return the negation of its value.
+        ConstantExpression { Value: bool c } => Expression.Constant(!c),
 
-            // For other expression types, apply a NOT operation.
-            { } n => Expression.Not(n),
+        // A raw boolean column: column = false
+        MemberExpression { Expression: ParameterExpression } me when me.Type == typeof(bool) => Expression.Equal(me, Expression.Constant(false)),
 
-            // If none of the above conditions are met, return null.
-            _ => null
-        }
+        // Boolean value compared to a boolean constant (e.g. x.Flag = true, x.FlagN.Value = true): flip the constant.
+        BinaryExpression { NodeType: ExpressionType.Equal, Left: var l, Right: ConstantExpression { Value: bool b } } when l.Type == typeof(bool) => Expression.Equal(l, Expression.Constant(!b)),
+
+        // For binary expressions, reverse their logical operation.
+        BinaryExpression { Left: var l, NodeType: ExpressionType.Equal, Right: var r } => Expression.NotEqual(l, r),
+        BinaryExpression { Left: var l, NodeType: ExpressionType.NotEqual, Right: var r } => Expression.Equal(l, r),
+        BinaryExpression { Left: var l, NodeType: ExpressionType.LessThan, Right: var r } => Expression.GreaterThanOrEqual(l, r),
+        BinaryExpression { Left: var l, NodeType: ExpressionType.GreaterThan, Right: var r } => Expression.LessThanOrEqual(l, r),
+        BinaryExpression { Left: var l, NodeType: ExpressionType.LessThanOrEqual, Right: var r } => Expression.GreaterThan(l, r),
+        BinaryExpression { Left: var l, NodeType: ExpressionType.GreaterThanOrEqual, Right: var r } => Expression.LessThan(l, r),
+
+        // For other expression types, apply a NOT operation.
+        _ => Expression.Not(node)
     };
 
     /// <summary>
@@ -230,86 +239,105 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
     };
 
     /// <summary>
-    /// Reduces equality expressions with special handling for nullable conversions and constant folding.
+    /// Reduces equality expressions with special handling for nullable conversions, boolean predicates and constant folding.
     /// </summary>
     /// <param name="node">The equality expression to reduce.</param>
     /// <returns>The reduced expression.</returns>
-    private Expression VisitEqual(BinaryExpression node)
-    {
-        var left = Visit(node.Left);
-        var right = Visit(node.Right);
-
-        return (left, right) switch
-        {
-            // When both sides are constants, return a constant expression representing the equality of their values.
-            (ConstantExpression(var l), ConstantExpression(var r)) => Expression.Constant(l == r),
-
-            // When the left side is a constant and the right is not, return an expression checking equality between them.
-            (ConstantExpression l, var r) => Expression.Equal(r, l),
-
-            // When the left side is not a constant, the right is a constant, and their types are different,
-            // but the non-nullable type of left is the same as the type of right, convert right to left's type and check equality.
-            (var l, ConstantExpression r) when l.Type != r.Type && Nullable.GetUnderlyingType(l.Type) == r.Type => Expression.Equal(Expression.Convert(r, l.Type), l),
-
-            // When both sides are of the same type, return an expression checking equality between them.
-            (var l, ConstantExpression r) when l.Type == r.Type => Expression.Equal(l, r),
-
-            // When left is not a constant, right is a member expression, and their types are different,
-            // but the non-nullable type of left is the same as the type of right, convert right to left's type and check equality.
-            (var l, MemberExpression r) when l.Type != r.Type && Nullable.GetUnderlyingType(l.Type) == r.Type => Expression.Equal(Expression.Convert(r, l.Type), l),
-
-            // When both sides are of the same type, with the right side being a member expression, return an expression checking equality.
-            (var l, MemberExpression r) when l.Type == r.Type => Expression.Equal(l, r),
-
-            // Special case for binary expressions: if the right side is a constant true, return the left side as is.
-            (BinaryExpression { NodeType: ExpressionType.Equal } l, ConstantExpression(true)) => l,
-
-            // Special case for binary expressions: if the right side is a constant false, return an expression that checks inequality.
-            (BinaryExpression { NodeType: ExpressionType.Equal } l, ConstantExpression(false)) => Expression.NotEqual(l.Left, l.Right),
-
-            // Default case: for any other combinations, return an expression checking equality.
-            var (l, r) => Expression.Equal(l, r)
-        };
-    }
+    private Expression VisitEqual(BinaryExpression node) => VisitEquality(node, isNotEqual: false);
 
     /// <summary>
-    /// Reduces inequality expressions with special handling for nullable conversions and constant folding.
+    /// Reduces inequality expressions with special handling for nullable conversions, boolean predicates and constant folding.
     /// </summary>
     /// <param name="node">The inequality expression to reduce.</param>
     /// <returns>The reduced expression.</returns>
-    private Expression VisitNotEqual(BinaryExpression node) => (Visit(node.Left), Visit(node.Right)) switch
+    private Expression VisitNotEqual(BinaryExpression node) => VisitEquality(node, isNotEqual: true);
+
+    /// <summary>
+    /// Shared implementation of <see cref="VisitEqual"/> and <see cref="VisitNotEqual"/>.
+    /// </summary>
+    /// <param name="node">The equality or inequality expression to reduce.</param>
+    /// <param name="isNotEqual"><c>true</c> for inequality; <c>false</c> for equality.</param>
+    /// <returns>The reduced expression.</returns>
+    private Expression VisitEquality(BinaryExpression node, bool isNotEqual)
     {
-        // When both sides are constants, return a constant expression representing the inequality of their values.
-        (ConstantExpression(var l), ConstantExpression(var r)) => Expression.Constant(l != r),
+        var left = VisitComparisonOperand(node.Left);
+        var right = VisitComparisonOperand(node.Right);
 
-        // When the left side is a constant and the right is not, return an expression checking inequality between them.
-        (ConstantExpression l, var r) => Expression.NotEqual(r, l),
+        // When both sides are constants, fold using value equality (not reference equality of boxed values).
+        if (left is ConstantExpression { Value: var lv } && right is ConstantExpression { Value: var rv })
+            return Expression.Constant(isNotEqual ? !Equals(lv, rv) : Equals(lv, rv));
 
-        // When the left side is not a constant, the right is a constant, and their types are different,
-        // but the non-nullable type of left is the same as the type of right, convert right to left's type and check inequality.
-        (var l, ConstantExpression r) when l.Type != r.Type && Nullable.GetUnderlyingType(l.Type) == r.Type =>
-            Expression.NotEqual(Expression.Convert(r, l.Type), l),
+        // A boolean predicate (comparison, IS NULL check, method call, ...) compared to a boolean constant:
+        // fold to the predicate itself or to its negation. Raw boolean columns are compared as values below.
+        if (TryFoldBoolPredicate(left, right, isNotEqual) is { } folded)
+            return folded;
+        if (TryFoldBoolPredicate(right, left, isNotEqual) is { } foldedSwapped)
+            return foldedSwapped;
 
-        // When both sides are of the same type, return an expression checking inequality between them.
-        (var l, ConstantExpression r) when l.Type == r.Type => Expression.NotEqual(l, r),
+        return (left, right) switch
+        {
+            // When the left side is a constant and the right is not, put the constant on the right.
+            (ConstantExpression l, var r) => MakeEquality(r, l, isNotEqual),
 
-        // When left is not a constant, right is a member expression, and their types are different,
-        // but the non-nullable type of left is the same as the type of right, convert right to left's type and check inequality.
-        (var l, MemberExpression r) when l.Type != r.Type && Nullable.GetUnderlyingType(l.Type) == r.Type =>
-            Expression.NotEqual(Expression.Convert(r, l.Type), l),
+            // When the left side is not a constant, the right is a constant, and their types are different,
+            // but the non-nullable type of left is the same as the type of right, convert right to left's type.
+            (var l, ConstantExpression r) when l.Type != r.Type && Nullable.GetUnderlyingType(l.Type) == r.Type => MakeEquality(Expression.Convert(r, l.Type), l, isNotEqual),
 
-        // When both sides are of the same type, with the right side being a member expression, return an expression checking inequality.
-        (var l, MemberExpression r) when l.Type == r.Type => Expression.NotEqual(l, r),
+            // When left is not a constant, right is a member expression, and their types are different,
+            // but the non-nullable type of left is the same as the type of right, convert right to left's type.
+            (var l, MemberExpression r) when l.Type != r.Type && Nullable.GetUnderlyingType(l.Type) == r.Type => MakeEquality(Expression.Convert(r, l.Type), l, isNotEqual),
 
-        // Special case for binary expressions: if the right side is a constant false, return the left side as is.
-        (BinaryExpression { NodeType: ExpressionType.Equal } l, ConstantExpression(false)) => l,
+            // Default case: compare both sides as they are.
+            var (l, r) => MakeEquality(l, r, isNotEqual)
+        };
 
-        // Special case for binary expressions: if the right side is a constant true, return an expression that checks inequality.
-        (BinaryExpression { NodeType: ExpressionType.Equal } l, ConstantExpression(true)) => Expression.NotEqual(l.Left, l.Right),
+        static Expression MakeEquality(Expression l, Expression r, bool notEqual) => notEqual ? Expression.NotEqual(l, r) : Expression.Equal(l, r);
+    }
 
-        // Default case: for any other combinations, return an expression checking inequality.
-        var (l, r) => Expression.NotEqual(l, r)
+    /// <summary>
+    /// Folds <c>predicate == bool constant</c> (or <c>!=</c>) to the predicate or its negation.
+    /// </summary>
+    /// <param name="predicate">The candidate predicate side.</param>
+    /// <param name="constant">The candidate constant side.</param>
+    /// <param name="isNotEqual"><c>true</c> for inequality; <c>false</c> for equality.</param>
+    /// <returns>The folded expression or null if the pattern does not apply.</returns>
+    private static Expression? TryFoldBoolPredicate(Expression predicate, Expression constant, bool isNotEqual)
+    {
+        if (constant is not ConstantExpression { Value: bool b } || predicate is ConstantExpression || predicate.Type != typeof(bool) || IsRawBoolValue(predicate))
+            return null;
+
+        return b != isNotEqual ? predicate : Negate(predicate);
+    }
+
+    /// <summary>
+    /// Visits an operand of an equality/inequality comparison. Boolean columns are kept as raw column values
+    /// (instead of being rewritten to <c>column = true</c>) so that they can be compared as values.
+    /// </summary>
+    /// <param name="node">The operand to visit.</param>
+    /// <returns>The visited operand.</returns>
+    private Expression VisitComparisonOperand(Expression node) => node switch
+    {
+        // x.BoolColumn
+        MemberExpression { Expression: ParameterExpression } me when me.Type == typeof(bool) => me,
+
+        // (bool?)x.BoolColumn
+        UnaryExpression { NodeType: ExpressionType.Convert, Operand: MemberExpression { Expression: ParameterExpression } me } when me.Type == typeof(bool) => node,
+
+        // x.BoolColumnN.Value
+        MemberExpression { Expression: MemberExpression { Expression: ParameterExpression } ime, Member: PropertyInfo { Name: "Value", DeclaringType: { } declaringType } } me
+            when me.Type == typeof(bool) && IsNullableT(declaringType) => Expression.Convert(ime, typeof(bool)),
+
+        _ => Visit(node)
     };
+
+    /// <summary>
+    /// Determines whether the expression is a raw boolean column value (as opposed to a boolean predicate).
+    /// </summary>
+    /// <param name="node">The expression to check.</param>
+    /// <returns>True if the expression is a raw column value.</returns>
+    private static bool IsRawBoolValue(Expression node) => node is
+        MemberExpression { Expression: ParameterExpression } or
+        UnaryExpression { NodeType: ExpressionType.Convert, Operand: MemberExpression { Expression: ParameterExpression } };
 
     /// <summary>
     /// Visits a member access expression and attempts to reduce common patterns such as boolean shorthand and nullable Value/HasValue access.

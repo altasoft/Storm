@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using AltaSoft.Storm.Attributes;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
@@ -45,7 +46,7 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         var entity = model.AddEntityType("", "EntityName");
         var propertyLookup = new Dictionary<string, StormColumnDef>();
 
-        var enums = new HashSet<Type>();
+        var enums = new Dictionary<Type, EdmEnumType>();
 
         foreach (var column in columnDefs.Where(x => x.SaveAs == SaveAs.Default))
         {
@@ -54,26 +55,27 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
 
             if (subPropertyName is not null)
             {
-                propertyName = propertyName + "___" + subPropertyName;
-                filter = filter.Replace(propertyName + '.' + subPropertyName, propertyName);
+                var flatName = propertyName + "___" + subPropertyName;
+                filter = ReplacePropertyPath(filter, propertyName, subPropertyName, flatName);
+                propertyName = flatName;
             }
 
             if (column.PropertyType.IsEnum)
             {
                 var enumType = column.PropertyType;
-                if (!enums.Contains(enumType))
+                if (!enums.TryGetValue(enumType, out var type))
                 {
                     var isFlagged = enumType.IsDefined(typeof(FlagsAttribute), inherit: false);
 
-                    var type = new EdmEnumType("", enumType.Name, isFlags: isFlagged);
+                    type = new EdmEnumType("", enumType.Name, isFlags: isFlagged);
                     foreach (var e in Enum.GetValues(enumType))
                         type.AddMember(e.ToString(), new EdmEnumMemberValue(Convert.ToInt64(e, CultureInfo.InvariantCulture)));
 
                     model.AddElement(type);
-                    enums.Add(enumType);
-
-                    entity.AddStructuralProperty(propertyName, new EdmEnumTypeReference(type, isNullable: column.IsNullable));
+                    enums.Add(enumType, type);
                 }
+
+                entity.AddStructuralProperty(propertyName, new EdmEnumTypeReference(type, isNullable: column.IsNullable));
             }
             else
             {
@@ -91,10 +93,20 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
 
         var translator = new ODataFilterStatementGenerator(sb, command, propertyLookup, paramIndex, tableAlias);
 
-        filterClause.Expression.Accept(translator);
+        translator.VisitPredicate(filterClause.Expression);
 
         paramIndex = translator._paramIndex;
         return;
+
+        // Rewrites 'Prop/Sub' and 'Prop.Sub' (case-insensitive, whole identifiers only) to the flattened
+        // property name, leaving single-quoted string literals untouched.
+        static string ReplacePropertyPath(string input, string property, string subProperty, string replacement)
+        {
+            var pattern = "'(?:[^']|'')*'|(?<![\\w.])" + Regex.Escape(property) + "[/.]" + Regex.Escape(subProperty) + "(?![\\w])";
+
+            return Regex.Replace(input, pattern, m => m.Value[0] == '\'' ? m.Value : replacement,
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+        }
 
         static EdmPrimitiveTypeKind ColumnDefToPrimitiveTypeKind(StormColumnDef column)
         {
@@ -204,7 +216,12 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
 
         var paramName = ParamPrefix + _paramIndex++.ToString(CultureInfo.InvariantCulture);
 
-        AddDbParameter(paramName, dbType, _lastIdentifierVisitedColumnDef.Size, value);
+        // Use a variable-length type and size = max(column size, value length) so that longer values are not
+        // truncated (and fixed-length values not padded) by the provider, matching the LINQ where generator.
+        dbType = SqlStatementGenerator.ToVariableLengthDbType(dbType);
+        var size = SqlStatementGenerator.GetParamSize(dbType, _lastIdentifierVisitedColumnDef.Size, value);
+
+        AddDbParameter(paramName, dbType, size, value);
         _builder.Append(paramName);
 
         return nodeIn;
@@ -249,6 +266,11 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
                     innerNode.Accept(this);
                     _builder.Append(')');
                 }
+                else if (input.OperatorKind is BinaryOperatorKind.And or BinaryOperatorKind.Or)
+                {
+                    // Operands of logical operators are predicates: a bare boolean property becomes 'col = 1'.
+                    VisitPredicate(innerNode);
+                }
                 else
                 {
                     innerNode.Accept(this);
@@ -256,12 +278,13 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
             }
         }
 
+        // Swaps operands of a comparison ('5 lt X' is 'X gt 5'); this is a mirror, not a negation.
         static BinaryOperatorKind ReverseComparison(BinaryOperatorKind value) => value switch
         {
-            BinaryOperatorKind.GreaterThan => BinaryOperatorKind.LessThanOrEqual,
-            BinaryOperatorKind.GreaterThanOrEqual => BinaryOperatorKind.LessThan,
-            BinaryOperatorKind.LessThan => BinaryOperatorKind.GreaterThanOrEqual,
-            BinaryOperatorKind.LessThanOrEqual => BinaryOperatorKind.GreaterThan,
+            BinaryOperatorKind.GreaterThan => BinaryOperatorKind.LessThan,
+            BinaryOperatorKind.GreaterThanOrEqual => BinaryOperatorKind.LessThanOrEqual,
+            BinaryOperatorKind.LessThan => BinaryOperatorKind.GreaterThan,
+            BinaryOperatorKind.LessThanOrEqual => BinaryOperatorKind.GreaterThanOrEqual,
             _ => value
         };
 
@@ -312,25 +335,48 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         return nodeIn switch
         {
             { Operand: ConvertNode { Source: var src } } => new UnaryOperatorNode(nodeIn.OperatorKind, src).Accept(this),
+            { OperatorKind: UnaryOperatorKind.Not, Operand: UnaryOperatorNode { OperatorKind: UnaryOperatorKind.Not } unary } => VisitPredicate(unary.Operand),
             { Operand: UnaryOperatorNode unary } when nodeIn.OperatorKind == unary.OperatorKind => unary.Operand.Accept(this),
-            { OperatorKind: UnaryOperatorKind.Negate, Operand: var o } => Negate("-", o, this),
+            { OperatorKind: UnaryOperatorKind.Negate, Operand: var o } => Negate("-", o, this, asPredicate: false),
             { Operand: BinaryOperatorNode { OperatorKind: BinaryOperatorKind.Equal } o } => new BinaryOperatorNode(BinaryOperatorKind.NotEqual, o.Left, o.Right).Accept(this),
             { Operand: BinaryOperatorNode { OperatorKind: BinaryOperatorKind.NotEqual } o } => new BinaryOperatorNode(BinaryOperatorKind.Equal, o.Left, o.Right).Accept(this),
-            { Operand: var o } => Negate("NOT", o, this),
+            { Operand: var o } => Negate("NOT", o, this, asPredicate: true),
             _ => throw new NotSupportedException($"Unary operator: {nodeIn.OperatorKind} not supported")
         };
 
-        static QueryNode Negate(string negOp, QueryNode operand, ODataFilterStatementGenerator visitor)
+        static QueryNode Negate(string negOp, QueryNode operand, ODataFilterStatementGenerator visitor, bool asPredicate)
         {
             visitor._builder.Append(negOp)
                 .Append('(');
 
-            var nodeOut = operand.Accept(visitor);
+            var nodeOut = asPredicate ? visitor.VisitPredicate(operand) : operand.Accept(visitor);
 
             visitor._builder.Append(')');
 
             return nodeOut;
         }
+    }
+
+    /// <summary>
+    /// Visits a node that is used as a predicate (the whole filter, an operand of 'and'/'or', or the operand of 'not').
+    /// A bare boolean property is not a valid SQL predicate, so it is emitted as <c>column = 1</c>.
+    /// </summary>
+    /// <param name="node">The node to visit.</param>
+    /// <returns>The visited node.</returns>
+    private QueryNode VisitPredicate(QueryNode node)
+    {
+        var inner = node;
+        while (inner is ConvertNode { Source: var source })
+            inner = source;
+
+        if (inner is SingleValuePropertyAccessNode property && property.TypeReference?.IsBoolean() == true)
+        {
+            var result = property.Accept(this);
+            _builder.Append(" = 1");
+            return result;
+        }
+
+        return node.Accept(this);
     }
 
     /// <inheritdoc/>
@@ -344,7 +390,8 @@ public sealed class ODataFilterStatementGenerator : QueryNodeVisitor<QueryNode>
         {
             case ConstantNode { Value: string constant }:
                 _builder.Append(" LIKE ");
-                parameters[1] = new ConstantNode(string.Format(CultureInfo.InvariantCulture, ToLikePattern(nodeIn.Name), constant)).Accept(this);
+                // Escape LIKE wildcards in the user value so it is matched literally; only the pattern's own '%' act as wildcards.
+                parameters[1] = new ConstantNode(string.Format(CultureInfo.InvariantCulture, ToLikePattern(nodeIn.Name), SqlStatementGenerator.EscapeLikeValue(constant))).Accept(this);
                 return new SingleValueFunctionCallNode(nodeIn.Name, nodeIn.Functions, parameters, nodeIn.TypeReference, nodeIn.Source);
 
             default: throw new NotSupportedException($"function '{nodeIn.Name}' argument 2 is not string constant");
