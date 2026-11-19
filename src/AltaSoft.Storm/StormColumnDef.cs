@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using AltaSoft.Storm.Attributes;
 using AltaSoft.Storm.Extensions;
@@ -191,6 +192,19 @@ public sealed class StormColumnDef
     internal bool LoadThisDetailColumnInPartialLoading(uint partialLoadFlags) => SaveAs == SaveAs.DetailTable && (PartialLoadFlags == 0 || (PartialLoadFlags & partialLoadFlags) != 0);
 
     /// <summary>
+    /// Converts a value to string using the invariant culture, so that values saved as strings can be read back
+    /// with <c>T.Parse(s, CultureInfo.InvariantCulture)</c> independent of the current culture.
+    /// Date/time values use the round-trip ("O") format.
+    /// </summary>
+    internal static string? ToInvariantString(object value) => value switch
+    {
+        string str => str,
+        DateTime or DateTimeOffset or DateOnly or TimeOnly => ((IFormattable)value).ToString("O", CultureInfo.InvariantCulture),
+        IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+        _ => value.ToString()
+    };
+
+    /// <summary>
     /// Converts the input value to JSON or XML format based on the SaveAs enum value.
     /// If the input value is null, it returns null.
     /// </summary>
@@ -211,10 +225,10 @@ public sealed class StormColumnDef
                 return StormManager.ToJson(value, typeToSerialize);
 
             case SaveAs.String:
-                return value?.ToString();
+                return ToInvariantString(value);
 
             case SaveAs.CompressedString:
-                var s = value?.ToString();
+                var s = ToInvariantString(value);
                 if (s is null)
                     return null;
                 return SqlCompression.Compress(s);

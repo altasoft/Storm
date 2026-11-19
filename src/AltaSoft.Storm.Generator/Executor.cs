@@ -27,16 +27,18 @@ internal static class Executor
         Compilation compilation)
     {
         var ormContext = new OrmGeneratorContext(context);
+        // Hint names must be unique within the generator (Roslyn compares them case-insensitively)
+        var usedHintNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { AssemblyAttributesHintName };
         try
         {
             var classes = classDeclarations.Union(classDeclarations2).Distinct();
-            ProcessClasses(classes, ormContext, context, compilation);
+            ProcessClasses(classes, ormContext, context, compilation, usedHintNames);
 
             ormContext.ResetBuilder();
 
             var methods = funcMethodDeclarations.Distinct().Select(x => (methodSyntax: x, isProcedure: false))
                 .Concat(procMethodDeclarations.Distinct().Select(x => (methodSyntax: x, isProcedure: true)));
-            ProcessTemplateMethods(methods, ormContext, context, compilation);
+            ProcessTemplateMethods(methods, ormContext, context, compilation, usedHintNames);
         }
         catch (InvalidStormAttributeParams ex)
         {
@@ -49,8 +51,10 @@ internal static class Executor
         }
     }
 
+    private const string AssemblyAttributesHintName = "AssemblyAttributes.g.cs";
+
     private static void ProcessClasses(IEnumerable<TypeDeclarationSyntax> classes, OrmGeneratorContext ormContext, SourceProductionContext context,
-        Compilation compilation)
+        Compilation compilation, HashSet<string> usedHintNames)
     {
         // 1st pass
         var dataBindableList = new List<(TypeDeclarationSyntax classSyntax, INamedTypeSymbol classSymbol, TypeGenerationSpec typeSpec)>(16);
@@ -90,15 +94,50 @@ internal static class Executor
             var sourceText = Generate(ormContext, classSyntax, classSymbol, typeSpec);
 
             if (sourceText is not null)
-                context.AddSource($"{classSymbol.Name.Replace('<', '_').Replace('>', '_').Replace(',', '_')}.g.cs", SourceText.From(sourceText, Encoding.UTF8));
+                context.AddSource(GetHintName(classSymbol, usedHintNames), SourceText.From(sourceText, Encoding.UTF8));
         }
 
         // Add assembly attributes
-        context.AddSource("AssemblyAttributes.g.cs", SourceText.From("[assembly: AltaSoft.Storm.Attributes.StormAssembly]", Encoding.UTF8));
+        context.AddSource(AssemblyAttributesHintName, SourceText.From("[assembly: AltaSoft.Storm.Attributes.StormAssembly]", Encoding.UTF8));
+    }
+
+    /// <summary>
+    /// Builds a unique, file-name-safe hint name for the generated source of the given type.
+    /// The short type name is used when it is still free; when another type with the same name was already generated
+    /// (e.g. same name in a different namespace), the fully qualified name is used instead, to avoid duplicate hint names (CS8785).
+    /// </summary>
+    private static string GetHintName(ITypeSymbol typeSymbol, HashSet<string> usedHintNames)
+    {
+        var hintName = ToSafeFileName(typeSymbol.Name) + ".g.cs";
+        if (usedHintNames.Add(hintName))
+            return hintName;
+
+        var fullName = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        if (fullName.StartsWith("global::", StringComparison.Ordinal))
+            fullName = fullName.Substring("global::".Length);
+
+        var baseName = ToSafeFileName(fullName);
+        hintName = baseName + ".g.cs";
+
+        // A type in the global namespace has the same full and short name, so fall back to a numeric suffix
+        for (var i = 2; !usedHintNames.Add(hintName); i++)
+            hintName = baseName + "_" + i.ToString(CultureInfo.InvariantCulture) + ".g.cs";
+
+        return hintName;
+
+        static string ToSafeFileName(string name)
+        {
+            var sb = new StringBuilder(name.Length);
+            foreach (var c in name)
+            {
+                sb.Append(char.IsLetterOrDigit(c) || c is '.' or '_' ? c : '_');
+            }
+            return sb.ToString();
+        }
     }
 
     private static void ProcessTemplateMethods(IEnumerable<(MethodDeclarationSyntax methodSyntax, bool isProcedure)> methods, OrmGeneratorContext ormContext,
-        SourceProductionContext context, Compilation compilation)
+        SourceProductionContext context, Compilation compilation, HashSet<string> usedHintNames)
     {
         var parser = new Parser(context);
 
@@ -158,7 +197,7 @@ internal static class Executor
             builder.CloseBracket();
 
             var sourceText = builder.ToString();
-            context.AddSource($"{classSymbol.Name.Replace('<', '_').Replace('>', '_').Replace(',', '_')}.g.cs", SourceText.From(sourceText, Encoding.UTF8));
+            context.AddSource(GetHintName(classSymbol, usedHintNames), SourceText.From(sourceText, Encoding.UTF8));
         }
 
         return;
@@ -410,12 +449,10 @@ internal static class Executor
 
         if (isStormDbObject)
         {
-            var haveConcurrencyCheck = propertyGenSpecList.Exists(x =>
-                (x.ColumnType & DupColumnType.ConcurrencyCheck) != DupColumnType.Default);
+            // Must be consistent with IConcurrencyCheck / __ConcurrencyColumnValues generation (includes FlatObject sub-properties)
+            GenerateCtor(ormContext, typeSpec, propertyGenSpecList, baseHasStormDbObjectAttribute, hasConcurrencyCheck);
 
-            GenerateCtor(ormContext, typeSpec, propertyGenSpecList, baseHasStormDbObjectAttribute, haveConcurrencyCheck);
-
-            if (haveConcurrencyCheck)
+            if (hasConcurrencyCheck)
             {
                 GenerateConcurrencyProps(ormContext, propertyGenSpecList);
             }
@@ -434,9 +471,7 @@ internal static class Executor
 
             GenerateAddDetailRowMethod(ormContext, propertyGenSpecList, baseHasStormDbObjectAttribute);
 
-            var partialLoadFlags = propertyGenSpecList
-                .Where(p => p.PartialLoadFlags != 0)
-                .Select(p => (p.PropertyName, p.PartialLoadFlags, p.SaveAs == DupSaveAs.DetailTable)).ToList();
+            var partialLoadFlags = GetPartialLoadFlags(propertyGenSpecList, out _);
 
             GeneratePartialLoadFlagsEnum(ormContext, partialLoadFlags, baseHasStormDbObjectAttribute);
 
@@ -686,7 +721,20 @@ internal static class Executor
     {
         var builder = ormContext.Builder;
 
-        var autoIncColumnIndex = propertyGenSpecList.FindIndex(x => (x.ColumnType & DupColumnType.AutoIncrement) != DupColumnType.Default);
+        // __columnDefs contains one entry per non-flat property and one entry per sub-property of a FlatObject,
+        // so the property index must be translated into the __columnDefs index.
+        var autoIncColumnIndex = -1;
+        var columnIndex = 0;
+        foreach (var p in propertyGenSpecList)
+        {
+            if ((p.ColumnType & DupColumnType.AutoIncrement) != DupColumnType.Default)
+            {
+                autoIncColumnIndex = columnIndex;
+                break;
+            }
+
+            columnIndex += GetColumnDefCount(p);
+        }
 
         builder.AppendLine("/// <inheritdoc />");
         builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
@@ -1322,7 +1370,12 @@ internal static class Executor
             {
                 builder.Append("if (").Continue(propSpec.PropertyName).ContinueLine(")");
                 builder.OpenBracket();
-                builder.Append("idx += ").Continue((propList.Count - index - 1).ToString(CultureInfo.InvariantCulture)).ContinueLine(";");
+                // Skip the reader columns of all remaining properties (a FlatObject property occupies one column per sub-property)
+                var remainingColumns = 0;
+                for (var j = index + 1; j < propList.Count; j++)
+                    remainingColumns += GetReadColumnCount(propList[j]);
+
+                builder.Append("idx += ").Continue(remainingColumns.ToString(CultureInfo.InvariantCulture)).ContinueLine(";");
                 builder.AppendLine("return;");
                 builder.CloseBracket();
             }
@@ -1493,6 +1546,9 @@ internal static class Executor
             keyColumns.Add((new List<int>(4), indexObject.IndexName));
         var hasConcurrencyCheck = false;
 
+        // Flags of FlatObject sub-properties live in this type's PartialLoadFlags space
+        var hasPartial = GetPartialLoadFlags(propertyGenSpecList, out var flatSubPropertyFlags).Count > 0;
+
         builder.AppendSummary("Array of StormColumnDef objects representing the column definitions.");
         builder.AppendLine("internal static readonly StormColumnDef[] __columnDefs =").OpenBracket();
 
@@ -1568,7 +1624,8 @@ internal static class Executor
                         .Continue(", ").Continue(subP.Precision.ToString(CultureInfo.InvariantCulture))
                         .Continue(", ").Continue(subP.Scale.ToString(CultureInfo.InvariantCulture))
                         .Continue(", SaveAs.").Continue(subP.SaveAs.ToString())
-                        .Continue(", ").Continue(subP.PartialLoadFlags.ToString(CultureInfo.InvariantCulture))
+                        .Continue(", ").Continue((flatSubPropertyFlags.TryGetValue(p.PropertyName + "_" + subP.PropertyName, out var subFlags) ? subFlags : 0u)
+                            .ToString(CultureInfo.InvariantCulture))
                         .Continue(", ").Continue(subP.IsNullable ? "true" : "false")
                         .Continue(", null")
                         .Continue(", null")
@@ -1636,8 +1693,6 @@ internal static class Executor
         builder.AppendLine("/// <inheritdoc />");
         builder.Append("public override ").Continue("bool HasConcurrencyCheck => ").Continue(hasConcurrencyCheck ? "true" : "false").Continue(";")
             .NewLine();
-
-        var hasPartial = propertyGenSpecList.Exists(p => p.PartialLoadFlags != 0);
 
         builder.AppendLine("/// <inheritdoc />");
         builder.Append("public override ").Continue("uint PartialLoadFlagsAll => ");
@@ -1906,6 +1961,64 @@ internal static class Executor
 
     private static bool HasKeys(List<PropertyGenerationSpec> props) => props.Exists(p => p.IsKey);
 
+    /// <summary>
+    /// Number of entries the property occupies in the generated <c>__columnDefs</c> array
+    /// (1 for a regular property, 1 per sub-property for a FlatObject).
+    /// </summary>
+    private static int GetColumnDefCount(PropertyGenerationSpec p) =>
+        p.SaveAs == DupSaveAs.FlatObject ? p.TypeGenerationSpec?.PropertyGenSpecList?.Count ?? 0 : 1;
+
+    /// <summary>
+    /// Number of data reader columns consumed when the property is read in the generated constructor
+    /// (1 for a regular property; for a FlatObject, the columns read by the flat type's constructor).
+    /// </summary>
+    private static int GetReadColumnCount(PropertyGenerationSpec p)
+    {
+        if (p.SaveAs != DupSaveAs.FlatObject)
+            return 1;
+
+        var subList = p.TypeGenerationSpec?.PropertyGenSpecList;
+        return subList?.Where(x => !x.IsReadOnly && x.SaveAs != DupSaveAs.DetailTable).Sum(GetReadColumnCount) ?? 0;
+    }
+
+    /// <summary>
+    /// Returns all partial load flags of the type: top-level properties keep the flags assigned by the parser,
+    /// and sub-properties of FlatObject properties get new bits in the parent's flag space (named <c>Property_SubProperty</c>).
+    /// </summary>
+    private static List<(string name, uint value, bool isDetailTable)> GetPartialLoadFlags(List<PropertyGenerationSpec> propertyGenSpecList,
+        out Dictionary<string, uint> flatSubPropertyFlags)
+    {
+        var result = propertyGenSpecList
+            .Where(p => p.PartialLoadFlags != 0)
+            .Select(p => (p.PropertyName, p.PartialLoadFlags, p.SaveAs == DupSaveAs.DetailTable)).ToList();
+
+        flatSubPropertyFlags = new Dictionary<string, uint>(StringComparer.Ordinal);
+
+        var usedFlags = result.Aggregate(0u, (current, x) => current | x.PartialLoadFlags);
+        var nextBit = 0;
+        while (nextBit < 32 && usedFlags >> nextBit != 0)
+            nextBit++;
+
+        foreach (var p in propertyGenSpecList)
+        {
+            if (p.SaveAs != DupSaveAs.FlatObject || p.TypeGenerationSpec?.PropertyGenSpecList is null)
+                continue;
+
+            foreach (var subP in p.TypeGenerationSpec.PropertyGenSpecList)
+            {
+                if (subP.PartialLoadFlags == 0 || nextBit >= 32)
+                    continue;
+
+                var name = p.PropertyName + "_" + subP.PropertyName;
+                var value = 1u << nextBit++;
+                flatSubPropertyFlags[name] = value;
+                result.Add((name, value, false));
+            }
+        }
+
+        return result;
+    }
+
     private static string GetFlags(PropertyGenerationSpec p)
     {
         var flags = new List<string>(4);
@@ -1956,6 +2069,12 @@ internal static class Executor
                     if (classKind == ClassKind.DomainPrimitive)
                         builder.Continue("(").Continue(propSpec.GetTypeFullName()).ContinueIf(isNullable, "?").Continue(")"); // Typecasting
                     builder.Continue("(").Continue(propSpec.DbStorageTypeSymbol.GetFullName()).ContinueIf(isNullable, "?").Continue(")"); // Typecasting
+                    if (propSpec.DbStorageTypeSymbol.GetFullName() == "System.TimeSpan")
+                    {
+                        // TimeSpan can be stored in time or date/time columns; GetTime/GetDateTime* return TimeOnly/DateTime, which can't be cast to TimeSpan.
+                        builder.Continue(isNullable ? "dr.GetTimeSpanOrNull" : "dr.AsTimeSpan").Continue(indexStr);
+                        break;
+                    }
                     if (dbType == UnifiedDbType.DateTime)
                         builder.Continue("dr.GetLocalDateTime");
                     else
@@ -2001,6 +2120,15 @@ internal static class Executor
         if (propSpec is PropertyGenerationSpec typeSpec)
             enumConverterFullName = typeSpec.TypeGenerationSpec?.EnumConverterFullName;
 
+        // DateTime values are saved using the round-trip ("O") format; RoundtripKind preserves DateTimeKind when reading back.
+        var isDateTime = propSpec.DbStorageTypeSymbol.SpecialType == SpecialType.System_DateTime;
+
+        // Nullable values are stored as NULL; parse only when the column has a value, otherwise yield null
+        // (idx is still advanced so that the following columns are read at the right position).
+        var isNullable = propSpec.IsNullable;
+        if (isNullable)
+            builder.Continue("((dr.IsDBNull(idx) && ++idx > 0) ? (").Continue(typeAlias).Continue("?)null : ");
+
         if (enumConverterFullName is not null)
         {
             builder.Continue(enumConverterFullName).Continue(".").Continue(Constants.StormStringEnumAttributeFromStringName).Continue("(");
@@ -2009,6 +2137,8 @@ internal static class Executor
         {
             if (propSpec.Kind == ClassKind.Enum)
                 builder.Continue("Enum.Parse<").Continue(typeAlias).Continue(">(");
+            else if (isDateTime && propSpec.Kind == ClassKind.DomainPrimitive)
+                builder.Continue("(").Continue(typeAlias).Continue(")System.DateTime.Parse(");
             else
                 builder.Continue(typeAlias).Continue(".Parse(");
         }
@@ -2017,8 +2147,6 @@ internal static class Executor
             builder.Continue("dr.AsStringCompressed");
         else
             builder.Continue("dr.GetString");
-        if (propSpec.IsNullable)
-            builder.Continue("OrNull");
         builder.Continue("(idx++)");
 
         if (enumConverterFullName is not null)
@@ -2029,9 +2157,14 @@ internal static class Executor
         {
             if (propSpec.Kind == ClassKind.Enum)
                 builder.Continue(")");
+            else if (isDateTime)
+                builder.Continue(", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind)");
             else
                 builder.Continue(", System.Globalization.CultureInfo.InvariantCulture)");
         }
+
+        if (isNullable)
+            builder.Continue(")");
     }
 
     private static void GenerateReadAsJsonMethodName(OrmGeneratorContext ormContext, ReadGenerationSpec propSpec, bool useCompression)
@@ -2106,6 +2239,10 @@ internal static class Executor
 
         var dbValueTypeName = p.DbType.ToDotNetTypeName();
 
+        // A time column maps to TimeOnly, but TimeSpan values can't be cast to TimeOnly; the provider accepts TimeSpan directly.
+        if (p.DbStorageTypeSymbol.GetFullName() == "System.TimeSpan")
+            dbValueTypeName = "System.TimeSpan";
+
         if (dbValueTypeName is not null && !string.Equals(dbValueTypeName, p.GetTypeAlias(), StringComparison.Ordinal)
                                         && p.SaveAs != DupSaveAs.DetailTable && p.SaveAs != DupSaveAs.String && p.SaveAs != DupSaveAs.CompressedString
                                         && p.SaveAs != DupSaveAs.CompressedJson && p.SaveAs != DupSaveAs.CompressedXml)
@@ -2123,14 +2260,57 @@ internal static class Executor
             builder.Continue(enumConverterFullName).Continue(".").Continue(Constants.StormStringEnumAttributeToStringName).Continue("(");
         }
 
+        // SaveAs.String of a formattable value: write using the invariant culture, so it can be read back by
+        // T.Parse(s, CultureInfo.InvariantCulture) regardless of the current culture.
+        var invariantFormat = toString && enumConverterFullName is null && p.Kind != ClassKind.Enum ? GetInvariantStringFormat(p.DbStorageTypeSymbol) : null;
+        var castToStorageType = invariantFormat is not null && p.Kind == ClassKind.DomainPrimitive;
+
+        if (castToStorageType)
+            builder.Continue("((").Continue(p.DbStorageTypeSymbol.GetFullName()).ContinueIf(p.IsNullable, "?").Continue(")");
+
         if (subPropSpec is null)
             builder.Continue(propertyNamePrefix).Continue(propSpec.PropertyName);
         else
             builder.Continue(propertyNamePrefix).Continue(propSpec.PropertyName).Continue(isSavedField ? "_" : ".").Continue(subPropSpec.PropertyName);
 
+        if (castToStorageType)
+            builder.Continue(")");
+
         if (toString)
         {
-            builder.Continue(enumConverterFullName is not null ? ")" : ".ToString()");
+            if (enumConverterFullName is not null)
+                builder.Continue(")");
+            else if (invariantFormat is not null)
+                builder.ContinueIf(p.IsNullable, "?").Continue(".ToString(").Continue(invariantFormat).Continue(", System.Globalization.CultureInfo.InvariantCulture)");
+            else
+                builder.Continue(".ToString()");
         }
+    }
+
+    /// <summary>
+    /// For a type implementing <see cref="IFormattable"/> returns the format string literal ("\"O\"" for date/time types, "null" otherwise)
+    /// that should be used together with the invariant culture to save a value as string. Returns null for non-formattable types.
+    /// </summary>
+    private static string? GetInvariantStringFormat(ITypeSymbol storageType)
+    {
+        if (storageType.SpecialType == SpecialType.System_String)
+            return null;
+
+        if (!storageType.AllInterfaces.Any(x => string.Equals(x.ToDisplayString(), "System.IFormattable", StringComparison.Ordinal)))
+            return null;
+
+        return IsRoundTripDateTimeType(storageType) ? "\"O\"" : "null";
+    }
+
+    /// <summary>
+    /// DateTime, DateTimeOffset, DateOnly and TimeOnly are saved as strings using the round-trip ("O") format.
+    /// </summary>
+    private static bool IsRoundTripDateTimeType(ITypeSymbol storageType)
+    {
+        if (storageType.SpecialType == SpecialType.System_DateTime)
+            return true;
+
+        return storageType.ContainingNamespace?.ToDisplayString() == "System" &&
+               storageType.Name is "DateTimeOffset" or "DateOnly" or "TimeOnly";
     }
 }

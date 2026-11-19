@@ -198,6 +198,7 @@ public class WhereAndODataFixTests : IClassFixture<DatabaseFixture>, IAsyncLifet
     [Fact]
     public void BoolColumnEqualsBoolColumn_ShouldCompareRawColumns()
     {
+        // ReSharper disable once EqualExpressionComparison
         Where(x => x.BoolValue == x.BoolValue).sql.Should().Be("([BoolValue] = [BoolValue])");
         Where(x => x.BoolValueN == x.BoolValue).sql.Should().Be("([BoolValueN] = [BoolValue])");
     }
