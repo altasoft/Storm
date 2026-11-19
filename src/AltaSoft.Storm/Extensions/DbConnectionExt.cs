@@ -102,15 +102,13 @@ public static class DbConnectionExt
         this StormContext context,
         string sqlStatement,
         QueryParameters queryParameters,
-        CancellationToken cancellationToken = default,
-        Action<StormDbCommand>? commandSetup = null)
+        CancellationToken cancellationToken = default)
     {
         var command = StormManager.CreateCommand(false);
         await using (command.ConfigureAwait(false))
         {
             var (connection, transaction) = await context.EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             command.SetStormCommandBaseParameters(connection, transaction, sqlStatement, queryParameters);
-            commandSetup?.Invoke(command);
 
             var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             return ConvertScalarValue<TResult>(value);

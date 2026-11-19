@@ -35,4 +35,7 @@ public partial class SaveAsStringEntity
 
     [StormColumn(SaveAs = SaveAs.String, Size = 20)]
     public DomainTypes.UserId OwnerId { get; set; }
+
+    [StormColumn(SaveAs = SaveAs.String, Size = 50)]
+    public DomainTypes.EventTime? EventAt { get; set; }
 }

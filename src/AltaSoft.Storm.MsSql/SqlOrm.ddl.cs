@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.Attributes;
+using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
 using AltaSoft.Storm.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -292,6 +293,15 @@ public static partial class SqlOrm
                         size = 8;
                     else if (propertyType == typeof(SqlLogSequenceNumber))
                         size = 10;
+                }
+
+                if (size <= 0 && column.DbType is UnifiedDbType.AnsiStringFixedLength or UnifiedDbType.StringFixedLength or UnifiedDbType.Binary)
+                {
+                    // SQL Server would create a column of length 1 and truncate any longer value.
+                    var propertyType = Nullable.GetUnderlyingType(column.PropertyType) ?? column.PropertyType;
+                    if (propertyType != typeof(char))
+                        throw new StormException($"Column '{column.ColumnName}' is fixed-length ({column.DbType}) and requires a size.");
+                    size = 1;
                 }
 
                 if (column.DbType == UnifiedDbType.Decimal && column.IsAutoInc())

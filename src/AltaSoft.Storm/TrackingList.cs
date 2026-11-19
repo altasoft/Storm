@@ -26,14 +26,21 @@ public class TrackingList<T> : ITrackingList<T> where T : IEquatable<T>
     protected readonly List<T> InternalList;
 
     /// <summary>
+    /// Compares items by reference for reference types (an item's identity, not its value, decides whether it was inserted or deleted),
+    /// and by value for value types.
+    /// </summary>
+    private static readonly IEqualityComparer<T> s_itemComparer =
+        typeof(T).IsValueType ? EqualityComparer<T>.Default : (IEqualityComparer<T>)(object)ReferenceEqualityComparer.Instance;
+
+    /// <summary>
     /// The set of items that have been inserted into the list.
     /// </summary>
-    protected readonly HashSet<T> InsertedItems = new(16);
+    protected readonly HashSet<T> InsertedItems = new(16, s_itemComparer);
 
     /// <summary>
     /// The set of items that have been deleted from the list.
     /// </summary>
-    protected readonly HashSet<T> DeletedItems = new(16);
+    protected readonly HashSet<T> DeletedItems = new(16, s_itemComparer);
 
     /// <summary>
     /// Indicates whether change tracking is active for the list.

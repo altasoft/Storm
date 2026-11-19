@@ -1923,7 +1923,8 @@ internal static class Executor
             {
                 Debug.Assert(p.TypeGenerationSpec?.PropertyGenSpecList is not null);
 
-                foreach (var subP in p.TypeGenerationSpec!.PropertyGenSpecList!)
+                // Read-only sub-properties are not selected, so they don't occupy a position in the select list.
+                foreach (var subP in p.TypeGenerationSpec!.PropertyGenSpecList!.Where(x => !x.IsReadOnly))
                 {
                     builder.Append(p.PropertyName).Continue("_").Continue(subP.PropertyName).Continue(" = ").Continue(orderId.ToString(CultureInfo.InvariantCulture))
                         .ContinueLine(",");

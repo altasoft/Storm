@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using AltaSoft.Storm.Attributes;
 using AltaSoft.Storm.Extensions;
 using AltaSoft.Storm.Helpers;
+using AltaSoft.DomainPrimitives;
 
 namespace AltaSoft.Storm;
 
@@ -199,6 +200,8 @@ public sealed class StormColumnDef
     internal static string? ToInvariantString(object value) => value switch
     {
         string str => str,
+        // Domain values are stored as their underlying primitive value, the same way the generated code stores them.
+        IDomainValue dv => ToInvariantString(dv.GetUnderlyingPrimitiveValue()),
         DateTime or DateTimeOffset or DateOnly or TimeOnly => ((IFormattable)value).ToString("O", CultureInfo.InvariantCulture),
         IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
         _ => value.ToString()

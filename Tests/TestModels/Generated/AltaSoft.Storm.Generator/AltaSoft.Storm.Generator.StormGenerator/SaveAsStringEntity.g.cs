@@ -61,6 +61,7 @@ public partial class SaveAsStringEntity : IDataBindableWithKey, ITrackingObject
         Day = System.DateOnly.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture);
         Time = System.TimeOnly.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture);
         OwnerId = AltaSoft.Storm.TestModels.DomainTypes.UserId.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture);
+        EventAt = ((dr.IsDBNull(idx) && ++idx > 0) ? (AltaSoft.Storm.TestModels.DomainTypes.EventTime?)null : (AltaSoft.Storm.TestModels.DomainTypes.EventTime)System.DateTime.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind));
     }
 
     /// <inheritdoc />
@@ -112,7 +113,9 @@ public partial class SaveAsStringEntity : IDataBindableWithKey, ITrackingObject
         Time = 8,
         Time_Desc = -8,
         OwnerId = 9,
-        OwnerId_Desc = -9
+        OwnerId_Desc = -9,
+        EventAt = 10,
+        EventAt_Desc = -10
     }
 
     /// <summary>
@@ -145,7 +148,8 @@ public partial class SaveAsStringEntity : IDataBindableWithKey, ITrackingObject
             (columnDefs[5], WhenOffset.ToString("O", System.Globalization.CultureInfo.InvariantCulture)),
             (columnDefs[6], Day.ToString("O", System.Globalization.CultureInfo.InvariantCulture)),
             (columnDefs[7], Time.ToString("O", System.Globalization.CultureInfo.InvariantCulture)),
-            (columnDefs[8], ((int)OwnerId).ToString(null, System.Globalization.CultureInfo.InvariantCulture))
+            (columnDefs[8], ((int)OwnerId).ToString(null, System.Globalization.CultureInfo.InvariantCulture)),
+            (columnDefs[9], ((System.DateTime?)EventAt)?.ToString("O", System.Globalization.CultureInfo.InvariantCulture))
         ];
     }
 
@@ -178,6 +182,7 @@ return [];
     private void __PropertySet_Day(ref System.DateOnly newValue, ref System.DateOnly oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Day), newValue); }
     private void __PropertySet_Time(ref System.TimeOnly newValue, ref System.TimeOnly oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(Time), newValue); }
     private void __PropertySet_OwnerId(ref AltaSoft.Storm.TestModels.DomainTypes.UserId newValue, ref AltaSoft.Storm.TestModels.DomainTypes.UserId oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(OwnerId), newValue); }
+    private void __PropertySet_EventAt(ref AltaSoft.Storm.TestModels.DomainTypes.EventTime? newValue, ref AltaSoft.Storm.TestModels.DomainTypes.EventTime? oldValue) { if (_isChangeTrackingActive && oldValue != newValue) _changeTrackingStateMachine!.PropertyChanged(nameof(EventAt), newValue); }
 
     #endregion Change Tracking Support
 }
@@ -223,6 +228,7 @@ public sealed class SaveAsStringEntityStormController : StormControllerBase
             nameof(SaveAsStringEntity.Day) => System.DateOnly.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture),
             nameof(SaveAsStringEntity.Time) => System.TimeOnly.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture),
             nameof(SaveAsStringEntity.OwnerId) => AltaSoft.Storm.TestModels.DomainTypes.UserId.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture),
+            nameof(SaveAsStringEntity.EventAt) => ((dr.IsDBNull(idx) && ++idx > 0) ? (AltaSoft.Storm.TestModels.DomainTypes.EventTime?)null : (AltaSoft.Storm.TestModels.DomainTypes.EventTime)System.DateTime.Parse(dr.GetString(idx++), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind)),
             _ => throw new StormException($"'{propertyName}' is not a column of the table")
         };
     }
@@ -246,7 +252,8 @@ public sealed class SaveAsStringEntityStormController : StormControllerBase
         new(nameof(SaveAsStringEntity.WhenOffset), null, "WhenOffset", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, 50, 0, 0, SaveAs.String, 0, false, null, null, typeof(System.DateTimeOffset), null),
         new(nameof(SaveAsStringEntity.Day), null, "Day", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, 20, 0, 0, SaveAs.String, 0, false, null, null, typeof(System.DateOnly), null),
         new(nameof(SaveAsStringEntity.Time), null, "Time", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, 30, 0, 0, SaveAs.String, 0, false, null, null, typeof(System.TimeOnly), null),
-        new(nameof(SaveAsStringEntity.OwnerId), null, "OwnerId", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, 20, 0, 0, SaveAs.String, 0, false, null, null, typeof(AltaSoft.Storm.TestModels.DomainTypes.UserId), null)
+        new(nameof(SaveAsStringEntity.OwnerId), null, "OwnerId", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, 20, 0, 0, SaveAs.String, 0, false, null, null, typeof(AltaSoft.Storm.TestModels.DomainTypes.UserId), null),
+        new(nameof(SaveAsStringEntity.EventAt), null, "EventAt", StormColumnFlags.CanSelect | StormColumnFlags.CanInsert | StormColumnFlags.CanUpdate, UnifiedDbType.String, 50, 0, 0, SaveAs.String, 0, true, null, null, typeof(AltaSoft.Storm.TestModels.DomainTypes.EventTime), null)
     };
 
     /// <summary>

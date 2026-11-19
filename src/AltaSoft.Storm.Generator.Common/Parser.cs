@@ -72,35 +72,35 @@ public sealed class Parser
                     bindObjectData.ObjectName = (string?)ArgValue();
                 }
                 else
-                if (arg.Is(Constants.StormDbObjectSchemaNamePropertyName, "string"))
-                {
-                    bindObjectData.SchemaName = (string?)ArgValue();
-                }
-                else
-                if (arg.Is(Constants.StormDbObjectObjectTypePropertyName, Constants.StormDbObjectObjectTypeFullName))
-                {
-                    bindObjectData.ObjectType = (DupDbObjectType)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.StormDbObjectDisplayNamePropertyName, "string"))
-                {
-                    bindObjectData.DisplayName = (string?)ArgValue();
-                }
-                else
-                if (arg.Is(Constants.StormDbObjectUpdateModePropertyName, Constants.StormDbObjectUpdateModeFullName))
-                {
-                    bindObjectData.UpdateMode = (DupUpdateMode)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.StormDbObjectVirtualViewSqlPropertyName, "string"))
-                {
-                    bindObjectData.VirtualViewSql = (string?)ArgValue();
-                }
-                else
-                if (arg.Is(Constants.StormDbObjectBulkCopyPropertyName, "bool"))
-                {
-                    bindObjectData.BulkInsert = (bool?)ArgValue() ?? false;
-                }
+                    if (arg.Is(Constants.StormDbObjectSchemaNamePropertyName, "string"))
+                    {
+                        bindObjectData.SchemaName = (string?)ArgValue();
+                    }
+                    else
+                        if (arg.Is(Constants.StormDbObjectObjectTypePropertyName, Constants.StormDbObjectObjectTypeFullName))
+                        {
+                            bindObjectData.ObjectType = (DupDbObjectType)NotNullArgValue();
+                        }
+                        else
+                            if (arg.Is(Constants.StormDbObjectDisplayNamePropertyName, "string"))
+                            {
+                                bindObjectData.DisplayName = (string?)ArgValue();
+                            }
+                            else
+                                if (arg.Is(Constants.StormDbObjectUpdateModePropertyName, Constants.StormDbObjectUpdateModeFullName))
+                                {
+                                    bindObjectData.UpdateMode = (DupUpdateMode)NotNullArgValue();
+                                }
+                                else
+                                    if (arg.Is(Constants.StormDbObjectVirtualViewSqlPropertyName, "string"))
+                                    {
+                                        bindObjectData.VirtualViewSql = (string?)ArgValue();
+                                    }
+                                    else
+                                        if (arg.Is(Constants.StormDbObjectBulkCopyPropertyName, "bool"))
+                                        {
+                                            bindObjectData.BulkInsert = (bool?)ArgValue() ?? false;
+                                        }
                 continue;
 
                 object? ArgValue() => arg.Value.Value;
@@ -309,45 +309,45 @@ public sealed class Parser
                     bindColumnData.SaveAs = (DupSaveAs)NotNullArgValue();
                 }
                 else
-                if (arg.Is(Constants.ColumnTypePropertyName, Constants.StormColumnColumnTypeFullName))
-                {
-                    bindColumnData.ColumnType = (DupColumnType)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbTypePropertyName, Constants.UnifiedDbTypeFullName))
-                {
-                    bindColumnData.DbType = (UnifiedDbType)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.LoadWithFlagsPropertyName, SpecialType.System_Boolean))
-                {
-                    bindColumnData.LoadWithFlags = (bool)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.ColumnNamePropertyName, SpecialType.System_String))
-                {
-                    bindColumnData.ColumnName = (string?)ArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbSizePropertyName, SpecialType.System_Int32))
-                {
-                    bindColumnData.Size = (int)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbPrecisionPropertyName, SpecialType.System_Int32))
-                {
-                    bindColumnData.Precision = (int)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbScalePropertyName, SpecialType.System_Int32))
-                {
-                    bindColumnData.Scale = (int)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DetailTableNamePropertyName, SpecialType.System_String))
-                {
-                    bindColumnData.DetailTableName = (string?)ArgValue();
-                }
+                    if (arg.Is(Constants.ColumnTypePropertyName, Constants.StormColumnColumnTypeFullName))
+                    {
+                        bindColumnData.ColumnType = (DupColumnType)NotNullArgValue();
+                    }
+                    else
+                        if (arg.Is(Constants.DbTypePropertyName, Constants.UnifiedDbTypeFullName))
+                        {
+                            bindColumnData.DbType = (UnifiedDbType)NotNullArgValue();
+                        }
+                        else
+                            if (arg.Is(Constants.LoadWithFlagsPropertyName, SpecialType.System_Boolean))
+                            {
+                                bindColumnData.LoadWithFlags = (bool)NotNullArgValue();
+                            }
+                            else
+                                if (arg.Is(Constants.ColumnNamePropertyName, SpecialType.System_String))
+                                {
+                                    bindColumnData.ColumnName = (string?)ArgValue();
+                                }
+                                else
+                                    if (arg.Is(Constants.DbSizePropertyName, SpecialType.System_Int32))
+                                    {
+                                        bindColumnData.Size = (int)NotNullArgValue();
+                                    }
+                                    else
+                                        if (arg.Is(Constants.DbPrecisionPropertyName, SpecialType.System_Int32))
+                                        {
+                                            bindColumnData.Precision = (int)NotNullArgValue();
+                                        }
+                                        else
+                                            if (arg.Is(Constants.DbScalePropertyName, SpecialType.System_Int32))
+                                            {
+                                                bindColumnData.Scale = (int)NotNullArgValue();
+                                            }
+                                            else
+                                                if (arg.Is(Constants.DetailTableNamePropertyName, SpecialType.System_String))
+                                                {
+                                                    bindColumnData.DetailTableName = (string?)ArgValue();
+                                                }
 
                 continue;
 
@@ -447,28 +447,28 @@ public sealed class Parser
                     typeGenerationSpec = GetStormTypeGenerationSpec(xTypeInfo.DbStorageTypeSymbol);
                 }
                 else
-                if (saveAs == DupSaveAs.Xml)
-                {
-                    dbType ??= UnifiedDbType.Xml;
-                    saveAs = DupSaveAs.Xml;
-                }
-                else
-                if (saveAs == DupSaveAs.CompressedXml)
-                {
-                    dbType ??= UnifiedDbType.VarBinary;
-                    saveAs = DupSaveAs.CompressedXml;
-                }
-                else
-                if (saveAs == DupSaveAs.CompressedJson)
-                {
-                    dbType ??= UnifiedDbType.VarBinary;
-                    saveAs = DupSaveAs.CompressedJson;
-                }
-                else
-                {
-                    dbType ??= UnifiedDbType.Json; // If not saving as DetailTable or Xml, then save as Json (by default)
-                    saveAs = DupSaveAs.Json;
-                }
+                    if (saveAs == DupSaveAs.Xml)
+                    {
+                        dbType ??= UnifiedDbType.Xml;
+                        saveAs = DupSaveAs.Xml;
+                    }
+                    else
+                        if (saveAs == DupSaveAs.CompressedXml)
+                        {
+                            dbType ??= UnifiedDbType.VarBinary;
+                            saveAs = DupSaveAs.CompressedXml;
+                        }
+                        else
+                            if (saveAs == DupSaveAs.CompressedJson)
+                            {
+                                dbType ??= UnifiedDbType.VarBinary;
+                                saveAs = DupSaveAs.CompressedJson;
+                            }
+                            else
+                            {
+                                dbType ??= UnifiedDbType.Json; // If not saving as DetailTable or Xml, then save as Json (by default)
+                                saveAs = DupSaveAs.Json;
+                            }
                 break;
 
             case ClassKind.SqlRowVersion:
@@ -529,11 +529,31 @@ public sealed class Parser
             partialLoadFlagsCount++;
         }
 
+        var size = bindColumnData.Size ?? typeGenerationSpec?.EnumConverterColumnSize ?? (dbType.Value.HasMaxSize() ? -1 : 0);
+
+        // Fixed-length columns (char/nchar/binary) without a size would be created with length 1 and truncate any longer value.
+        if (size > 0 || saveAs == DupSaveAs.DetailTable ||
+            dbType.Value is not (UnifiedDbType.AnsiStringFixedLength or UnifiedDbType.StringFixedLength or UnifiedDbType.Binary))
+        {
+            return new PropertyGenerationSpec(propertySymbol, typeGenerationSpec, bindColumnData, partialLoadFlags, saveAs,
+                xTypeInfo.IsNullable, xTypeInfo.Kind, xTypeInfo.DbStorageTypeSymbol, xTypeInfo.ListItemTypeSymbol, xTypeInfo.ListItemKind,
+                dbType.Value, size, bindColumnData.Precision ?? 0, bindColumnData.Scale ?? 0);
+        }
+
+        if (xTypeInfo.DbStorageTypeSymbol.SpecialType == SpecialType.System_Char && saveAs == DupSaveAs.Default)
+        {
+            size = 1;
+        }
+        else
+        {
+            _context.ReportDiagnosticError("AL0013", "Missing size of fixed-length column",
+                "Property '{0}' is mapped to fixed-length UnifiedDbType.{1}, which requires Size to be specified",
+                GetAttributeArgumentLocation(attributeData, propertySymbol, Constants.DbSizePropertyName), propertySymbol.Name, dbType.Value);
+        }
+
         return new PropertyGenerationSpec(propertySymbol, typeGenerationSpec, bindColumnData, partialLoadFlags, saveAs,
             xTypeInfo.IsNullable, xTypeInfo.Kind, xTypeInfo.DbStorageTypeSymbol, xTypeInfo.ListItemTypeSymbol, xTypeInfo.ListItemKind,
-            dbType.Value,
-            bindColumnData.Size ?? typeGenerationSpec?.EnumConverterColumnSize ?? (dbType.Value.HasMaxSize() ? -1 : 0),
-            bindColumnData.Precision ?? 0, bindColumnData.Scale ?? 0);
+            dbType.Value, size, bindColumnData.Precision ?? 0, bindColumnData.Scale ?? 0);
     }
 
     public ParameterGenerationSpec GetParameterGenerationSpec(IParameterSymbol paramSymbol)
@@ -550,25 +570,25 @@ public sealed class Parser
                     bindParameterData.DbType = (UnifiedDbType)NotNullArgValue();
                 }
                 else
-                if (arg.Is(Constants.ParameterNamePropertyName, SpecialType.System_String))
-                {
-                    bindParameterData.ParameterName = (string?)ArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbSizePropertyName, SpecialType.System_Int32))
-                {
-                    bindParameterData.Size = (int)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbPrecisionPropertyName, SpecialType.System_Int32))
-                {
-                    bindParameterData.Precision = (int)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbScalePropertyName, SpecialType.System_Int32))
-                {
-                    bindParameterData.Scale = (int)NotNullArgValue();
-                }
+                    if (arg.Is(Constants.ParameterNamePropertyName, SpecialType.System_String))
+                    {
+                        bindParameterData.ParameterName = (string?)ArgValue();
+                    }
+                    else
+                        if (arg.Is(Constants.DbSizePropertyName, SpecialType.System_Int32))
+                        {
+                            bindParameterData.Size = (int)NotNullArgValue();
+                        }
+                        else
+                            if (arg.Is(Constants.DbPrecisionPropertyName, SpecialType.System_Int32))
+                            {
+                                bindParameterData.Precision = (int)NotNullArgValue();
+                            }
+                            else
+                                if (arg.Is(Constants.DbScalePropertyName, SpecialType.System_Int32))
+                                {
+                                    bindParameterData.Scale = (int)NotNullArgValue();
+                                }
 
                 continue;
 
@@ -650,30 +670,30 @@ public sealed class Parser
                     bindParameterData.ObjectName = (string?)ArgValue();
                 }
                 else
-                if (arg.Is(Constants.StormDbObjectSchemaNamePropertyName, "string"))
-                {
-                    bindParameterData.SchemaName = (string?)ArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbTypePropertyName, Constants.UnifiedDbTypeFullName))
-                {
-                    bindParameterData.DbType = (UnifiedDbType)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbSizePropertyName, SpecialType.System_Int32))
-                {
-                    bindParameterData.Size = (int)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbPrecisionPropertyName, SpecialType.System_Int32))
-                {
-                    bindParameterData.Precision = (int)NotNullArgValue();
-                }
-                else
-                if (arg.Is(Constants.DbScalePropertyName, SpecialType.System_Int32))
-                {
-                    bindParameterData.Scale = (int)NotNullArgValue();
-                }
+                    if (arg.Is(Constants.StormDbObjectSchemaNamePropertyName, "string"))
+                    {
+                        bindParameterData.SchemaName = (string?)ArgValue();
+                    }
+                    else
+                        if (arg.Is(Constants.DbTypePropertyName, Constants.UnifiedDbTypeFullName))
+                        {
+                            bindParameterData.DbType = (UnifiedDbType)NotNullArgValue();
+                        }
+                        else
+                            if (arg.Is(Constants.DbSizePropertyName, SpecialType.System_Int32))
+                            {
+                                bindParameterData.Size = (int)NotNullArgValue();
+                            }
+                            else
+                                if (arg.Is(Constants.DbPrecisionPropertyName, SpecialType.System_Int32))
+                                {
+                                    bindParameterData.Precision = (int)NotNullArgValue();
+                                }
+                                else
+                                    if (arg.Is(Constants.DbScalePropertyName, SpecialType.System_Int32))
+                                    {
+                                        bindParameterData.Scale = (int)NotNullArgValue();
+                                    }
 
                 continue;
 
@@ -746,10 +766,10 @@ public sealed class Parser
                     objectName = (string?)ArgValue();
                 }
                 else
-                if (arg.Is(Constants.StormDbObjectSchemaNamePropertyName, "string"))
-                {
-                    schemaName = (string?)ArgValue();
-                }
+                    if (arg.Is(Constants.StormDbObjectSchemaNamePropertyName, "string"))
+                    {
+                        schemaName = (string?)ArgValue();
+                    }
 
                 continue;
 

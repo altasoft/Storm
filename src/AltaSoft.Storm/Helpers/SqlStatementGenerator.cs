@@ -10,11 +10,7 @@ using AltaSoft.Storm.Exceptions;
 using AltaSoft.Storm.Extensions;
 using AltaSoft.Storm.Interfaces;
 
-#if NET8_0_OR_GREATER
-
 using AltaSoft.DomainPrimitives;
-
-#endif
 
 namespace AltaSoft.Storm.Helpers;
 
@@ -448,13 +444,7 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
             // Columns saved as string are stored in invariant-culture text (see StormColumnDef.GetValueForDbParameter),
             // so the comparison value must be converted the same way to match.
             if (column.SaveAs == Attributes.SaveAs.String && value is not string)
-            {
-#if NET8_0_OR_GREATER
-                if (value is IDomainValue dv)
-                    value = dv.GetUnderlyingPrimitiveValue();
-#endif
                 value = StormColumnDef.ToInvariantString(value)!;
-            }
 
             var dbType = ToVariableLengthDbType(column.DbType);
 
@@ -470,13 +460,11 @@ internal sealed class SqlStatementGenerator : ExpressionVisitor
                 type = enumType;
             }
 
-#if NET8_0_OR_GREATER
             if (value is IDomainValue d)
             {
                 type = d.GetUnderlyingPrimitiveType();
                 value = d.GetUnderlyingPrimitiveValue();
             }
-#endif
 
             var dbType = type.ToUnifiedDbType();
             dbType = ToVariableLengthDbType(dbType);
