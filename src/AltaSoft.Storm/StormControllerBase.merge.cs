@@ -168,7 +168,7 @@ public abstract partial class StormControllerBase
         var sb = StormManager.GetStringBuilderFromPool();
 
         if (autoIncColumn is not null)
-            sb.Append("DECLARE @__storm_id_values TABLE ([Index] int NOT NULL, [Id] ").Append(StormManager.ToSqlDbType(autoIncColumn.DbType, 0, 0, 0)).AppendLine(" NOT NULL);");
+            sb.Append("DECLARE @__storm_id_values TABLE ([Index] int NOT NULL, [Id] ").Append(GetIdentityBufferSqlType(autoIncColumn)).AppendLine(" NOT NULL);");
 
         if (updateThenInsert)
             sb.AppendLine("DECLARE @__storm_rows_affected__ int = 0;");

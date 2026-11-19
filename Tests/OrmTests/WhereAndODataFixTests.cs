@@ -138,6 +138,41 @@ public class WhereAndODataFixTests : IClassFixture<DatabaseFixture>, IAsyncLifet
         Where(x => s1 == s2 || x.IntValue == 1).sql.Should().Be("1=1");
     }
 
+    [Fact]
+    public void CapturedConstantsEqual_ShouldFoldWithTypedSemantics()
+    {
+        // NaN == NaN is false in C# (object.Equals would say true and fold the predicate to 1=1)
+        double a = double.NaN, b = double.NaN;
+        Where(x => a == b).sql.Should().Be("1=0");
+        Where(x => a != b).sql.Should().Be("1=1");
+
+        float fa = float.NaN, fb = float.NaN;
+        Where(x => fa == fb).sql.Should().Be("1=0");
+
+        double? na = double.NaN, nb = double.NaN;
+        Where(x => na == nb).sql.Should().Be("1=0");
+
+        // Nullable semantics are preserved: null == null is true, null == value is false
+        int? n1 = null, n2 = null, n3 = 5;
+        Where(x => n1 == n2).sql.Should().Be("1=1");
+        Where(x => n1 == n3).sql.Should().Be("1=0");
+        Where(x => n1 != n3).sql.Should().Be("1=1");
+    }
+
+    [Fact]
+    public async Task Delete_WithCapturedNaNEquality_DeletesNothing()
+    {
+        double a = double.NaN, b = double.NaN;
+
+        var countBefore = await _context.SelectFromUsersTable().CountAsync();
+
+        // Before the fix this folded to 1=1 and deleted every row
+        var deleted = await _context.DeleteFromUsersTable().Where(x => a == b).GoAsync();
+
+        deleted.Should().Be(0);
+        (await _context.SelectFromUsersTable().CountAsync()).Should().Be(countBefore);
+    }
+
     // ---------- #4 boolean comparisons ----------
 
     [Fact]

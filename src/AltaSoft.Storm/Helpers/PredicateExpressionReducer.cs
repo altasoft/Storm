@@ -263,9 +263,21 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         var left = VisitComparisonOperand(node.Left);
         var right = VisitComparisonOperand(node.Right);
 
-        // When both sides are constants, fold using value equality (not reference equality of boxed values).
+        // When both sides are constants, fold by evaluating the original typed comparison (operand types, operator method and
+        // nullable lifting are preserved), so that e.g. NaN == NaN is false, as in C#. object.Equals would return true for NaN,
+        // which would fold the predicate to 1=1 and could make a filtered UPDATE/DELETE affect every row.
         if (left is ConstantExpression { Value: var lv } && right is ConstantExpression { Value: var rv })
+        {
+            if (CanBeConstantOfType(lv, node.Left.Type) && CanBeConstantOfType(rv, node.Right.Type))
+            {
+                var comparison = node.Update(Expression.Constant(lv, node.Left.Type), node.Conversion, Expression.Constant(rv, node.Right.Type));
+                var result = Expression.Lambda<Func<object?>>(Expression.Convert(comparison, typeof(object))).Compile(preferInterpretation: true)();
+                return Expression.Constant(result, node.Type);
+            }
+
+            // The reduced operand type differs from the original one: fall back to value equality (not reference equality of boxed values)
             return Expression.Constant(isNotEqual ? !Equals(lv, rv) : Equals(lv, rv));
+        }
 
         // A boolean predicate (comparison, IS NULL check, method call, ...) compared to a boolean constant:
         // fold to the predicate itself or to its negation. Raw boolean columns are compared as values below.
@@ -292,6 +304,9 @@ internal sealed class PredicateExpressionReducer : ExpressionVisitor
         };
 
         static Expression MakeEquality(Expression l, Expression r, bool notEqual) => notEqual ? Expression.NotEqual(l, r) : Expression.Equal(l, r);
+
+        static bool CanBeConstantOfType(object? value, Type type) =>
+            value is null ? !type.IsValueType || Nullable.GetUnderlyingType(type) is not null : type.IsInstanceOfType(value);
     }
 
     /// <summary>
