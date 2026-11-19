@@ -273,9 +273,36 @@ public static partial class SqlOrm
 
         static string GetSqlColumnInfo(StormColumnDef column)
         {
-            var typeName = column.IsRowVersion()
-                ? "rowversion"
-                : StormManager.ToSqlDbType(column.DbType, column.Size, column.Precision, column.Scale);
+            string typeName;
+            if (column.IsRowVersion())
+            {
+                typeName = "rowversion";
+            }
+            else
+            {
+                var size = column.Size;
+                var precision = column.Precision;
+                var scale = column.Scale;
+
+                if (column.DbType == UnifiedDbType.Binary && size <= 0)
+                {
+                    // Fixed-length binary without explicit size: use the natural size of known fixed-size types.
+                    var propertyType = Nullable.GetUnderlyingType(column.PropertyType) ?? column.PropertyType;
+                    if (propertyType == typeof(SqlRowVersion))
+                        size = 8;
+                    else if (propertyType == typeof(SqlLogSequenceNumber))
+                        size = 10;
+                }
+
+                if (column.DbType == UnifiedDbType.Decimal && column.IsAutoInc())
+                {
+                    // IDENTITY columns must have scale 0
+                    precision = precision <= 0 ? UnifiedDbTypeExt.DefaultDecimalPrecision : precision;
+                    scale = 0;
+                }
+
+                typeName = StormManager.ToSqlDbType(column.DbType, size, precision, scale);
+            }
 
             return $"{column.ColumnName} {typeName} {(column.IsAutoInc() ? "IDENTITY " : "")}{(column.IsNullable ? "NULL" : "NOT NULL")}";
         }

@@ -200,7 +200,8 @@ public sealed class StormTransactionScope : IDisposable
     /// <param name="cancellationToken">Cancellation token to observe while committing the transaction.</param>
     /// <returns>A <see cref="Task"/> that completes when commit (if required) has finished.</returns>
     /// <exception cref="ObjectDisposedException">Thrown if the scope has already been disposed.</exception>
-    /// <exception cref="StormException">Thrown when transaction nesting is inconsistent.</exception>
+    /// <exception cref="StormException">Thrown when transaction nesting is inconsistent, or when the ambient transaction has already been
+    /// rolled back (e.g. an inner joined scope was disposed without calling <see cref="CompleteAsync"/>).</exception>
     public async Task CompleteAsync(CancellationToken cancellationToken)
     {
         _logger?.LogTrace("[StormTransactionScope] CompleteAsync called.");
@@ -214,6 +215,9 @@ public sealed class StormTransactionScope : IDisposable
 
         if (IsSuppressed)
             return;
+
+        if (Ambient.IsRollBacked)
+            throw new StormException(AmbientState.RolledBackByInnerScopeMessage);
 
         if (--Ambient.TransactionCount < 0)
             throw new StormException("TransactionCount < 0.");

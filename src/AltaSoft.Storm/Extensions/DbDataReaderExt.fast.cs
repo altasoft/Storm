@@ -333,8 +333,18 @@ public static partial class DbDataReaderExt
     /// <param name="self">The <see cref="StormDbDataReader"/> instance.</param>
     /// <param name="idx">The zero-based column index.</param>
     /// <returns>The <see cref="TimeOnly"/> value at the specified column index.</returns>
+    /// <remarks>
+    /// SQL Server <c>time</c> columns are returned by the provider as <see cref="TimeSpan"/>; date/time columns
+    /// (e.g. <c>datetime2</c>) are returned as <see cref="DateTime"/> and their time-of-day part is used.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TimeOnly GetTime(this StormDbDataReader self, int idx) => TimeOnly.FromDateTime(self.GetLocalDateTime(idx));
+    public static TimeOnly GetTime(this StormDbDataReader self, int idx)
+    {
+        if (self.GetFieldType(idx) == typeof(TimeSpan))
+            return TimeOnly.FromTimeSpan(self.GetTimeSpan(idx));
+
+        return TimeOnly.FromDateTime(self.GetDateTime(idx));
+    }
 
     /// <summary>
     /// Gets the <see cref="TimeOnly"/> value from the specified column index, or <c>null</c> if the value is <see cref="DBNull"/>.
@@ -350,13 +360,38 @@ public static partial class DbDataReaderExt
     #region TimeSpan
 
     /// <summary>
+    /// Gets the <see cref="TimeSpan"/> value from the specified column index.
+    /// SQL Server <c>time</c> columns are read directly; date/time columns (e.g. <c>datetime2</c>) yield their time-of-day part.
+    /// </summary>
+    /// <param name="self">The <see cref="StormDbDataReader"/> instance.</param>
+    /// <param name="idx">The zero-based column index.</param>
+    /// <returns>The <see cref="TimeSpan"/> value at the specified column index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan AsTimeSpan(this StormDbDataReader self, int idx)
+    {
+        if (self.GetFieldType(idx) == typeof(TimeSpan))
+            return self.GetTimeSpan(idx);
+
+        return self.GetDateTime(idx).TimeOfDay;
+    }
+
+    /// <summary>
     /// Gets the <see cref="TimeSpan"/> value from the specified column index, or <c>null</c> if the value is <see cref="DBNull"/>.
     /// </summary>
     /// <param name="self">The <see cref="StormDbDataReader"/> instance.</param>
     /// <param name="idx">The zero-based column index.</param>
     /// <returns>The <see cref="TimeSpan"/> value at the specified column index, or <c>null</c> if <see cref="DBNull"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TimeSpan? GetTimeSpanOrNull(this StormDbDataReader self, int idx) => self.IsDBNull(idx) ? null : TimeSpan.FromTicks(self.GetLocalDateTime(idx).Ticks);
+    public static TimeSpan? GetTimeSpanOrNull(this StormDbDataReader self, int idx)
+    {
+        if (self.IsDBNull(idx))
+            return null;
+
+        if (self.GetFieldType(idx) == typeof(TimeSpan))
+            return self.GetTimeSpan(idx);
+
+        return self.GetDateTime(idx).TimeOfDay;
+    }
 
     #endregion TimeSpan
 

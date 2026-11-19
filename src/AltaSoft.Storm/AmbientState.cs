@@ -110,9 +110,21 @@ internal sealed class AmbientState : IDisposable
         return _connection;
     }
 
+    /// <summary>
+    /// Message used when work is attempted on an ambient transaction that has already been rolled back.
+    /// </summary>
+    internal const string RolledBackByInnerScopeMessage =
+        "The ambient transaction has already been rolled back (an inner StormTransactionScope was disposed without calling CompleteAsync, or a commit failed). " +
+        "No further work can be done in this transaction scope; dispose it and start a new one.";
+
     internal async ValueTask<StormDbTransaction?> GetTransactionAsync(CancellationToken cancellationToken)
     {
         Debug.Assert(_connection is not null);
+
+        // Do not silently start a new transaction after the shared one has been rolled back:
+        // the outer scope would otherwise keep working (and possibly commit) outside of the transaction it believes it is in.
+        if (IsRollBacked)
+            throw new StormException(RolledBackByInnerScopeMessage);
 
         if (_transaction is not null)
             return _transaction;
