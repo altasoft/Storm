@@ -253,17 +253,30 @@ internal static class StringBuilderExt
     }
 
     /// <summary>
-    /// Wraps the contents of the specified StringBuilder in SQL transaction statements by inserting a BEGIN TRAN at the
-    /// start and appending a COMMIT TRAN at the end.
+    /// Wraps the contents of the specified StringBuilder into an atomic SQL transaction block:
+    /// <c>BEGIN TRY BEGIN TRAN; ... COMMIT TRAN; END TRY BEGIN CATCH IF @@TRANCOUNT&gt;0 ROLLBACK TRAN; THROW; END CATCH</c>.
     /// </summary>
-    /// <remarks>This method modifies the provided StringBuilder in place. Use this method to ensure that a
-    /// batch of SQL statements is executed within a single transaction block.</remarks>
+    /// <remarks>
+    /// <para>This method modifies the provided StringBuilder in place. Any error raised by a statement inside the batch
+    /// (e.g. primary/foreign key violation, concurrency error) aborts the remaining statements, rolls back the whole
+    /// transaction and is re-thrown to the client with its original error number.</para>
+    /// <para>SET XACT_ABORT ON is intentionally not used: some generated statements (e.g. insert-then-update merge) catch
+    /// expected errors in nested TRY/CATCH blocks and continue, which would be impossible with a doomed transaction.</para>
+    /// <para>Callers must only use this wrapper when the command does not run inside a caller-owned transaction
+    /// (the ROLLBACK in the CATCH block would roll back the outer transaction as well).</para>
+    /// </remarks>
     /// <param name="sb">The StringBuilder instance containing the SQL statements to be wrapped in a transaction. Cannot be null.</param>
-    /// <returns>The same StringBuilder instance with BEGIN TRAN prepended and COMMIT TRAN appended.</returns>
+    /// <returns>The same StringBuilder instance wrapped into the transaction block.</returns>
     public static StringBuilder WrapIntoBeginTranCommit(this StringBuilder sb)
     {
-        sb.Insert(0, $"BEGIN TRAN;{Environment.NewLine}");
-        sb.AppendLine("COMMIT TRAN");
+        sb.Insert(0, $"BEGIN TRY{Environment.NewLine}BEGIN TRAN;{Environment.NewLine}");
+        sb.AppendLine(";");
+        sb.AppendLine("COMMIT TRAN;");
+        sb.AppendLine("END TRY");
+        sb.AppendLine("BEGIN CATCH");
+        sb.AppendLine("  IF @@TRANCOUNT > 0 ROLLBACK TRAN;");
+        sb.AppendLine("  THROW;");
+        sb.AppendLine("END CATCH;");
         return sb;
     }
 }

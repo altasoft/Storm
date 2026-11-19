@@ -42,10 +42,22 @@ public abstract partial class StormControllerBase
             var reader = await command.ExecuteCommandReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
             {
-                if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                    return 1;
+                try
+                {
+                    if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                        value.__SetAutoIncValue(reader, 0);
 
-                value.__SetAutoIncValue(reader, 0);
+                    // The auto-inc value is returned by an OUTPUT clause, so later statements of the batch may still fail
+                    // (e.g. concurrency error raised by the update part of insert-then-update merge).
+                    // Errors raised after the first result set are reported only when the remaining results are consumed.
+                    await DrainRemainingResultsAsync(reader, cancellationToken).ConfigureAwait(false);
+                }
+                catch (StormDbException ex)
+                {
+                    if (StormManager.HandleDbException(ex) is { } handledException)
+                        throw handledException;
+                    throw;
+                }
                 return 1;
             }
         }
@@ -78,13 +90,37 @@ public abstract partial class StormControllerBase
             var reader = await command.ExecuteCommandReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
             {
-                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                try
                 {
-                    var index = reader.GetInt32(0);
-                    valueList[index].__SetAutoIncValue(reader, 1);
+                    while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        var index = reader.GetInt32(0);
+                        valueList[index].__SetAutoIncValue(reader, 1);
+                    }
+
+                    await DrainRemainingResultsAsync(reader, cancellationToken).ConfigureAwait(false);
+                }
+                catch (StormDbException ex)
+                {
+                    if (StormManager.HandleDbException(ex) is { } handledException)
+                        throw handledException;
+                    throw;
                 }
             }
             return valueList.Count;
+        }
+    }
+
+    /// <summary>
+    /// Consumes all remaining result sets of the reader, so that errors raised by later statements of the batch are surfaced.
+    /// </summary>
+    private static async Task DrainRemainingResultsAsync(StormDbDataReader reader, CancellationToken cancellationToken)
+    {
+        while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false))
+        {
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+            }
         }
     }
 
@@ -102,9 +138,6 @@ public abstract partial class StormControllerBase
             checkConcurrency = false;
 
         var sb = StormManager.GetStringBuilderFromPool();
-
-        if (checkConcurrency)
-            sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
 
         if (updateThenInsert)
             sb.AppendLine("DECLARE @__storm_rows_affected__ int = 0;");
@@ -137,8 +170,6 @@ public abstract partial class StormControllerBase
         if (autoIncColumn is not null)
             sb.Append("DECLARE @__storm_id_values TABLE ([Index] int NOT NULL, [Id] ").Append(StormManager.ToSqlDbType(autoIncColumn.DbType, 0, 0, 0)).AppendLine(" NOT NULL);");
 
-        if (checkConcurrency)
-            sb.AppendLine("DECLARE @__storm_concurrency_error__ bit = 0;");
         if (updateThenInsert)
             sb.AppendLine("DECLARE @__storm_rows_affected__ int = 0;");
 
