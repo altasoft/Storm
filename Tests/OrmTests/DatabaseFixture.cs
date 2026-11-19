@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AltaSoft.Storm.TestModels;
 using Xunit;
@@ -15,6 +16,10 @@ public sealed class DatabaseFixture : IAsyncLifetime
             ?? "Data Source=(localdb)\\MSSQLLocalDB;Integrated Security=True;Encrypt=false;TrustServerCertificate=true";
     }
 
+    // StormManager.Initialize is a one-time, startup-only API and is not safe to call concurrently.
+    // Test classes run in parallel, so fixtures may be constructed at the same time.
+    private static readonly Lock s_initLock = new();
+
     private readonly DatabaseHelper _databaseHelper;
 
     public string ConnectionString => _databaseHelper.ConnectionString;
@@ -29,16 +34,19 @@ public sealed class DatabaseFixture : IAsyncLifetime
         UsersBulkCopy = _databaseHelper.UsersBulkCopy;
         CustomerProperties = _databaseHelper.CustomerProperties;
 
-        if (!StormManager.IsInitialized)
+        lock (s_initLock)
         {
-            StormManager.Initialize(new MsSqlOrmProvider(), configuration =>
+            if (!StormManager.IsInitialized)
             {
-                configuration.AddStormContext<TestStormContext>(dbConfig =>
+                StormManager.Initialize(new MsSqlOrmProvider(), configuration =>
                 {
-                    dbConfig.UseConnectionString(ConnectionString);
-                    dbConfig.UseDefaultSchema("dbo");
+                    configuration.AddStormContext<TestStormContext>(dbConfig =>
+                    {
+                        dbConfig.UseConnectionString(ConnectionString);
+                        dbConfig.UseDefaultSchema("dbo");
+                    });
                 });
-            });
+            }
         }
     }
 

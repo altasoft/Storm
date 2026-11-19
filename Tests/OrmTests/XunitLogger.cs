@@ -15,7 +15,13 @@ public sealed class XunitLogger<T> : ILogger<T>, IDisposable
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter)
     {
-        _output.WriteLine(state?.ToString());
+        try
+        {
+            _output.WriteLine(state?.ToString());
+        }
+        catch (InvalidOperationException)
+        {
+        }
     }
 
     public bool IsEnabled(LogLevel logLevel)
