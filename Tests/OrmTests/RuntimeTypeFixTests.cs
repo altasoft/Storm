@@ -270,16 +270,34 @@ public sealed class RuntimeTypeFixTests : IClassFixture<DatabaseFixture>, IAsync
     #region #5 CDC LSN for capture instance
 
     [Fact]
-    public async Task GetLastLogSequenceNumberAsync_CaptureInstance_CallsFunctionWithParameter()
+    public async Task GetLastLogSequenceNumberAsync_CaptureInstance_ReturnsMaxLsnOfChangeTable()
     {
-        await using var context = new TestStormContext(_connectionString);
+        // CDC is not supported on LocalDB, so a stand-in change table cdc.[<capture_instance>_CT] with known LSNs is created instead.
+        // The capture instance name contains ' and ] to verify that the table name is quoted safely.
+        const string captureInstance = "dbo_it's]a [test";
+        const string changeTable = "[cdc].[dbo_it's]]a [test_CT]";
 
-        // CDC is not enabled on the test database (and not supported on LocalDB), so the CDC function cannot succeed.
-        // Before the fix the statement was malformed (fn_cdc_get_max_lsn takes no arguments) and failed at compile time with
-        // "too many arguments". Now the function is invoked correctly and only fails because the CDC metadata tables are missing.
-        var ex = await Assert.ThrowsAnyAsync<SqlException>(() => context.GetLastLogSequenceNumberAsync("dbo_it's]a [test"));
-        Assert.DoesNotContain("too many arguments", ex.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("cdc.", ex.Message, StringComparison.OrdinalIgnoreCase);
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        await ExecAsync(connection, "IF SCHEMA_ID('cdc') IS NULL EXEC('CREATE SCHEMA [cdc]')");
+        await ExecAsync(connection, $"IF OBJECT_ID('{changeTable.Replace("'", "''")}') IS NOT NULL DROP TABLE {changeTable}; CREATE TABLE {changeTable} ([__$start_lsn] binary(10) NOT NULL)");
+
+        try
+        {
+            await using var context = new TestStormContext(_connectionString);
+
+            // No changes yet
+            Assert.Equal(SqlLogSequenceNumber.Zero, await context.GetLastLogSequenceNumberAsync(captureInstance));
+
+            await ExecAsync(connection, $"INSERT INTO {changeTable} VALUES (0x0000002A000001A80003), (0x0000002B000000100001), (0x0000002A000002000001)");
+
+            var lsn = await context.GetLastLogSequenceNumberAsync(captureInstance);
+            Assert.Equal(new SqlLogSequenceNumber([0x00, 0x00, 0x00, 0x2B, 0x00, 0x00, 0x00, 0x10, 0x00, 0x01]), lsn);
+        }
+        finally
+        {
+            await ExecAsync(connection, $"DROP TABLE {changeTable}");
+        }
     }
 
     #endregion

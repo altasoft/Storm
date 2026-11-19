@@ -326,28 +326,29 @@ public abstract class StormContext : IAsyncDisposable, IDisposable, IStormContex
     }
 
     /// <summary>
-    /// Asynchronously retrieves the log sequence number (LSN) that marks the low endpoint of the validity interval of a specific
-    /// change data capture (CDC) capture instance, i.e. <c>SELECT sys.fn_cdc_get_min_lsn(@capture_instance)</c>.
+    /// Asynchronously retrieves the log sequence number (LSN) of the last change captured by a specific change data capture (CDC)
+    /// capture instance, i.e. <c>SELECT MAX(__$start_lsn) FROM cdc.[&lt;capture_instance&gt;_CT]</c>.
     /// </summary>
     /// <remarks>
     /// SQL Server has no per-capture-instance "max LSN" function (<c>sys.fn_cdc_get_max_lsn()</c> takes no arguments and is database-wide;
-    /// use <see cref="GetLastLogSequenceNumberAsync(CancellationToken)"/> for it). The capture-instance specific value is the minimum LSN,
-    /// which, together with the database-wide max LSN, forms the range to query with <c>cdc.fn_cdc_get_all_changes_&lt;capture_instance&gt;</c>.
-    /// CDC must be enabled on the database; SQL Server returns <c>0x00000000000000000000</c> when the capture instance does not exist or the caller is not authorized.
+    /// use <see cref="GetLastLogSequenceNumberAsync(CancellationToken)"/> for it), so the capture instance's change table is queried.
+    /// CDC must be enabled on the database and the capture instance must exist.
     /// </remarks>
-    /// <param name="captureInstance">The (unquoted) name of the capture instance. It is passed to SQL Server as a parameter.</param>
+    /// <param name="captureInstance">The name of the capture instance (e.g. <c>dbo_Users</c>).</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the asynchronous operation.</param>
     /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains the minimum log sequence number of the capture instance as a <see cref="SqlLogSequenceNumber"/>.
+    /// A task that represents the asynchronous operation. The task result contains the LSN of the last captured change of the capture instance,
+    /// or <see cref="SqlLogSequenceNumber.Zero"/> when the change table contains no changes.
     /// </returns>
     public async Task<SqlLogSequenceNumber> GetLastLogSequenceNumberAsync(string captureInstance, CancellationToken cancellationToken = default)
     {
-        const string statement = "SELECT sys.fn_cdc_get_min_lsn(@capture_instance)";
+        // The table name cannot be passed as a parameter, so it is quoted (']' escaped as ']]') to prevent SQL injection
+        var changeTable = "[" + captureInstance.UnquoteSqlName().Replace("]", "]]") + "_CT]";
+        var statement = "SELECT MAX(__$start_lsn) FROM [cdc]." + changeTable;
 
         var queryParameters = new QueryParameters(this);
-        var bytes = await this.ExecuteScalarAsync<byte[]>(statement, queryParameters, cancellationToken,
-            command => StormManager.AddDbParameter(command, "@capture_instance", UnifiedDbType.String, 128, captureInstance.UnquoteSqlName(), ParameterDirection.Input)).ConfigureAwait(false);
-        return new SqlLogSequenceNumber(bytes);
+        var bytes = await this.ExecuteScalarAsync<byte[]?>(statement, queryParameters, cancellationToken).ConfigureAwait(false);
+        return bytes is null ? SqlLogSequenceNumber.Zero : new SqlLogSequenceNumber(bytes);
     }
 
     /// <summary>
