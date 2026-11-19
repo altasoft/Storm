@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<TargetFrameworks>$(DefaultTargetFrameworks)</TargetFrameworks>
 	<Nullable>enable</Nullable>
@@ -47,7 +47,9 @@
           AfterTargets="CoreCompile"
           Condition="'$(EmitCompilerGeneratedFiles)' == 'true'
                    And '$(DesignTimeBuild)' != 'true'">
-	  <RemoveDir Directories="$(CompilerGeneratedFilesOutputPath)/AltaSoft.DomainPrimitives.Generator" />
+	  <RemoveDir
+		  Directories="$(CompilerGeneratedFilesOutputPath)/AltaSoft.DomainPrimitives.Generator"
+		  Condition="Exists('$(CompilerGeneratedFilesOutputPath)/AltaSoft.DomainPrimitives.Generator')" />
   </Target>
 
   <ItemGroup>
